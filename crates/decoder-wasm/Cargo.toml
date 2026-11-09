@@ -1,0 +1,23 @@
+[package]
+name = "glyphpack-decoder-wasm"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+license = "0BSD"
+authors = ["NeoX"]
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[features]
+default = []
+format = []
+format-runtime = ["format"]
+none = []
+fast = []
+secure = []
+memory-heavy = []
+memory-runtime = ["memory-heavy"]
+legacy = []
+full = ["format-runtime", "none", "fast", "secure", "memory-runtime"]

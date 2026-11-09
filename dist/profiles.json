@@ -1,0 +1,110 @@
+{
+  "core.min.mjs": {
+    "backend": "wasm",
+    "base64Bytes": 1748,
+    "blake3": "bbb3bb559546edd3392d7086ab6515f867e00f6b2b21ccbf187c9810654bb058",
+    "browserTarget": "chrome109",
+    "bytes": 2988,
+    "gzip9Bytes": 1311,
+    "wasmBytes": 2547
+  },
+  "core.mjs": {
+    "backend": "wasm",
+    "base64Bytes": 1748,
+    "blake3": "cd8d30a89ce272d7e6e0f7e77cdda00ba4cb1e7617743a6872640b5362af8feb",
+    "browserTarget": "chrome109",
+    "bytes": 3651,
+    "gzip9Bytes": 1311,
+    "wasmBytes": 2547
+  },
+  "default.min.mjs": {
+    "backend": "wasm",
+    "base64Bytes": 5056,
+    "blake3": "d835a069f28ee554277db6935a138a7211420134083e962149df28c30c8b8f8d",
+    "browserTarget": "chrome109",
+    "bytes": 6473,
+    "gzip9Bytes": 3790,
+    "wasmBytes": 8325
+  },
+  "default.mjs": {
+    "backend": "wasm",
+    "base64Bytes": 5056,
+    "blake3": "2e315751afcafde04e348b30d101e9427d212231a16a9ece3866d1571760b751",
+    "browserTarget": "chrome109",
+    "bytes": 7191,
+    "gzip9Bytes": 3790,
+    "wasmBytes": 8325
+  },
+  "fast-none.min.mjs": {
+    "backend": "wasm",
+    "base64Bytes": 3172,
+    "blake3": "0ca3023452cc154fd48bd6c292b67d2dcb3f0d8cb8a1e8276c12d64c135b57b8",
+    "browserTarget": "chrome109",
+    "bytes": 4860,
+    "gzip9Bytes": 2379,
+    "wasmBytes": 5126
+  },
+  "fast-none.mjs": {
+    "backend": "wasm",
+    "base64Bytes": 3172,
+    "blake3": "6425fc655cfd1a1040653021f4b20c2fffa2b3272cc5934b8697dd46445858d1",
+    "browserTarget": "chrome109",
+    "bytes": 5777,
+    "gzip9Bytes": 2379,
+    "wasmBytes": 5126
+  },
+  "full.min.mjs": {
+    "backend": "wasm",
+    "base64Bytes": 7532,
+    "blake3": "0204ea6a4495a0b4c4fa744f2caad517b69dc090d5d0dce6a2185d1aac75150d",
+    "browserTarget": "chrome109",
+    "bytes": 9403,
+    "gzip9Bytes": 5648,
+    "wasmBytes": 13427
+  },
+  "full.mjs": {
+    "backend": "wasm",
+    "base64Bytes": 7532,
+    "blake3": "9ed3ec3b86eda93b5fc432bafa1a8d9c3ca81dcea50740319e05821664a07dae",
+    "browserTarget": "chrome109",
+    "bytes": 10459,
+    "gzip9Bytes": 5648,
+    "wasmBytes": 13427
+  },
+  "high-memory.min.mjs": {
+    "backend": "wasm",
+    "base64Bytes": 5196,
+    "blake3": "e26debb5ef7105af5a60d776f7afac522baf3a0af0243b690850d3f99266f175",
+    "browserTarget": "chrome109",
+    "bytes": 6613,
+    "gzip9Bytes": 3895,
+    "wasmBytes": 8449
+  },
+  "high-memory.mjs": {
+    "backend": "wasm",
+    "base64Bytes": 5196,
+    "blake3": "20751a46513bd893b7852648838453a506c99db33fee8b0742125d8eb7bf4465",
+    "browserTarget": "chrome109",
+    "bytes": 7331,
+    "gzip9Bytes": 3895,
+    "wasmBytes": 8449
+  },
+  "none.min.mjs": {
+    "backend": "wasm",
+    "base64Bytes": 1748,
+    "blake3": "bbb3bb559546edd3392d7086ab6515f867e00f6b2b21ccbf187c9810654bb058",
+    "browserTarget": "chrome109",
+    "bytes": 2988,
+    "gzip9Bytes": 1311,
+    "wasmBytes": 2547
+  },
+  "none.mjs": {
+    "backend": "wasm",
+    "base64Bytes": 1748,
+    "blake3": "cd8d30a89ce272d7e6e0f7e77cdda00ba4cb1e7617743a6872640b5362af8feb",
+    "browserTarget": "chrome109",
+    "bytes": 3651,
+    "gzip9Bytes": 1311,
+    "wasmBytes": 2547
+  }
+}

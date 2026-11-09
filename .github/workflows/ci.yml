@@ -1,0 +1,30 @@
+name: ci
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@1.99.1
+        with:
+          components: rustfmt, clippy
+          targets: wasm32v1-none
+      - run: npm ci
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --locked --all-targets -- -D warnings
+      - run: npm test
+      - run: npm run build
+      - run: git diff --exit-code -- dist
+      # This is compatibility coverage, not the recorded Chromium 156 benchmark.
+      - run: npx playwright install --with-deps chromium
+      - name: Browser compatibility smoke
+        run: |
+          browser=$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')
+          version=$("$browser" --version | sed -E 's/.* ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          CHROMIUM_BIN="$browser" CHROMIUM_VERSION="$version" npm run test:browser

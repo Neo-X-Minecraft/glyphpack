@@ -1,0 +1,31 @@
+[package]
+name = "glyphpack"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+description = "Dense UTF-16 payload encoding with a specialized Rust/Wasm decoder"
+license = "0BSD"
+readme = "README.md"
+authors = ["NeoX"]
+exclude = ["benchmarks/results/*", "benchmarks/experiments/snapshots/*", "tests/vendor/*", ".github/*"]
+keywords = ["encoding", "utf16", "html", "payload", "javascript"]
+categories = ["encoding", "command-line-utilities", "web-programming"]
+
+[dependencies]
+serde_json = "=1.0.154"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
+
+[workspace]
+members = ["crates/decoder-wasm"]
+default-members = ["."]
+resolver = "2"
+
+[profile.wasm-release]
+inherits = "release"
+opt-level = 3
+lto = "fat"
+panic = "abort"

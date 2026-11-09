@@ -1,0 +1,65 @@
+[
+  {
+    "repo": "kevinAlbs/Base122",
+    "commit": "b62945c2733fa4da8792a1071e40a8b326e8dd1b",
+    "sourceUrl": "https://raw.githubusercontent.com/kevinAlbs/Base122/b62945c2733fa4da8792a1071e40a8b326e8dd1b/base122.js",
+    "file": "benchmarks/vendor/encoding-bench/kevinAlbs-Base122-base122.js",
+    "sha256": "90639975b319ffeb2bbe9264e202bc4dcb34db3e9f4734c4792bfe6fee62b23c"
+  },
+  {
+    "repo": "kevinAlbs/Base122",
+    "commit": "b62945c2733fa4da8792a1071e40a8b326e8dd1b",
+    "sourceUrl": "https://raw.githubusercontent.com/kevinAlbs/Base122/b62945c2733fa4da8792a1071e40a8b326e8dd1b/decode.js",
+    "file": "benchmarks/vendor/encoding-bench/kevinAlbs-Base122-decode.js",
+    "sha256": "d682e3e1637246ab9651e629818efecc86b3d070b97a00510c52b9686c4ad4c5"
+  },
+  {
+    "repo": "code4fukui/Base122",
+    "commit": "fb2b89d9d498f3f7573f9817cf7b2263d0321423",
+    "sourceUrl": "https://raw.githubusercontent.com/code4fukui/Base122/fb2b89d9d498f3f7573f9817cf7b2263d0321423/Base122.js",
+    "file": "benchmarks/vendor/encoding-bench/code4fukui-Base122-Base122.js",
+    "sha256": "877265d69e6a6480f39a24391fd20280c837b2fc46319ffe1c3320355ee61782"
+  },
+  {
+    "repo": "Sheep-y/Base85",
+    "commit": "f14b0e9d6854fba56f0bc6457fa87880953a64c2",
+    "sourceUrl": "https://raw.githubusercontent.com/Sheep-y/Base85/f14b0e9d6854fba56f0bc6457fa87880953a64c2/javascript/base85.js",
+    "file": "benchmarks/vendor/encoding-bench/Sheep-y-Base85-javascript-base85.js",
+    "sha256": "89b051e4effae2becf4c61ff0a4bfcd80786cf565dfdf16c74745ca994230cd7"
+  },
+  {
+    "repo": "Sheep-y/Base85",
+    "commit": "f14b0e9d6854fba56f0bc6457fa87880953a64c2",
+    "sourceUrl": "https://raw.githubusercontent.com/Sheep-y/Base85/f14b0e9d6854fba56f0bc6457fa87880953a64c2/LICENSE",
+    "file": "benchmarks/vendor/encoding-bench/Sheep-y-Base85-LICENSE",
+    "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+  },
+  {
+    "repo": "AlttiRi/base85",
+    "commit": "06e3abca2afe55e50ee17f8d62be675c54a90ddc",
+    "sourceUrl": "https://raw.githubusercontent.com/AlttiRi/base85/06e3abca2afe55e50ee17f8d62be675c54a90ddc/base85.js",
+    "file": "benchmarks/vendor/encoding-bench/AlttiRi-base85-base85.js",
+    "sha256": "eedd3fa989eb039b1832ac9910762c16bd80515573e258ac8d853ef789d49f07"
+  },
+  {
+    "repo": "kevinAlbs/Base122",
+    "commit": "b62945c2733fa4da8792a1071e40a8b326e8dd1b",
+    "sourceUrl": "https://raw.githubusercontent.com/kevinAlbs/Base122/b62945c2733fa4da8792a1071e40a8b326e8dd1b/LICENSE.txt",
+    "file": "benchmarks/vendor/encoding-bench/kevinAlbs-Base122-LICENSE.txt",
+    "sha256": "e0e0c24feb98c3bd0c19aca3dfaea8de9b4764e8eaf74e9ad0affca88c8467ee"
+  },
+  {
+    "repo": "code4fukui/Base122",
+    "commit": "fb2b89d9d498f3f7573f9817cf7b2263d0321423",
+    "sourceUrl": "https://raw.githubusercontent.com/code4fukui/Base122/fb2b89d9d498f3f7573f9817cf7b2263d0321423/LICENSE.txt",
+    "file": "benchmarks/vendor/encoding-bench/code4fukui-Base122-LICENSE.txt",
+    "sha256": "e0e0c24feb98c3bd0c19aca3dfaea8de9b4764e8eaf74e9ad0affca88c8467ee"
+  },
+  {
+    "repo": "AlttiRi/base85",
+    "commit": "06e3abca2afe55e50ee17f8d62be675c54a90ddc",
+    "sourceUrl": "https://raw.githubusercontent.com/AlttiRi/base85/06e3abca2afe55e50ee17f8d62be675c54a90ddc/license",
+    "file": "benchmarks/vendor/encoding-bench/AlttiRi-base85-license",
+    "sha256": "35493470968315ce055453f3dc6c2a029ba38420f683afbf642b464ce5216777"
+  }
+]

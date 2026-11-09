@@ -1,0 +1,13 @@
+* text=auto eol=lf
+*.csv text eol=lf
+*.png binary
+*.wasm binary
+# Preserve byte-identical provenance and upstream source fingerprints.
+benchmarks/results/encoding-decode-benchmark.csv -text
+benchmarks/vendor/encoding-bench/** -text
+tests/vendor/hashes/** -text
+tests/fixtures/blake3-vectors.json -text
+# Historical/reference whitespace is part of the recorded byte identity.
+benchmarks/results/encoding-decode-benchmark.csv -diff -whitespace
+benchmarks/vendor/encoding-bench/** -whitespace
+tests/vendor/hashes/** -whitespace

@@ -1,0 +1,38 @@
+{
+  "name": "glyphpack",
+  "version": "0.1.0",
+  "description": "Dense UTF-16 payloads with a Rust/Wasm decoder and gzip/base64 ESM loader",
+  "license": "0BSD",
+  "type": "commonjs",
+  "exports": {
+    ".": "./dist/default.min.mjs",
+    "./full": "./dist/full.min.mjs",
+    "./core": "./dist/core.min.mjs",
+    "./none": "./dist/none.min.mjs",
+    "./fast-none": "./dist/fast-none.min.mjs",
+    "./high-memory": "./dist/high-memory.min.mjs"
+  },
+  "files": [
+    "dist",
+    "docs",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "cargo run --release --locked -- build --all",
+    "test": "cargo test --locked && cargo run --release --locked -- test-js",
+    "test:browser": "cargo run --release --locked -- bench smoke",
+    "bench": "cargo run --release --locked -- bench run",
+    "bench:encode": "cargo run --release --locked --example encode_bench",
+    "summary": "cargo run --release --locked -- summary"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "playwright": "1.63.0",
+    "binaryen": "129.0.0"
+  },
+  "author": "NeoX"
+}
