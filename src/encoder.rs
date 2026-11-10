@@ -115,6 +115,56 @@ pub fn count_pairs(data: &[u8], mask: u8) -> usize {
     count + usize::from(bits != 0)
 }
 
+// Four independent carry chains expose instruction-level parallelism while
+// sharing the input load. This is deliberately four masks, not a wider batch:
+// it fits register files well and keeps the stack scratch small (no SIMD or
+// unsafe reads). Mask order, scores and tie-breaking remain exact.
+fn score_four(data: &[u8], masks: [u8; 4]) -> [usize; 4] {
+    let mut queues = [0u64; 4];
+    let mut bits = [0u32; 4];
+    let mut counts = [0usize; 4];
+    let masks = masks.map(|m| u32::from(m) * 0x01010101);
+    for part in data.chunks(4) {
+        for lane in 0..4 {
+            let word = if let Ok(bytes) = <[u8; 4]>::try_from(part) {
+                u64::from(u32::from_le_bytes(bytes) ^ masks[lane])
+            } else {
+                part.iter().enumerate().fold(0u64, |v, (i, &b)| {
+                    v | (u64::from(b ^ (masks[lane] as u8)) << (8 * i))
+                })
+            };
+            queues[lane] |= word << bits[lane];
+            bits[lane] += (part.len() * 8) as u32;
+            while bits[lane] >= 32 {
+                let width = if queues[lane] & 0x7fffffff > THRESHOLD {
+                    31
+                } else {
+                    32
+                };
+                queues[lane] >>= width;
+                bits[lane] -= width;
+                counts[lane] += 1;
+            }
+        }
+    }
+    for i in 0..4 {
+        counts[i] += usize::from(bits[i] != 0);
+    }
+    counts
+}
+
+fn scores(data: &[u8], masks: &[u8]) -> Vec<(u8, usize)> {
+    let mut out = Vec::with_capacity(masks.len());
+    for chunk in masks.chunks(4) {
+        if let Ok(group) = <[u8; 4]>::try_from(chunk) {
+            out.extend(chunk.iter().copied().zip(score_four(data, group)));
+        } else {
+            out.extend(chunk.iter().map(|&mask| (mask, count_pairs(data, mask))));
+        }
+    }
+    out
+}
+
 /// Full search is exact; sampled fast search retains identity on ties and never
 /// enlarges its body. Header width is independent of the selected byte mask.
 pub fn choose_mask(data: &[u8], effort: Effort) -> MaskSelection {
@@ -134,22 +184,46 @@ pub fn choose_mask(data: &[u8], effort: Effort) -> MaskSelection {
         .into_iter()
         .chain((1..=255).filter(|m| !priority.contains(m)))
         .collect();
-    if effort == Effort::Fast && data.len() > 32768 {
+    let sampled = effort == Effort::Fast && data.len() > 32768;
+    if sampled {
         let mut sample = data[..16384].to_vec();
         sample.extend_from_slice(&data[data.len() - 16384..]);
-        // Cache each score once. sort_by_key would rescan the sample for every
-        // comparison; this stable ordering also preserves identity/tie policy.
-        masks.sort_by_cached_key(|&m| count_pairs(&sample, m));
-        masks.truncate(8);
+        // Stable sorting preserves the original priority among equal scores.
+        let mut ranked = scores(&sample, &masks);
+        ranked.sort_by_key(|&(_, pairs)| pairs);
+        masks = ranked.into_iter().take(8).map(|(mask, _)| mask).collect();
     }
-    for mask in masks {
-        let count = count_pairs(data, mask);
+    let mut consider = |mask, count| {
         best.candidates += 1;
         if count < best.pairs {
             best.mask = mask;
             best.pairs = count;
-            if count == minimum {
-                break;
+        }
+        best.pairs == minimum
+    };
+    // Preserve cheap early exits for common low-entropy inputs. The sampled
+    // shortlist already ranks the strongest candidate first.
+    let early = if sampled { 1 } else { priority.len() }.min(masks.len());
+    for &mask in &masks[..early] {
+        if consider(mask, count_pairs(data, mask)) {
+            return best;
+        }
+    }
+    for chunk in masks[early..].chunks(4) {
+        let counts = if let Ok(group) = <[u8; 4]>::try_from(chunk) {
+            score_four(data, group)
+        } else {
+            let mut counts = [0; 4];
+            for (i, &mask) in chunk.iter().enumerate() {
+                counts[i] = count_pairs(data, mask);
+            }
+            counts
+        };
+        for (&mask, count) in chunk.iter().zip(counts) {
+            // candidates counts results considered in order; later parallel
+            // results can be discarded after the exact minimum is reached.
+            if consider(mask, count) {
+                return best;
             }
         }
     }
@@ -177,6 +251,9 @@ impl Output for Units {
     }
     fn unit(&mut self, c: u16) {
         self.0.push(c);
+    }
+    fn pair(&mut self, low: u16, high: u16) {
+        self.0.extend_from_slice(&[low, high]);
     }
     fn finish(self) -> Vec<u16> {
         self.0
@@ -309,4 +386,78 @@ pub fn encode_text(data: &[u8], options: &EncodeOptions) -> Result<String, Strin
 /// Direct UTF-16LE bytes, without an intermediate u16 buffer or document BOM.
 pub fn dense16(data: &[u8], options: &EncodeOptions) -> Result<Vec<u8>, String> {
     encode::<LittleEndian>(data, options)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn parallel_scores_match_scalar_for_every_mask_and_short_tail() {
+        let mut seed = 833u32;
+        for n in (0..40).chain([63, 64, 65, 257, 4097]) {
+            let random: Vec<u8> = (0..n)
+                .map(|_| {
+                    seed = seed.wrapping_mul(1664525).wrapping_add(1013904223);
+                    (seed >> 24) as u8
+                })
+                .collect();
+            for data in [random, vec![255; n]] {
+                for first in (0u8..=252).step_by(4) {
+                    let masks = [first, first + 1, first + 2, first + 3];
+                    assert_eq!(
+                        score_four(&data, masks),
+                        masks.map(|m| count_pairs(&data, m)),
+                        "length {n}, masks {masks:?}"
+                    );
+                }
+            }
+        }
+    }
+    #[test]
+    fn sampled_selection_preserves_scalar_ties_and_candidate_order() {
+        let mut seed = 91u32;
+        for n in [32768, 32769, 65537] {
+            let data: Vec<u8> = (0..n)
+                .map(|_| {
+                    seed = seed.wrapping_mul(1664525).wrapping_add(1013904223);
+                    (seed >> 24) as u8
+                })
+                .collect();
+            // Scalar reference from before batched scoring. Stable priority is
+            // part of deterministic encoder output, including equal scores.
+            let priority = [255, 85, 170, 51, 204, 15, 240];
+            let mut masks: Vec<u8> = priority
+                .into_iter()
+                .chain((1..=255).filter(|m| !priority.contains(m)))
+                .collect();
+            if n > 32768 {
+                let mut sample = data[..16384].to_vec();
+                sample.extend_from_slice(&data[n - 16384..]);
+                masks.sort_by_cached_key(|&m| count_pairs(&sample, m));
+                masks.truncate(8);
+            }
+            let baseline = count_pairs(&data, 0);
+            let mut expected = (0, baseline, 1);
+            if baseline != n.div_ceil(4) {
+                for mask in masks {
+                    let pairs = count_pairs(&data, mask);
+                    expected.2 += 1;
+                    if pairs < expected.1 {
+                        expected.0 = mask;
+                        expected.1 = pairs;
+                    }
+                    if pairs == n.div_ceil(4) {
+                        break;
+                    }
+                }
+            }
+            let actual = choose_mask(&data, Effort::Fast);
+            assert_eq!(
+                (actual.mask, actual.pairs, actual.candidates),
+                expected,
+                "length {n}"
+            );
+            assert_eq!(actual.baseline_pairs, baseline);
+        }
+    }
 }
