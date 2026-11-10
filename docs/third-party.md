@@ -27,3 +27,7 @@ are explicitly labeled in browser results.
 
 Rust dependencies are recorded in `Cargo.lock`. Build/test dependencies are
 recorded in `package-lock.json`; they are not production decoder dependencies.
+
+Native release archives include license files from the locked Cargo dependencies
+and Rust's standard-library copyright inventory. Browser ZIPs include the Rust
+inventory as well. These notices do not change the 0BSD license on NeoX's code.

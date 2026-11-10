@@ -1,0 +1,94 @@
+name: packages
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-22.04
+            target: x86_64-unknown-linux-musl
+          - runner: ubuntu-22.04-arm
+            target: aarch64-unknown-linux-musl
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.99.1
+        with:
+          targets: ${{ matrix.target }}
+      - run: sudo apt-get update && sudo apt-get install -y musl-tools
+      - name: Build and test static CLI
+        env:
+          TARGET: ${{ matrix.target }}
+          RUSTFLAGS: -C linker=musl-gcc
+        run: |
+          cargo build --release --locked --target "$TARGET"
+          cargo test --locked --target "$TARGET" --lib --test native --test cli -- --skip all_63_specialized_wasm_builds --skip invalid_build_choices_and_minimal_code
+      - name: Package native CLI and notices
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          cli="target/$TARGET/release/glyphpack"
+          version=$("$cli" --version | cut -d ' ' -f 2)
+          stage=generated/native-package
+          mkdir -p "$stage/licenses" generated/packages
+          cp "$cli" LICENSE "$stage/"
+          cp docs/cli.md "$stage/README.md"
+          git rev-parse HEAD > "$stage/COMMIT"
+          cargo vendor --locked generated/vendor > /dev/null
+          for package in generated/vendor/*; do
+            for notice in "$package"/LICENSE* "$package"/COPYING* "$package"/NOTICE*; do
+              if [ -f "$notice" ]; then
+                destination="$stage/licenses/$(basename "$package")"
+                mkdir -p "$destination"
+                cp "$notice" "$destination/"
+              fi
+            done
+          done
+          cp "$(rustc --print sysroot)/share/doc/rust/COPYRIGHT-library.html" "$stage/licenses/rust-library.html"
+          tar -C "$stage" --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner -cf - . | gzip -9 -n > "generated/packages/glyphpack-v$version-$TARGET.tar.gz"
+          (cd generated/packages && sha256sum *.tar.gz > native-sha256.txt)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cli-${{ matrix.target }}
+          path: generated/packages/
+          retention-days: 30
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@1.99.1
+        with:
+          targets: wasm32v1-none
+      - run: npm ci
+      - run: npm run build
+      - run: git diff --exit-code -- dist
+      - name: Package browser modules
+        run: |
+          version=$(target/release/glyphpack --version | cut -d ' ' -f 2)
+          stage=generated/web-package
+          mkdir -p "$stage/examples" "$stage/licenses" generated/packages
+          cp -r dist docs "$stage/"
+          cp examples/usage*.mjs "$stage/examples/"
+          cp LICENSE README.md "$stage/"
+          cp docs/downloads.md "$stage/START-HERE.md"
+          cp "$(rustc --print sysroot)/share/doc/rust/COPYRIGHT-library.html" "$stage/licenses/rust-library.html"
+          git rev-parse HEAD > "$stage/COMMIT"
+          (cd "$stage" && zip -X -9 -q -r "../packages/glyphpack-v$version-web.zip" .)
+          cp dist/default.min.mjs dist/full.min.mjs dist/core.min.mjs generated/packages/
+          cp generated/wasm/profiles/f01-d012-m01-modern.wasm generated/packages/glyphpack-full.wasm
+          cp LICENSE generated/packages/
+          cp docs/downloads.md generated/packages/START-HERE.md
+          (cd generated/packages && sha256sum *.mjs *.wasm *.zip LICENSE START-HERE.md > web-sha256.txt)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: browser-modules
+          path: generated/packages/
+          retention-days: 30

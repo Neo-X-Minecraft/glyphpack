@@ -224,3 +224,8 @@ let packed = dense16(b"hello", &EncodeOptions::default())?;
 
 The default `tools` feature adds the CLI, decoder compilation, benchmark/report
 utilities and their JSON dependency. Disabling it leaves the codec APIs intact.
+
+Release downloads are explained in [Start here](docs/downloads.md). Native CLI
+archives are built and tested as static musl binaries for Linux x86_64/aarch64.
+The manual packages workflow produces reviewable archives; it never publishes a
+release automatically. [Release checklist](docs/releasing.md).
