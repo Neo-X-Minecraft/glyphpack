@@ -1,0 +1,40 @@
+diff --git a/crates/decoder-wasm/src/unpack.rs b/crates/decoder-wasm/src/unpack.rs
+index 2e1da9a..feb5279 100644
+--- a/crates/decoder-wasm/src/unpack.rs
++++ b/crates/decoder-wasm/src/unpack.rs
+@@ -48,23 +48,19 @@ fn pair<const FORMAT: bool, const HEAVY: bool>(
+     let word = state.carry | (value << state.shift);
+     state.last_word = word;
+     let narrow = (value & 0x7fffffff) > THRESHOLD;
+-    if state.shift == 0 {
+-        if narrow {
+-            state.carry = word >> 24;
+-            state.shift = 7;
+-            state.at += 3;
+-            state.last_width = 3;
+-        } else {
+-            state.carry = 0;
+-            state.at += 4;
+-            state.last_width = 4;
+-        }
++    let short = state.shift == 0 && narrow;
++    let shifted = value.wrapping_shr(32 - state.shift);
++    state.carry = if short {
++        word >> 24
++    } else if state.shift != 0 {
++        shifted
+     } else {
+-        state.carry = value >> (32 - state.shift);
+-        state.shift -= u32::from(narrow);
+-        state.at += 4;
+-        state.last_width = 4;
+-    }
++        0
++    };
++    state.shift = state.shift.wrapping_sub(u32::from(narrow)) & 7;
++    let advance = 4 - usize::from(short);
++    state.at += advance;
++    state.last_width = advance;
+     Ok(word)
+ }
+ 
