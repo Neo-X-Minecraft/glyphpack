@@ -75,7 +75,7 @@ const report = {
           if (/^https?:/.test(r.url())) requests.push(r.url());
         });
         await page.goto(pathToFileURL(file).href);
-        await page.waitForFunction(() => globalThis.fileResult, {
+        await page.waitForFunction(() => globalThis.fileResult, null, {
           timeout: 60000,
         });
         const result = await page.evaluate(() => fileResult);
