@@ -20,3 +20,17 @@ words and the tail was approximately 15% slower in initial ARM64 screening.
 Four independent carry chains performed better for sustained mask searches.
 Low-entropy early exits keep their scalar priority probes. Sampled ranking stays
 stable, and the public candidate count follows results considered in order.
+
+`browser.cjs` compares the demo's browser encoder modules, including input copy
+and conversion of output u16 units into a JS string. Build the demo at commit
+`436b780` in a separate checkout for the scalar baseline, then build the current
+demo and pass both `encoder.mjs` paths:
+
+```sh
+node benchmarks/experiments/encoder-batching/browser.cjs \
+  /path/to/old/encoder.mjs generated/pages/encoder.mjs \
+  generated/results/encoder-browser.json
+```
+
+It checks encoded strings before timing, alternates calls to the two warmed
+Wasm instances, and retains every sample. It excludes worker structured cloning.

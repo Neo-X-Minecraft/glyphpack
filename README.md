@@ -9,7 +9,7 @@ The browser's `DecompressionStream('gzip')` inflates it once during module impor
 There is one production backend, with small JS glue for options and memory I/O.
 Target: **Chrome 109+**.
 
-[**Open the live workbench →**](https://neo-x-minecraft.github.io/glyphpack/)
+[**Open the live workbench →**](https://neo-x-minecraft.github.io/glyphpack/) · [v0.2.0 measurements](docs/performance.md)
 
 Try JSON, multilingual text, SVG, arbitrary bytes, gzip logs, and empty files.
 The page encodes local files with Rust/Wasm, explains verification failures,
