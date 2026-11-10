@@ -1,0 +1,282 @@
+diff --git a/crates/decoder-wasm/Cargo.toml b/crates/decoder-wasm/Cargo.toml
+index 6597125..a5c7aba 100644
+--- a/crates/decoder-wasm/Cargo.toml
++++ b/crates/decoder-wasm/Cargo.toml
+@@ -11,6 +11,7 @@ publish = false
+ crate-type = ["cdylib"]
+ 
+ [features]
++js-string = []
+ default = []
+ format = []
+ format-runtime = ["format"]
+diff --git a/crates/decoder-wasm/src/lib.rs b/crates/decoder-wasm/src/lib.rs
+index 887f2d0..5fdea94 100644
+--- a/crates/decoder-wasm/src/lib.rs
++++ b/crates/decoder-wasm/src/lib.rs
+@@ -49,8 +49,45 @@ struct State {
+     high_ptr: usize,
+     payload_length: usize,
+ }
+-fn digit(input: &[u16], table: &[u16], at: usize) -> Option<u16> {
+-    input.get(at).map(|&c| table[c as usize])
++// Input stays a two-word value. Const specialization removes reader dispatch
++// from each character load; the memory path remains available for Chrome 109.
++#[derive(Clone, Copy)]
++pub(crate) struct Input<const DIRECT: bool> {
++    pointer: usize,
++    length: usize,
++}
++impl<const DIRECT: bool> Input<DIRECT> {
++    #[inline(always)]
++    fn len(self) -> usize {
++        self.length
++    }
++    #[inline(always)]
++    fn get(self, index: usize) -> Option<u16> {
++        if index < self.length {
++            Some(self.code(index))
++        } else {
++            None
++        }
++    }
++    #[inline(always)]
++    fn code(self, index: usize) -> u16 {
++        assert!(index < self.length);
++        #[cfg(feature = "js-string")]
++        if DIRECT {
++            return unsafe { char_code_at(index as u32) as u16 };
++        }
++        // The arena is reserved by input_ptr and the preceding guard proves
++        // this UTF-16 unit lies inside it. DIRECT paths never read this pointer.
++        unsafe { *(self.pointer as *const u16).add(index) }
++    }
++}
++#[cfg(feature = "js-string")]
++#[link(wasm_import_module = "glyph")]
++extern "C" {
++    fn char_code_at(index: u32) -> u32;
++}
++fn digit<const DIRECT: bool>(input: Input<DIRECT>, table: &[u16], at: usize) -> Option<u16> {
++    input.get(at).map(|c| table[c as usize])
+ }
+ impl State {
+     const fn new() -> Self {
+@@ -102,9 +139,16 @@ impl State {
+         self.heap_end = end;
+         Some(start)
+     }
+-    fn decode(&mut self, format_arg: u32, data_arg: u32, memory_arg: u32) -> u32 {
+-        let input =
+-            unsafe { core::slice::from_raw_parts(self.input_ptr as *const u16, self.input_len) };
++    fn decode<const DIRECT: bool>(
++        &mut self,
++        format_arg: u32,
++        data_arg: u32,
++        memory_arg: u32,
++    ) -> u32 {
++        let input = Input::<DIRECT> {
++            pointer: self.input_ptr,
++            length: self.input_len,
++        };
+         let table = unsafe { core::slice::from_raw_parts(TABLE.0.get().cast::<u16>(), 65536) };
+ 
+         let verify_format =
+@@ -220,7 +264,7 @@ impl State {
+             &[]
+         };
+         let result = match (verify_format, heavy) {
+-            (false, false) => unpack::unpack::<false, false>(
++            (false, false) => unpack::unpack::<false, false, DIRECT>(
+                 input,
+                 start,
+                 output,
+@@ -229,7 +273,7 @@ impl State {
+                 high,
+                 verify_data != 0,
+             ),
+-            (false, true) => unpack::unpack::<false, true>(
++            (false, true) => unpack::unpack::<false, true, DIRECT>(
+                 input,
+                 start,
+                 output,
+@@ -238,7 +282,7 @@ impl State {
+                 high,
+                 verify_data != 0,
+             ),
+-            (true, false) => unpack::unpack::<true, false>(
++            (true, false) => unpack::unpack::<true, false, DIRECT>(
+                 input,
+                 start,
+                 output,
+@@ -247,7 +291,7 @@ impl State {
+                 high,
+                 verify_data != 0,
+             ),
+-            (true, true) => unpack::unpack::<true, true>(
++            (true, true) => unpack::unpack::<true, true, DIRECT>(
+                 input,
+                 start,
+                 output,
+@@ -310,7 +354,7 @@ pub extern "C" fn input_ptr(length: u32) -> u32 {
+ }
+ #[no_mangle]
+ pub extern "C" fn decode(format: u32, data: u32, memory: u32) -> u32 {
+-    unsafe { (&mut *STATE.0.get()).decode(format, data, memory) }
++    unsafe { (&mut *STATE.0.get()).decode::<false>(format, data, memory) }
+ }
+ #[no_mangle]
+ pub extern "C" fn output_ptr() -> u32 {
+@@ -324,3 +368,15 @@ pub extern "C" fn stored_len() -> u32 {
+ pub extern "C" fn payload_len() -> u32 {
+     unsafe { (*STATE.0.get()).payload_length as u32 }
+ }
++
++// The linked shim holds a string reference only for the duration of this call.
++// Modern readers reserve no UTF-16 staging arena. Header/allocation guards and
++// the shared output/hash routines remain exactly the same specialization.
++#[cfg(feature = "js-string")]
++#[no_mangle]
++pub extern "C" fn decode_direct(length: u32, format: u32, data: u32, memory: u32) -> u32 {
++    let state = unsafe { &mut *STATE.0.get() };
++    state.initialize();
++    state.input_len = length as usize;
++    state.decode::<true>(format, data, memory)
++}
+diff --git a/crates/decoder-wasm/src/unpack.rs b/crates/decoder-wasm/src/unpack.rs
+index 2e1da9a..4b5cc3c 100644
+--- a/crates/decoder-wasm/src/unpack.rs
++++ b/crates/decoder-wasm/src/unpack.rs
+@@ -1,6 +1,7 @@
+ //! Bulk little-endian stores with the same carry, byte coverage and padding
+ //! semantics as the JS core. Const generics remove format/heavy branches from
+ //! each specialized hot loop; dispatch happens once per decoded packet.
++use super::Input;
+ const THRESHOLD: u32 = 1870174576;
+ 
+ #[derive(Default)]
+@@ -14,15 +15,15 @@ struct Bits {
+ }
+ 
+ #[inline(always)]
+-fn pair<const FORMAT: bool, const HEAVY: bool>(
+-    text: &[u16],
++fn pair<const FORMAT: bool, const HEAVY: bool, const DIRECT: bool>(
++    text: Input<DIRECT>,
+     pos: usize,
+     table: &[u16],
+     high: &[u32],
+     state: &mut Bits,
+ ) -> Result<u32, u32> {
+-    let lo = table[text[pos] as usize];
+-    let hi = text.get(pos + 1).map(|&c| {
++    let lo = table[text.code(pos) as usize];
++    let hi = text.get(pos + 1).map(|c| {
+         if HEAVY {
+             high[c as usize]
+         } else {
+@@ -69,8 +70,8 @@ fn pair<const FORMAT: bool, const HEAVY: bool>(
+ }
+ 
+ #[inline(always)]
+-fn full<const FORMAT: bool, const HEAVY: bool>(
+-    text: &[u16],
++fn full<const FORMAT: bool, const HEAVY: bool, const DIRECT: bool>(
++    text: Input<DIRECT>,
+     pos: usize,
+     out: &mut [u8],
+     table: &[u16],
+@@ -79,7 +80,7 @@ fn full<const FORMAT: bool, const HEAVY: bool>(
+     mask: u32,
+ ) -> Result<(), u32> {
+     let at = state.at;
+-    let word = pair::<FORMAT, HEAVY>(text, pos, table, high, state)? ^ mask;
++    let word = pair::<FORMAT, HEAVY, DIRECT>(text, pos, table, high, state)? ^ mask;
+     // SAFETY: the bulk loop proves at+16 <= out.len() before four stores.
+     // Every pair advances by at most four bytes. Wasm i32.store supports an
+     // unaligned address; explicit LE conversion keeps the native model valid.
+@@ -90,8 +91,8 @@ fn full<const FORMAT: bool, const HEAVY: bool>(
+     Ok(())
+ }
+ 
+-pub fn unpack<const FORMAT: bool, const HEAVY: bool>(
+-    text: &[u16],
++pub(super) fn unpack<const FORMAT: bool, const HEAVY: bool, const DIRECT: bool>(
++    text: Input<DIRECT>,
+     start: usize,
+     out: &mut [u8],
+     mask_byte: u8,
+@@ -104,9 +105,15 @@ pub fn unpack<const FORMAT: bool, const HEAVY: bool>(
+     let mut pos = start;
+     while pos + 8 <= text.len() && state.at + 16 <= out.len() {
+         for lane in 0..4 {
+-            if let Err(error) =
+-                full::<FORMAT, HEAVY>(text, pos + 2 * lane, out, table, high, &mut state, mask)
+-            {
++            if let Err(error) = full::<FORMAT, HEAVY, DIRECT>(
++                text,
++                pos + 2 * lane,
++                out,
++                table,
++                high,
++                &mut state,
++                mask,
++            ) {
+                 return error;
+             }
+         }
+@@ -114,7 +121,7 @@ pub fn unpack<const FORMAT: bool, const HEAVY: bool>(
+     }
+     while pos < text.len() {
+         let at = state.at;
+-        let word = match pair::<FORMAT, HEAVY>(text, pos, table, high, &mut state) {
++        let word = match pair::<FORMAT, HEAVY, DIRECT>(text, pos, table, high, &mut state) {
+             Ok(word) => word ^ mask,
+             Err(error) => return error,
+         };
+diff --git a/src/decoder/loader.js b/src/decoder/loader.js
+index 08d06de..8e91a60 100644
+--- a/src/decoder/loader.js
++++ b/src/decoder/loader.js
+@@ -12,5 +12,12 @@ export async function loadWasm(payload){
+     for(let i=0;i<text.length;i++)compressed[i]=text.charCodeAt(i);
+   }
+   const bytes=await new Response(new Blob([compressed]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+-  return(await WebAssembly.instantiate(bytes)).instance.exports;
++  const {module,instance}=await WebAssembly.instantiate(bytes,{
++    'wasm:js-string':{charCodeAt:(text,index)=>text.charCodeAt(index)}
++  },{builtins:['js-string']});
++  // Engines recognizing native builtins remove their imports from this list.
++  // Older engines ignore compile options, link the polyfill, and use the memory
++  // reader. They never call the per-character polyfill on the normal API path.
++  const directStrings=!!instance.exports.decode_string&&!WebAssembly.Module.imports(module).some(i=>i.module==='wasm:js-string');
++  return {...instance.exports,directStrings};
+ }
+diff --git a/src/decoder/wasm-runtime.js b/src/decoder/wasm-runtime.js
+index 8d62ed0..4df3d5a 100644
+--- a/src/decoder/wasm-runtime.js
++++ b/src/decoder/wasm-runtime.js
+@@ -4,7 +4,12 @@
+  */
+ const littleEndian=new Uint8Array(new Uint16Array([1]).buffer)[0]===1;
+ export function runWasm(api,text,verifyFormat,dataKind,memoryHeavy){
+-  const length=text.length,pointer=api.input_ptr(length);
++  const length=text.length;
++  let status;
++  if(api.directStrings&&typeof text==='string'){
++    status=api.decode_string(text,length,+verifyFormat,dataKind,+memoryHeavy);
++  }else{
++  const pointer=api.input_ptr(length);
+   if(pointer===0&&length)throw RangeError('Wasm decoder memory allocation failed');
+   // memory growth invalidates old views, so obtain the input view AFTER reserve
+   // and obtain the output view AFTER decoding. Never retain either arena view.
+@@ -15,7 +20,8 @@ export function runWasm(api,text,verifyFormat,dataKind,memoryHeavy){
+     const input=new DataView(api.memory.buffer,pointer,length*2);
+     for(let i=0;i<length;i++)input.setUint16(i*2,text.charCodeAt(i),true);
+   }
+-  const status=api.decode(+verifyFormat,dataKind,+memoryHeavy);
++  status=api.decode(+verifyFormat,dataKind,+memoryHeavy);
++  }
+   if(status){
+     if(status===2)throw Error('Invalid payload length');
+     if(status===8)throw RangeError('Wasm decoder memory allocation failed');

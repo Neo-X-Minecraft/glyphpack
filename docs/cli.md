@@ -34,4 +34,11 @@ benchmarks need the matching source checkout. Run them from that checkout or
 set `GLYPHPACK_ROOT=/path/to/glyphpack`. They also require the build tools listed
 in the repository README. `encode` and `inject` are independent of those tools.
 
+`cargo run --release --locked -- build --all` also writes
+`dist/standalone.html`. Open that file directly to exercise the embedded browser
+decoder offline. The default Wasm build uses standard SIMD128, supported by the
+Chrome 109 baseline. For an explicitly scalar kernel, build with
+`RUSTFLAGS="-C target-feature=-simd128"`; this changes the generated artifact,
+not the payload format or JavaScript options.
+
 Source and live workbench: https://github.com/Neo-X-Minecraft/glyphpack

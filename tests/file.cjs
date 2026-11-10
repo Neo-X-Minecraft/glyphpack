@@ -90,6 +90,41 @@ const report = {
         });
         await context.close();
       }
+      if (!process.argv[2]) {
+        const demo = path.join(root, "dist/standalone.html");
+        assert(
+          fs.existsSync(demo),
+          "Build the standalone HTML with npm run build",
+        );
+        const context = await browser.newContext();
+        await context.setOffline(true);
+        await context.addInitScript(() => {
+          globalThis.fetch = () => {
+            throw Error("Unexpected standalone fetch");
+          };
+        });
+        const page = await context.newPage(),
+          requests = [];
+        page.on("request", (r) => {
+          if (/^https?:/.test(r.url())) requests.push(r.url());
+        });
+        await page.goto(pathToFileURL(demo).href);
+        await page.waitForFunction(
+          () =>
+            document.querySelector("output")?.textContent ===
+            "Hello from GlyphPack. ✓",
+        );
+        assert.equal(requests.length, 0);
+        report.rows.push({
+          browser: browser.version(),
+          type: "ready-built-demo",
+          pass: true,
+          cases: 1,
+          protocol: "file:",
+          networkRequests: 0,
+        });
+        await context.close();
+      }
     } finally {
       await browser.close();
     }

@@ -166,10 +166,20 @@ pub fn build_wasm(options: &BuildOptions) -> Result<PathBuf, String> {
             .map(str::to_string)
             .collect()
     };
+    // SIMD128 is part of the Chrome 109 baseline (Chrome has enabled it since 91).
+    // Respect an explicit portable-MVP override without introducing a public
+    // runtime option or shipping two kernels. No relaxed SIMD or threads.
+    let simd_disabled = flags.iter().any(|flag| {
+        flag.split_once("target-feature=")
+            .is_some_and(|(_, features)| features.split(',').any(|feature| feature == "-simd128"))
+    });
+    if !simd_disabled {
+        flags.extend(["-C".into(), "target-feature=+simd128".into()]);
+    }
     flags.extend(["-C".into(), "link-arg=-zstack-size=65536".into()]);
     let flags = flags.join("\x1f");
     let mut source = features(&options).join(",").into_bytes();
-    source.extend_from_slice(b"wasm32v1-none:chrome109:mvp-mutable:-O4:atomic-cache-v2");
+    source.extend_from_slice(b"wasm32v1-none:chrome109:simd128-mutable:-O4:atomic-cache-v3");
     source.extend_from_slice(flags.as_bytes());
     for path in [
         "Cargo.toml",
@@ -177,6 +187,7 @@ pub fn build_wasm(options: &BuildOptions) -> Result<PathBuf, String> {
         "crates/decoder-wasm/src/lib.rs",
         "crates/decoder-wasm/src/unpack.rs",
         "src/hash.rs",
+        "src/hash/simd.rs",
     ] {
         source.extend(io(fs::read(root.join(path)))?);
     }
@@ -224,7 +235,8 @@ pub fn build_wasm(options: &BuildOptions) -> Result<PathBuf, String> {
         std::process::id(),
         NEXT.fetch_add(1, Ordering::Relaxed)
     ));
-    let result = io(Command::new(&optimizer)
+    let mut optimize = Command::new(&optimizer);
+    optimize
         .arg(&artifact)
         .args([
             "--mvp-features",
@@ -236,8 +248,11 @@ pub fn build_wasm(options: &BuildOptions) -> Result<PathBuf, String> {
             "--strip-producers",
             "-o",
         ])
-        .arg(&temporary)
-        .output())?;
+        .arg(&temporary);
+    if !simd_disabled {
+        optimize.arg("--enable-simd");
+    }
+    let result = io(optimize.output())?;
     if !result.status.success() {
         return Err(String::from_utf8_lossy(&result.stderr).into());
     }
@@ -272,9 +287,15 @@ impl Drop for Scratch {
 }
 
 pub fn build_decoder(options: &BuildOptions) -> Result<String, String> {
+    let wasm = io(fs::read(build_wasm(options)?))?;
+    build_adapter(options, &wasm)
+}
+
+/// Bundle a matching kernel into an independent ESM. Separating assembly from
+/// compilation lets experiments compare kernels through the identical adapter.
+pub fn build_adapter(options: &BuildOptions, wasm: &[u8]) -> Result<String, String> {
     let options = canonical(options)?;
-    let wasm = io(fs::read(build_wasm(&options)?))?;
-    let payload = transport::base64(&transport::gzip9(&wasm)?);
+    let payload = transport::base64(&transport::gzip9(wasm)?);
     let mut imports = String::from(
         "import {runWasm} from './wasm-runtime.js';\nimport {loadWasm} from './loader.js';\n",
     );

@@ -5,7 +5,7 @@ on:
       comparison:
         description: Browser coverage (cloud measurements are not the Chromium 156 baseline)
         type: choice
-        options: [full, smoke, history, history-smoke]
+        options: [full, smoke, history, history-smoke, paired]
         default: full
 permissions:
   contents: read
@@ -34,6 +34,7 @@ jobs:
       - run: cargo build --release --locked
       - run: npx playwright install --with-deps chromium
       - name: Decode comparison
+        if: inputs.comparison != 'paired'
         env:
           MODE: ${{ inputs.comparison }}
         run: |
@@ -47,6 +48,17 @@ jobs:
           else
             CHROMIUM_BIN="$browser" CHROMIUM_VERSION="$version" target/release/glyphpack bench "$mode"
           fi
+      - name: Paired release comparison
+        if: inputs.comparison == 'paired'
+        run: |
+          git fetch origin tag v0.2.0 --depth=1
+          target/release/glyphpack build --all
+          target/release/glyphpack bench prepare
+          mkdir -p generated/results
+          git show v0.2.0:dist/full.min.mjs > generated/results/baseline-v0.2.0.mjs
+          browser=$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')
+          version=$("$browser" --version | sed -E 's/.* ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          CHROMIUM_BIN="$browser" CHROMIUM_VERSION="$version" COMPARE_DATASETS=all node benchmarks/compare.cjs generated/results/baseline-v0.2.0.mjs dist/full.min.mjs generated/results/paired.json
       - name: Native encoder comparison
         run: cargo run --release --locked --example encode_bench -- --quick --output generated/results/encoder.json > generated/results/encoder.csv
       - name: Summarize full comparison

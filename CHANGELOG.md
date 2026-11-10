@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.1 · 2026-11-10
+
+- Hash four complete BLAKE3 chunks in parallel with portable Wasm SIMD128,
+  retaining scalar tail/root processing and exact wire compatibility.
+- Keep native browser base64/gzip and memory operations; preserve the existing
+  JavaScript API, verification defaults, allocation guards and buffer ownership.
+- Support an explicit `RUSTFLAGS="-C target-feature=-simd128"` MVP build override.
+- Add `dist/standalone.html` and automated offline `file://` checks for UTF-8 and
+  UTF-16LE documents on Chrome 109 and current Chromium.
+- Add official-vector checks through the actual Wasm verifier and calibrated
+  paired comparisons of all twelve runtime combinations.
+
+
 ## 0.2.0 · 2026-11-10
 
 - Batch four independent Rust mask scores for faster exact and sampled search,

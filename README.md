@@ -7,9 +7,13 @@ benchmark preparation. A specialized Rust/Wasm decoder runs in the browser.
 Every distribution module embeds its Wasm as **native gzip level 9 + base64**.
 The browser's `DecompressionStream('gzip')` inflates it once during module import.
 There is one production backend, with small JS glue for options and memory I/O.
-Target: **Chrome 109+**.
+Target: **Chrome 109+**. BLAKE3 uses standard Wasm SIMD128 for full chunks.
 
-[**Open the live workbench →**](https://neo-x-minecraft.github.io/glyphpack/) · [v0.2.0 measurements](docs/performance.md)
+Open [dist/standalone.html](dist/standalone.html) directly under `file://` for an
+offline example. It embeds the decoder and payload; no server or companion fetch
+is needed. Standalone exports are tested in Chrome 109 and Chromium 156.
+
+[**Open the live workbench →**](https://neo-x-minecraft.github.io/glyphpack/) · [performance measurements](docs/performance.md)
 
 Try JSON, multilingual text, SVG, arbitrary bytes, gzip logs, and empty files.
 The page encodes local files with Rust/Wasm, explains verification failures,
@@ -138,6 +142,7 @@ See [format and embedding details](docs/format.md).
 
 ```sh
 npm test                         # Rust vectors + 63 specialized Wasm profiles
+npm run test:file                # offline file://, UTF-8 and UTF-16LE
 npm run test:browser              # Browser matrix, peers and offline HTML
 npm run bench                    # Decode-only comparison in Chromium
 npm run bench:encode             # Native encoder CSV
@@ -177,6 +182,7 @@ is a warmed decode-only comparison, including the chosen verification.
 ```text
 src/encoder.rs           native packing, mask search and output backends
 src/hash.rs              native/shared Wasm XXH32 and BLAKE3
+src/hash/simd.rs         four-chunk BLAKE3 SIMD compression
 src/injector.rs          generic HTML insertion
 src/builder.rs           specialized Wasm + gzip/base64 ESM builds
 src/transport.rs         native gzip and base64 output
