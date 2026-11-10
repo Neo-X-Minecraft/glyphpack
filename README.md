@@ -239,3 +239,5 @@ glyphpack build --full -o decoder.mjs --types decoder.d.mts
 `npm run test:types` checks accepted/rejected policies, and `npm run test:package`
 installs a real local tarball in a clean directory and tests all six exports.
 GitHub runs these consumer checks on Node 20 and 22.
+
+[Fresh local recheck of the optimization archive](benchmarks/results/historical-recheck/README.md) includes the exact original inputs, archived JavaScript, all build profiles, hashes, and transports.

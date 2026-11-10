@@ -14,6 +14,9 @@
 | Const-specialized bulk/tail pair loops | `crates/decoder-wasm/src/unpack.rs` |
 | CLI | `src/main.rs` |
 | Build profiles, test vectors, hosting and reports | `src/tooling/` |
+| Archived input preparation and expansion audit | `src/tooling/history.rs` |
+| Historical CSV aggregation and charts | `src/tooling/history_report.rs` |
+| Browser candidate, profile and hash measurements | `benchmarks/history.cjs` |
 | Demo encoder ABI, reusing the native encoder | `crates/encoder-wasm/src/lib.rs` |
 | Static Pages build and encoded fixtures | `src/tooling/site.rs` |
 | Workbench UI and background worker | `site/` |
