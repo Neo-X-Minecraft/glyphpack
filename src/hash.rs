@@ -1,5 +1,5 @@
 //! Dependency-free, one-shot XXH32 and unkeyed BLAKE3-256 for native encoding.
-//! Browser verification has independent optimized implementations in `decoder/`.
+//! Browser verification reuses this source, with four-chunk portable SIMD.
 //! Digests detect changed bytes; an unkeyed digest does not establish authorship.
 
 /// XXH32 with seed zero, using explicit wrapping arithmetic on every lane.
@@ -55,11 +55,15 @@ pub fn xxhash32(data: &[u8]) -> u32 {
     h ^ (h >> 16)
 }
 
+#[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
+#[path = "hash/simd.rs"]
+mod simd;
+
 const IV: [u32; 8] = [
     0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19,
 ];
-const PERMUTE: [usize; 16] = [2, 6, 3, 10, 7, 0, 4, 13, 1, 11, 12, 5, 9, 14, 15, 8];
 
+#[inline(always)]
 fn mix(s: &mut [u32; 16], a: usize, b: usize, c: usize, d: usize, x: u32, y: u32) {
     s[a] = s[a].wrapping_add(s[b]).wrapping_add(x);
     s[d] = (s[d] ^ s[a]).rotate_right(16);
@@ -73,7 +77,7 @@ fn mix(s: &mut [u32; 16], a: usize, b: usize, c: usize, d: usize, x: u32, y: u32
 
 // CHUNK_START=1, CHUNK_END=2, PARENT=4, ROOT=8. Only eight output words
 // are needed for chaining values and the fixed 32-byte root digest.
-fn compress(cv: [u32; 8], mut m: [u32; 16], counter: u64, length: usize, flags: u32) -> [u32; 8] {
+fn compress(cv: [u32; 8], m: [u32; 16], counter: u64, length: usize, flags: u32) -> [u32; 8] {
     let mut s = [0; 16];
     s[..8].copy_from_slice(&cv);
     s[8..12].copy_from_slice(&IV[..4]);
@@ -81,19 +85,27 @@ fn compress(cv: [u32; 8], mut m: [u32; 16], counter: u64, length: usize, flags: 
     s[13] = (counter >> 32) as u32;
     s[14] = length as u32;
     s[15] = flags;
-    for round in 0..7 {
-        mix(&mut s, 0, 4, 8, 12, m[0], m[1]);
-        mix(&mut s, 1, 5, 9, 13, m[2], m[3]);
-        mix(&mut s, 2, 6, 10, 14, m[4], m[5]);
-        mix(&mut s, 3, 7, 11, 15, m[6], m[7]);
-        mix(&mut s, 0, 5, 10, 15, m[8], m[9]);
-        mix(&mut s, 1, 6, 11, 12, m[10], m[11]);
-        mix(&mut s, 2, 7, 8, 13, m[12], m[13]);
-        mix(&mut s, 3, 4, 9, 14, m[14], m[15]);
-        if round != 6 {
-            m = core::array::from_fn(|i| m[PERMUTE[i]]);
-        }
+    // Static schedules expose every message index to LLVM, with no runtime
+    // message permutation or seven-round loop. SIMD builds also use this for tails.
+    macro_rules! round {
+        ($a:expr,$b:expr,$c:expr,$d:expr,$e:expr,$f:expr,$g:expr,$h:expr,$i:expr,$j:expr,$k:expr,$l:expr,$n:expr,$o:expr,$p:expr,$q:expr) => {
+            mix(&mut s, 0, 4, 8, 12, m[$a], m[$b]);
+            mix(&mut s, 1, 5, 9, 13, m[$c], m[$d]);
+            mix(&mut s, 2, 6, 10, 14, m[$e], m[$f]);
+            mix(&mut s, 3, 7, 11, 15, m[$g], m[$h]);
+            mix(&mut s, 0, 5, 10, 15, m[$i], m[$j]);
+            mix(&mut s, 1, 6, 11, 12, m[$k], m[$l]);
+            mix(&mut s, 2, 7, 8, 13, m[$n], m[$o]);
+            mix(&mut s, 3, 4, 9, 14, m[$p], m[$q]);
+        };
     }
+    round!(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+    round!(2, 6, 3, 10, 7, 0, 4, 13, 1, 11, 12, 5, 9, 14, 15, 8);
+    round!(3, 4, 10, 12, 13, 2, 7, 14, 6, 5, 9, 0, 11, 15, 8, 1);
+    round!(10, 7, 12, 9, 14, 3, 13, 15, 4, 0, 11, 2, 5, 8, 1, 6);
+    round!(12, 13, 9, 11, 15, 10, 14, 8, 7, 2, 5, 3, 0, 1, 6, 4);
+    round!(9, 14, 11, 5, 8, 12, 15, 1, 13, 3, 0, 10, 2, 6, 4, 7);
+    round!(11, 15, 5, 0, 1, 9, 8, 6, 14, 10, 2, 12, 3, 4, 7, 13);
     core::array::from_fn(|i| s[i] ^ s[i + 8])
 }
 
@@ -107,7 +119,30 @@ pub fn blake3(data: &[u8]) -> [u8; 32] {
     let mut stack = [[0u32; 8]; 64];
     let mut depth = 0usize;
     let mut cv = IV;
-    for chunk in 0..chunks {
+    let mut chunk = 0;
+    while chunk < chunks {
+        #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
+        if chunk + 4 < chunks {
+            // Leave the final chunk/root path scalar. Prefix groups contain
+            // four complete chunks and merge in precisely the original order.
+            let values = simd::hash_four(&data[chunk * 1024..(chunk + 4) * 1024], chunk);
+            for value in values {
+                cv = value;
+                let mut completed = chunk + 1;
+                while completed & 1 == 0 {
+                    let mut words = [0; 16];
+                    depth -= 1;
+                    words[..8].copy_from_slice(&stack[depth]);
+                    words[8..].copy_from_slice(&cv);
+                    cv = compress(IV, words, 0, 64, 4);
+                    completed >>= 1;
+                }
+                stack[depth] = cv;
+                depth += 1;
+                chunk += 1;
+            }
+            continue;
+        }
         cv = IV;
         let part = &data[(chunk * 1024).min(data.len())..((chunk + 1) * 1024).min(data.len())];
         let blocks = part.len().div_ceil(64).max(1);
@@ -149,6 +184,7 @@ pub fn blake3(data: &[u8]) -> [u8; 32] {
             stack[depth] = cv;
             depth += 1;
         }
+        chunk += 1;
     }
     let mut digest = [0; 32];
     for (word, bytes) in cv.iter().zip(digest.chunks_exact_mut(4)) {

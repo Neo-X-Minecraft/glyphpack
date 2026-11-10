@@ -1,6 +1,6 @@
 [package]
 name = "glyphpack"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 rust-version = "1.85"
 description = "Dense UTF-16 payload encoding with a specialized Rust/Wasm decoder"
@@ -52,3 +52,15 @@ inherits = "release"
 opt-level = 3
 lto = "fat"
 panic = "abort"
+
+[[example]]
+name = "adapter_prototype"
+required-features = ["tools"]
+
+[[example]]
+name = "hybrid_prototype"
+required-features = ["tools"]
+
+[[example]]
+name = "paired_report"
+required-features = ["tools"]

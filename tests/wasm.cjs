@@ -2,6 +2,7 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),{pathToFileURL}=require('node:url');
 const root=path.resolve(__dirname,'..'),vectors=JSON.parse(fs.readFileSync(path.join(root,'generated/test-vectors.json')));
+const {execFileSync}=require('node:child_process');
 const artifact=process.argv[2]?.endsWith('.wasm')?process.argv[2]:path.join(root,'generated/wasm/profiles/f01-d012-m01-modern.wasm');
 (async()=>{
  const runtime=fs.readFileSync(path.join(root,'src/decoder/wasm-runtime.js'),'utf8').replace(/PAYLOAD_(?:INCLUDE_FORMAT|CHECK_DATA|ALLOW_FAST|ALLOW_SECURE)/g,'true');
@@ -17,6 +18,16 @@ const artifact=process.argv[2]?.endsWith('.wasm')?process.argv[2]:path.join(root
   if(expected){assert(!b.error,b.error);assert(b.bytes.equals(Buffer.from(expected,'hex')));roundTrips++;}
  };
  for(const row of vectors.rows)for(const memoryHeavy of[false,true])for(const verifyFormat of[false,true])for(const verifyData of['none','fast','secure'])check(row.packets[verifyData],{memoryHeavy,verifyFormat,verifyData},row.rawHex);
+ // Exercise every official BLAKE3 size through the actual SIMD verifier, not
+ // only the native encoder or the frozen JS oracle. Fixed mask avoids spending
+ // time searching masks; the existing fixture matrix covers mask restoration.
+ const official=JSON.parse(fs.readFileSync(path.join(root,'tests/fixtures/blake3-vectors.json')));
+ const cli=process.env.GLYPHPACK_BIN||path.join(root,'target/release/glyphpack');
+ for(const row of official.cases){
+  const data=Buffer.from(Uint8Array.from({length:row.input_len},(_,i)=>i%251));
+  const text=execFileSync(cli,['encode','-','--checksum','secure','--mask','0','--text'],{input:data,encoding:'utf8'});
+  for(const memoryHeavy of[false,true])for(const verifyFormat of[false,true])check(text,{memoryHeavy,verifyFormat,verifyData:'secure'},data.toString('hex'));
+ }
  const prefix=(...digits)=>String.fromCharCode(...digits.map(i=>vectors.alphabet[i]));
  // Tiny malformed headers must not allocate an output arena or the heavy table.
  const fresh=new WebAssembly.Instance(module).exports;
@@ -44,5 +55,5 @@ const artifact=process.argv[2]?.endsWith('.wasm')?process.argv[2]:path.join(root
   wasm(vectors.zero.none,{verifyData:'none',memoryHeavy:true});
   check(prefix(0,length)+' '.repeat(Math.ceil(length/4)*2),{verifyFormat,verifyData:'none',memoryHeavy:true});
  }
- console.log(JSON.stringify({pass:true,comparisons,roundTrips,fullCombinations:12,wasmBytes:fs.statSync(artifact).size,arenaReuse:true,exactErrorsAndBufferShape:true}));
+ console.log(JSON.stringify({pass:true,comparisons,roundTrips,officialKernelCases:official.cases.length,fullCombinations:12,wasmBytes:fs.statSync(artifact).size,arenaReuse:true,exactErrorsAndBufferShape:true}));
 })().catch(e=>{console.error(e);process.exitCode=1;});

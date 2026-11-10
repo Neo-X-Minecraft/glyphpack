@@ -4,6 +4,7 @@
 | --- | --- |
 | Alphabet, mask scoring and encoding | `src/encoder.rs` |
 | Native and Wasm checksum/digest | `src/hash.rs` |
+| Four-chunk BLAKE3 SIMD compression | `src/hash/simd.rs` |
 | HTML insertion | `src/injector.rs` |
 | Specialization, optimization and ESM builds | `src/builder.rs` |
 | Native gzip level 9 and base64 | `src/transport.rs` |
@@ -26,8 +27,11 @@ no host functions and uses neither a general-purpose allocator nor exception
 formatting. Optional high-digit storage is committed only after header guards.
 Old arena regions are bounded by geometric growth and reused capacities.
 
-The `wasm32v1-none` target and Binaryen MVP validation with mutable globals keep
-the instruction set independent of future Rust target-feature defaults.
+The `wasm32v1-none` target and explicit SIMD128/mutable-global validation keep
+the instruction set independent of future Rust target-feature defaults. SIMD
+hashing processes four complete chunks together; tails and tree parents retain
+the scalar compression path. No relaxed SIMD, shared memory or threads are used.
+An explicit `RUSTFLAGS="-C target-feature=-simd128"` preserves the MVP path.
 The ESM adapter targets Chrome 109. On that browser base64 initialization uses
 `atob`; newer engines may use `Uint8Array.fromBase64` when present.
 

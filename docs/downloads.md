@@ -5,6 +5,15 @@ By NeoX · 0BSD · https://github.com/Neo-X-Minecraft/glyphpack
 Try the local-file workbench at https://neo-x-minecraft.github.io/glyphpack/.
 It encodes files, previews bytes, and exports self-contained HTML viewers.
 
+## Open directly from disk
+
+Download `standalone.html`, or open `dist/standalone.html` from the web ZIP.
+It is a complete offline HTML example with inline code and embedded Wasm. It
+works under `file://` with no server, headers, or file-access exceptions.
+For your own local-file viewer, embed the module as that example does, or use
+the workbench's standalone HTML export; separate ESM files follow browser module
+loading rules.
+
 ## Browser modules
 
 - `default.min.mjs`: fixed BLAKE3 integrity and format checks; recommended.
@@ -24,7 +33,7 @@ afterward. No companion Wasm fetch is needed. Target: Chrome 109+.
 Default options: format on, BLAKE3 on, heavy lookup off. The wire format and
 public decoder API are unchanged from v0.1.0.
 
-The npm tarball can be installed directly with `npm install ./glyphpack-0.2.0.tgz`;
+The npm tarball can be installed directly with `npm install ./glyphpack-0.2.1.tgz`;
 it contains the same modules and specialized TypeScript declarations.
 
 ## Native tools and results

@@ -33,13 +33,16 @@ async function main() {
       path.join(root, "generated/encoding-comparison/inputs.json"),
     ),
   ).filter((s) =>
-    [
-      "random-1KiB",
-      "random-64KiB",
-      "random-1MiB",
-      "zeros-1MiB",
-      "sequential-1MiB",
-    ].includes(s.label),
+    process.env.COMPARE_DATASETS
+      ? process.env.COMPARE_DATASETS === "all" ||
+        process.env.COMPARE_DATASETS.split(",").includes(s.label)
+      : [
+          "random-1KiB",
+          "random-64KiB",
+          "random-1MiB",
+          "zeros-1MiB",
+          "sequential-1MiB",
+        ].includes(s.label),
   );
   const rows = [];
   let browserVersion;
@@ -92,20 +95,35 @@ async function main() {
                     throw Error("Output shape mismatch");
                   for (let i = 0; i < a.length; i++)
                     if (a[i] !== b[i]) throw Error("Byte mismatch");
+                  let calibrated = batch;
+                  for (;;) {
+                    let fastest = Infinity;
+                    for (let k = 0; k < 2; k++) {
+                      const start = performance.now();
+                      for (let n = 0; n < calibrated; n++) {
+                        const b = decoders[k](text, options);
+                        window.calibrationSink =
+                          (window.calibrationSink || 0) ^ (b[0] || 0);
+                      }
+                      fastest = Math.min(fastest, performance.now() - start);
+                    }
+                    if (fastest >= 2 || calibrated >= 4096) break;
+                    calibrated *= 2;
+                  }
                   const samples = [[], []];
                   let sink = 0;
                   for (let round = -3; round < 9; round++)
                     for (let j = 0; j < 2; j++) {
                       const k = (round + j + run + 4) % 2,
                         start = performance.now();
-                      for (let n = 0; n < batch; n++) {
+                      for (let n = 0; n < calibrated; n++) {
                         const out = decoders[k](text, options);
                         sink ^= out[(n * 997) % out.length] || 0;
                       }
-                      const elapsed = (performance.now() - start) / batch;
+                      const elapsed = (performance.now() - start) / calibrated;
                       if (round >= 0) samples[k].push(elapsed);
                     }
-                  rows.push({ ...options, batch, samples, sink });
+                  rows.push({ ...options, batch: calibrated, samples, sink });
                 }
             return rows;
           },
@@ -166,6 +184,8 @@ async function main() {
     modules: modules.map(({ url, ...m }) => m),
     methodology: {
       runs: 3,
+      calibration:
+        "both implementations; >=2 ms per measured batch, capped at 4096 calls",
       warmups: 3,
       measured: 9,
       order: "alternate implementations each round",

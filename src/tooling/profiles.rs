@@ -1,7 +1,8 @@
 //! Reproducible distributions and the complete 63-profile feature matrix.
 use crate::{
     builder::{build_decoder, build_wasm, BuildOptions},
-    encoder::Integrity,
+    encoder::{self, EncodeOptions, Integrity},
+    injector,
 };
 use serde_json::{json, Value};
 use std::{fs, path::Path};
@@ -95,6 +96,16 @@ pub fn build_all(root: &Path) -> Result<Value, String> {
             fs::write(out.join(&file), source).map_err(|e| e.to_string())?;
         }
     }
+    // A real file:// entry point: embed the readable default module and payload
+    // in the document. No external ESM import, fetch, worker or server is needed.
+    let text = encoder::encode_text(
+        "Hello from GlyphPack. ✓".as_bytes(),
+        &EncodeOptions::default(),
+    )?;
+    let payload = injector::payload_element("payload", &text, &Default::default())?;
+    let decoder = fs::read_to_string(out.join("default.mjs")).map_err(|e| e.to_string())?;
+    let html=format!("<!doctype html><meta charset=\"utf-8\"><title>GlyphPack standalone</title><output>Loading…</output>{payload}<script type=\"module\">{decoder}\ndocument.querySelector('output').textContent=new TextDecoder().decode(binary(document.getElementById('payload').textContent));</script>\n");
+    fs::write(out.join("standalone.html"), html).map_err(|e| e.to_string())?;
     fs::write(
         out.join("profiles.json"),
         serde_json::to_string_pretty(&manifest).unwrap() + "\n",

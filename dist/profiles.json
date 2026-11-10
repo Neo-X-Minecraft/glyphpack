@@ -19,75 +19,75 @@
   },
   "default.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 5056,
-    "blake3": "d835a069f28ee554277db6935a138a7211420134083e962149df28c30c8b8f8d",
+    "base64Bytes": 7764,
+    "blake3": "ceba06a0e347cbf639e195a0078645553d1a31a669e63999c5dcb43a62bb5a9e",
     "browserTarget": "chrome109",
-    "bytes": 6473,
-    "gzip9Bytes": 3790,
-    "wasmBytes": 8325
+    "bytes": 9181,
+    "gzip9Bytes": 5821,
+    "wasmBytes": 15845
   },
   "default.mjs": {
     "backend": "wasm",
-    "base64Bytes": 5056,
-    "blake3": "2e315751afcafde04e348b30d101e9427d212231a16a9ece3866d1571760b751",
+    "base64Bytes": 7764,
+    "blake3": "d698198654414330e7eb2853a7d88cb685d65f0fe453cef3aedd87c003e1b0ca",
     "browserTarget": "chrome109",
-    "bytes": 7191,
-    "gzip9Bytes": 3790,
-    "wasmBytes": 8325
+    "bytes": 9899,
+    "gzip9Bytes": 5821,
+    "wasmBytes": 15845
   },
   "fast-none.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 3172,
-    "blake3": "0ca3023452cc154fd48bd6c292b67d2dcb3f0d8cb8a1e8276c12d64c135b57b8",
+    "base64Bytes": 3272,
+    "blake3": "3cf625a04632eee3e2f2bb35f6a56d80a80fab20da29b347b20eb01985dd178a",
     "browserTarget": "chrome109",
-    "bytes": 4860,
-    "gzip9Bytes": 2379,
-    "wasmBytes": 5126
+    "bytes": 4960,
+    "gzip9Bytes": 2454,
+    "wasmBytes": 5248
   },
   "fast-none.mjs": {
     "backend": "wasm",
-    "base64Bytes": 3172,
-    "blake3": "6425fc655cfd1a1040653021f4b20c2fffa2b3272cc5934b8697dd46445858d1",
+    "base64Bytes": 3272,
+    "blake3": "7c1d9e7d831e8497f6c2ae689abc61970def86e1fa3d88c5c9169f138ee8553d",
     "browserTarget": "chrome109",
-    "bytes": 5777,
-    "gzip9Bytes": 2379,
-    "wasmBytes": 5126
+    "bytes": 5877,
+    "gzip9Bytes": 2454,
+    "wasmBytes": 5248
   },
   "full.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7532,
-    "blake3": "0204ea6a4495a0b4c4fa744f2caad517b69dc090d5d0dce6a2185d1aac75150d",
+    "base64Bytes": 10216,
+    "blake3": "85c24d95ed1cc1f8796b50e2c9aee88b0cd33e2a3a672210e42dfaecbf96fc05",
     "browserTarget": "chrome109",
-    "bytes": 9403,
-    "gzip9Bytes": 5648,
-    "wasmBytes": 13427
+    "bytes": 12087,
+    "gzip9Bytes": 7660,
+    "wasmBytes": 21281
   },
   "full.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7532,
-    "blake3": "9ed3ec3b86eda93b5fc432bafa1a8d9c3ca81dcea50740319e05821664a07dae",
+    "base64Bytes": 10216,
+    "blake3": "72ba93a57dd1424175a84060bc864f0f1b67f8054d813dea1cde54b55a787901",
     "browserTarget": "chrome109",
-    "bytes": 10459,
-    "gzip9Bytes": 5648,
-    "wasmBytes": 13427
+    "bytes": 13143,
+    "gzip9Bytes": 7660,
+    "wasmBytes": 21281
   },
   "high-memory.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 5196,
-    "blake3": "e26debb5ef7105af5a60d776f7afac522baf3a0af0243b690850d3f99266f175",
+    "base64Bytes": 7960,
+    "blake3": "8256a133f00ce95c5e85898858a066c22770f99c75cb76b1b0f42e9bb5a52cd7",
     "browserTarget": "chrome109",
-    "bytes": 6613,
-    "gzip9Bytes": 3895,
-    "wasmBytes": 8449
+    "bytes": 9377,
+    "gzip9Bytes": 5970,
+    "wasmBytes": 16234
   },
   "high-memory.mjs": {
     "backend": "wasm",
-    "base64Bytes": 5196,
-    "blake3": "20751a46513bd893b7852648838453a506c99db33fee8b0742125d8eb7bf4465",
+    "base64Bytes": 7960,
+    "blake3": "7137ed50af8d0ce1f488d099a961e31a6cee5fd8381655d1a3c5ebde478e14a5",
     "browserTarget": "chrome109",
-    "bytes": 7331,
-    "gzip9Bytes": 3895,
-    "wasmBytes": 8449
+    "bytes": 10095,
+    "gzip9Bytes": 5970,
+    "wasmBytes": 16234
   },
   "none.min.mjs": {
     "backend": "wasm",

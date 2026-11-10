@@ -74,6 +74,8 @@ impl State {
         self.heap_end = core::ptr::addr_of!(__heap_base) as usize;
         let table = unsafe { &mut *TABLE.0.get() };
         let mut index = 0u16;
+        // Keep the specified Unicode code-point bounds visible for format audits.
+        #[allow(clippy::needless_range_loop)]
         for c in 32..65534 {
             if c == 60
                 || (127..=159).contains(&c)

@@ -1,0 +1,46 @@
+--- a/src/hash.rs
++++ b/src/hash.rs
+@@ -77,6 +77,34 @@
+ 
+ // CHUNK_START=1, CHUNK_END=2, PARENT=4, ROOT=8. Only eight output words
+ // are needed for chaining values and the fixed 32-byte root digest.
++#[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
++fn compress(cv: [u32; 8], mut m: [u32; 16], counter: u64, length: usize, flags: u32) -> [u32; 8] {
++    let mut s = [0; 16];
++    s[..8].copy_from_slice(&cv);
++    s[8..12].copy_from_slice(&IV[..4]);
++    s[12] = counter as u32;
++    s[13] = (counter >> 32) as u32;
++    s[14] = length as u32;
++    s[15] = flags;
++    for round in 0..7 {
++        mix(&mut s, 0, 4, 8, 12, m[0], m[1]);
++        mix(&mut s, 1, 5, 9, 13, m[2], m[3]);
++        mix(&mut s, 2, 6, 10, 14, m[4], m[5]);
++        mix(&mut s, 3, 7, 11, 15, m[6], m[7]);
++        mix(&mut s, 0, 5, 10, 15, m[8], m[9]);
++        mix(&mut s, 1, 6, 11, 12, m[10], m[11]);
++        mix(&mut s, 2, 7, 8, 13, m[12], m[13]);
++        mix(&mut s, 3, 4, 9, 14, m[14], m[15]);
++        if round != 6 {
++            m = core::array::from_fn(|i| {
++                m[[2, 6, 3, 10, 7, 0, 4, 13, 1, 11, 12, 5, 9, 14, 15, 8][i]]
++            });
++        }
++    }
++    core::array::from_fn(|i| s[i] ^ s[i + 8])
++}
++
++#[cfg(not(all(target_arch = "wasm32", target_feature = "simd128")))]
+ fn compress(cv: [u32; 8], m: [u32; 16], counter: u64, length: usize, flags: u32) -> [u32; 8] {
+     let mut s = [0; 16];
+     s[..8].copy_from_slice(&cv);
+@@ -86,7 +114,7 @@
+     s[14] = length as u32;
+     s[15] = flags;
+     // Static schedules expose every message index to LLVM, with no runtime
+-    // message permutation or seven-round loop. SIMD builds also use this for tails.
++    // message permutation or seven-round loop. This is only a performance candidate.
+     macro_rules! round {
+         ($a:expr,$b:expr,$c:expr,$d:expr,$e:expr,$f:expr,$g:expr,$h:expr,$i:expr,$j:expr,$k:expr,$l:expr,$n:expr,$o:expr,$p:expr,$q:expr) => {
+             mix(&mut s, 0, 4, 8, 12, m[$a], m[$b]);
