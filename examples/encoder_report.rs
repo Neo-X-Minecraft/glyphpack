@@ -44,6 +44,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             contexts.insert(kind.to_string(), signature);
         }
         for row in r["rows"].as_array().ok_or("Missing rows")? {
+            // Individual empty native calls can fall below Instant's clock
+            // resolution. Keep their original samples in the raw archive, but
+            // omit every empty native case consistently from timing summaries.
+            // Browser batches are calibrated and do not have this limitation.
+            if kind != "browser" && row["bytes"] == 0 {
+                continue;
+            }
             let key = vec![
                 kind.into(),
                 field(row, "dataset"),
@@ -115,9 +122,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .collect();
     let mut compact = String::from("kind,dataset,policy,before_ms,after_ms,speedup\n");
-    let mut md=String::from("# Encoder comparison\n\nComplete paired calls with BLAKE3. Local unpinned host; lower milliseconds is faster. Native outputs are fresh buffers; browser output capacity is warm.\n\n| Runtime | Input | Policy | Before ms | After ms | Speedup |\n| --- | --- | --- | ---: | ---: | ---: |\n");
+    let mut md=String::from("# Encoder comparison\n\nComplete paired calls with BLAKE3. Unpinned hosts; lower milliseconds is faster. Native outputs are fresh buffers; browser output capacity is warm. See the adjacent environment and raw samples for each campaign.\n\n| Runtime | Input | Policy | Before ms | After ms | Speedup |\n| --- | --- | --- | ---: | ---: | ---: |\n");
     let height = 105 + selected.len() * 64;
-    let mut svg=format!("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"980\" height=\"{height}\" viewBox=\"0 0 980 {height}\" role=\"img\" aria-label=\"Encoder before and after timings, each pair normalized to its baseline\"><rect width=\"100%\" height=\"100%\" fill=\"#101318\"/><g fill=\"#edf1f7\" font-family=\"system-ui,sans-serif\"><text x=\"24\" y=\"30\" font-size=\"20\">Encoder · BLAKE3 · complete calls</text><text x=\"24\" y=\"53\" font-size=\"13\">Each pair has its own baseline scale · lower is faster · unpinned local host</text><text x=\"24\" y=\"76\" font-size=\"13\">Gray: frozen reference · green: current implementation</text>");
+    let mut svg=format!("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"980\" height=\"{height}\" viewBox=\"0 0 980 {height}\" role=\"img\" aria-label=\"Encoder before and after timings, each pair normalized to its baseline\"><rect width=\"100%\" height=\"100%\" fill=\"#101318\"/><g fill=\"#edf1f7\" font-family=\"system-ui,sans-serif\"><text x=\"24\" y=\"30\" font-size=\"20\">Encoder · BLAKE3 · complete calls</text><text x=\"24\" y=\"53\" font-size=\"13\">Each pair has its own baseline scale · lower is faster · unpinned host</text><text x=\"24\" y=\"76\" font-size=\"13\">Gray: frozen reference · green: current implementation</text>");
     for (i, r) in selected.iter().enumerate() {
         let k = field(r, "kind");
         let d = field(r, "dataset");

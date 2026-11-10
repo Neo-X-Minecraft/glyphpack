@@ -1,0 +1,57 @@
+{
+  "browser": {
+    "architecture": "arm64",
+    "browser": "156.0.8078.79",
+    "host": {
+      "path": "generated/pages/encoder-host.mjs",
+      "sha256": "5ce080e95f6894d95ed33fbce77161c3028260429797724d549b08a9c6414db9"
+    },
+    "modules": [
+      {
+        "bytes": 20292,
+        "path": "generated/encoder-optimization/baseline.mjs",
+        "sha256": "9365cfe96640edb1f9a681c5c896f1365c5fb68cbaf9896b925cbb1e2d527808"
+      },
+      {
+        "bytes": 22636,
+        "path": "generated/pages/encoder.mjs",
+        "sha256": "413919bef8f431708497ec4a0f9693bca046d2b6f41f0b10c3e57265a73ce321"
+      }
+    ],
+    "rustc": null,
+    "rustflags": null,
+    "sources": null
+  },
+  "native": {
+    "architecture": "aarch64",
+    "browser": null,
+    "host": null,
+    "modules": null,
+    "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)\nbinary: rustc\ncommit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67\ncommit-date: 2026-10-13\nhost: aarch64-unknown-linux-gnu\nrelease: 1.99.1\nLLVM version: 23.1.1",
+    "rustflags": "",
+    "sources": {
+      "Cargo.lock": "6779839bdf43e7ca6be97a8dcfb2ec6783424ea04f3427cc9e7eb453ecfeff72",
+      "Cargo.toml": "ff21c4ccbf7ec95fb8270c68e03715e17f49fa46d96622efe9211e9df8e7b4ea",
+      "benchmarks/fixtures/encoder-v0.2.1.rs": "b2de7cc9118dcf7bb989e4aa1b8891b893083d2d19c2bf39438ac9f90452bd8e",
+      "src/encoder.rs": "55d8c0910dff748e79cf3bcd028b52285fe4a9b032e896b446fae4bc7651a3d3",
+      "src/encoder/parallel.rs": "18370eb68756c49a454ed367891a76c79e63ce00b351f1f81315b81ab101f25b",
+      "src/hash.rs": "e58ba16668580a4ad85fe7f9e011eb705d7d944a0242da71929a131153cfaff3"
+    }
+  },
+  "native-parallel": {
+    "architecture": "aarch64",
+    "browser": null,
+    "host": null,
+    "modules": null,
+    "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)\nbinary: rustc\ncommit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67\ncommit-date: 2026-10-13\nhost: aarch64-unknown-linux-gnu\nrelease: 1.99.1\nLLVM version: 23.1.1",
+    "rustflags": "",
+    "sources": {
+      "Cargo.lock": "6779839bdf43e7ca6be97a8dcfb2ec6783424ea04f3427cc9e7eb453ecfeff72",
+      "Cargo.toml": "ff21c4ccbf7ec95fb8270c68e03715e17f49fa46d96622efe9211e9df8e7b4ea",
+      "benchmarks/fixtures/encoder-v0.2.1.rs": "b2de7cc9118dcf7bb989e4aa1b8891b893083d2d19c2bf39438ac9f90452bd8e",
+      "src/encoder.rs": "55d8c0910dff748e79cf3bcd028b52285fe4a9b032e896b446fae4bc7651a3d3",
+      "src/encoder/parallel.rs": "18370eb68756c49a454ed367891a76c79e63ce00b351f1f81315b81ab101f25b",
+      "src/hash.rs": "e58ba16668580a4ad85fe7f9e011eb705d7d944a0242da71929a131153cfaff3"
+    }
+  }
+}

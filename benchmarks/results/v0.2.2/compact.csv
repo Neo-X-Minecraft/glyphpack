@@ -1,0 +1,8 @@
+kind,dataset,policy,before_ms,after_ms,speedup
+browser,gzip-logs,exact,20.000000,14.600000,1.3699
+browser,gzip-logs,sampled,8.100000,5.000000,1.6200
+browser,random-1MiB,exact,175.300000,125.500000,1.3968
+browser,random-1MiB,sampled,36.300000,15.900000,2.2830
+native,random-1MiB,exact,101.539819,98.098298,1.0351
+native,random-1MiB,fixed0,3.039677,3.008908,1.0102
+native-parallel,random-1MiB,exact,98.308744,67.538936,1.4556

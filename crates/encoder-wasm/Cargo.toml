@@ -2,9 +2,15 @@
 name = "glyphpack-encoder-wasm"
 version = "0.2.2"
 edition = "2021"
+rust-version = "1.85"
 license = "0BSD"
 authors = ["NeoX"]
 publish = false
+
+# Recognize the shared encoder's native-only feature during host-side linting.
+# Its worker module is excluded from every Wasm build, including all-features.
+[features]
+parallel-encoder = []
 
 [lib]
 crate-type = ["cdylib"]

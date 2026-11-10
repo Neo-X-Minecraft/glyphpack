@@ -31,10 +31,33 @@ u16 or UTF-8 backend. Sampled search ranks deterministic prefix/suffix samples
 before scoring the shortlist over the complete input. Exact search retains its
 stable priority and tie-breaking.
 
-[Public native measurements](../benchmarks/results/v0.2.0/encoder-comparison.csv)
-and [browser encoder measurements](../benchmarks/results/v0.2.0/encoder-browser.json)
-describe the previous optimization campaign. New encoder measurements will be
-recorded separately; old numbers are not relabeled as new results.
+The [v0.2.2 paired campaign](../benchmarks/results/v0.2.2/README.md) compares
+complete encoding calls with frozen v0.2.1, using identical output bytes:
+
+| Secure encoding | Before | After | Speedup |
+| --- | ---: | ---: | ---: |
+| Chromium 156 / ARM64, random 1 MiB, sampled | 36.3 ms | 15.9 ms | 2.28× |
+| Chromium 156 / ARM64, random 1 MiB, exact | 175.3 ms | 125.5 ms | 1.40× |
+| Native ARM64, random 1 MiB, exact | 101.54 ms | 98.10 ms | 1.04× |
+| Opt-in native parallel, random 1 MiB, exact | 98.31 ms | 67.54 ms | 1.46× |
+
+Native rows are separate process campaigns. The serial native improvement is
+small and host-dependent. The optional parallel path helps expensive searches;
+many inputs retain the serial path, and the feature stays off by default.
+The independent GitHub x64 browser campaign measured 2.14× sampled and 1.37×
+exact speedups on random 1 MiB with Chromium 153.0.8010.12. Its absolute times
+are separate from the Chromium 156 campaign.
+
+Browser improvements combine Rust mask scoring, output capacity reuse, native
+UTF-16 conversion and existing SIMD BLAKE3. They are not an isolated measure of
+Rust packing speed. The optional workbench encoder grows from 20,292 to 22,636
+module bytes; all decoder modules and encoded payload bytes remain unchanged.
+The reports retain all integrity modes, native representations and run ranges,
+including slower cases, with seven representative rows in the compact CSV.
+
+[Earlier public native measurements](../benchmarks/results/v0.2.0/encoder-comparison.csv)
+and [browser measurements](../benchmarks/results/v0.2.0/encoder-browser.json)
+remain a separately labeled campaign.
 
 ## Reproduce
 
@@ -42,7 +65,8 @@ See [benchmarking](benchmarking.md) for commands and timing boundaries. Inputs
 include pseudorandom bytes, zeros, sequential bytes, text and caller-selected
 files. Encoding, input construction, module initialization and correctness
 checks are outside decode timers. Complete encoder timers include the selected
-hash, mask search and newly allocated output.
+hash, mask search and output construction. Native calls allocate fresh outputs;
+the browser retains Wasm capacity and produces an owned JavaScript string.
 
 Inline standalone HTML works offline under `file://`; tests cover Chrome 109
 and current Chromium with UTF-8 and UTF-16LE documents. No companion fetch or
