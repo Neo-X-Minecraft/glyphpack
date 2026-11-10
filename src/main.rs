@@ -254,7 +254,15 @@ fn main_impl() -> Result<()> {
             };
             tooling::site::build(&root(), &out)
         }
-        "summary" => tooling::summary::compact(&root()),
+        "summary" => match args {
+            [] => tooling::summary::compact(&root()),
+            [input_flag, input, output_flag, output]
+                if input_flag == "--input" && output_flag == "--output" =>
+            {
+                tooling::report::write(Path::new(input), Path::new(output))
+            }
+            _ => Err("Usage: glyphpack summary [--input CSV --output directory]".into()),
+        },
         "help" | "--help" | "-h" => {
             println!("GlyphPack\n\n  encode [input|-] [--checksum secure|fast|none] [--mask N] [--text] [-o path]\n  build [--full|--all] [--format on off] [--data none fast secure]\n        [--memory-heavy off on] [--module] [--readable] [-o path]\n  inject template.html payload.utf16 output.html\n  demo [output.html]\n  fixtures\n  test-js\n  bench prepare|run|smoke [--quick]\n  site [--output directory]\n  summary");
             Ok(())

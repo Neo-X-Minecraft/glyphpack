@@ -7,7 +7,7 @@ use std::{
 
 /// Standard quoted CSV parsing, including doubled quotes and embedded newlines.
 /// Unicode bytes are preserved rather than interpreted as ASCII characters.
-fn parse_csv(text: &str) -> Result<Vec<Vec<String>>, String> {
+pub(crate) fn parse_csv(text: &str) -> Result<Vec<Vec<String>>, String> {
     let bytes = text.as_bytes();
     let mut rows = Vec::new();
     let mut row = Vec::new();

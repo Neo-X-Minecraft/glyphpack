@@ -1,0 +1,49 @@
+name: benchmarks
+on:
+  workflow_dispatch:
+    inputs:
+      comparison:
+        description: Browser coverage (cloud measurements are not the Chromium 156 baseline)
+        type: choice
+        options: [full, smoke]
+        default: full
+permissions:
+  contents: read
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@1.99.1
+        with:
+          targets: wasm32v1-none
+      - run: npm ci
+      - run: cargo build --release --locked
+      - run: npx playwright install --with-deps chromium
+      - name: Decode comparison
+        env:
+          MODE: ${{ inputs.comparison }}
+        run: |
+          browser=$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')
+          version=$("$browser" --version | sed -E 's/.* ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          mode=run
+          if [ "$MODE" = smoke ]; then mode=smoke; fi
+          CHROMIUM_BIN="$browser" CHROMIUM_VERSION="$version" target/release/glyphpack bench "$mode"
+      - name: Native encoder comparison
+        run: cargo run --release --locked --example encode_bench -- --quick --output generated/results/encoder.json > generated/results/encoder.csv
+      - name: Summarize full comparison
+        if: inputs.comparison == 'full'
+        run: |
+          target/release/glyphpack summary --input generated/results/encoding-decode-benchmark.csv --output generated/results/report
+          cat generated/results/report/summary.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmarks-${{ github.sha }}
+          path: generated/results/
+          retention-days: 30

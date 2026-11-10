@@ -3,5 +3,6 @@
 pub mod benchmark;
 pub mod fixtures;
 pub mod profiles;
+pub mod report;
 pub mod site;
 pub mod summary;
