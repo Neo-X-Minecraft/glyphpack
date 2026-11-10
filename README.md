@@ -90,8 +90,31 @@ glyphpack demo demo.html
 GlyphPack is a binary-to-text transport, not a compressor. Compress input first
 when appropriate. Automatic XOR selection never enlarges the identity-mask body.
 Full search checks every mask unless it reaches the theoretical minimum.
-The Rust encoder writes the requested representation directly, borrows input
-when no trailer is needed, and avoids intermediate UTF-16 buffers.
+The Rust encoder writes the requested representation directly. It borrows input
+and its small digest separately, samples windows without copying them, and
+avoids intermediate UTF-16 buffers.
+
+For repeated encoding, retain the output allocation:
+
+```rust
+use glyphpack::encoder::{dense16_into, EncodeOptions};
+let mut output = Vec::new();
+dense16_into(b"first input", &EncodeOptions::default(), &mut output)?;
+dense16_into(b"next input", &EncodeOptions::default(), &mut output)?;
+```
+
+`encode_units_into` and `encode_text_into` do the same for u16 units and UTF-8.
+Validation errors preserve the existing output. Serial encoding can reuse warm
+capacity without heap allocation after the alphabet initializes.
+
+An opt-in `parallel-encoder` Cargo feature uses up to four scoped native workers
+for expensive exact searches. It shares the input, preserves output/tie order,
+and stays off by default. Some inputs reach the minimum early and benefit less
+from computing ahead. It does not add threads to browser builds.
+
+```sh
+cargo build --release --features parallel-encoder
+```
 
 ## Build only the features you need
 
@@ -158,6 +181,10 @@ archives for differential testing, never as a shipped runtime fallback.
 [Benchmark methodology](docs/benchmarking.md) · [Source map](docs/source-map.md)
 
 ## Build the demo
+
+The optional browser encoder uses native UTF-16 string conversion, reusable Wasm
+output capacity, and standard SIMD128 for BLAKE3. Chrome 109 remains supported.
+Set `GLYPHPACK_ENCODER_SIMD=0` when building the site for a scalar comparison.
 
 ```sh
 rustup target add wasm32-unknown-unknown

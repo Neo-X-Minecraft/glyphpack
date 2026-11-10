@@ -3,6 +3,8 @@
 | Area | Authoritative source |
 | --- | --- |
 | Alphabet, mask scoring and encoding | `src/encoder.rs` |
+| Optional scoped native mask search | `src/encoder/parallel.rs` |
+| Native browser string conversion | `site/encoder-host.mjs` |
 | Native and Wasm checksum/digest | `src/hash.rs` |
 | Four-chunk BLAKE3 SIMD compression | `src/hash/simd.rs` |
 | HTML insertion | `src/injector.rs` |

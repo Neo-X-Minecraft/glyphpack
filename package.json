@@ -1,6 +1,6 @@
 {
   "name": "glyphpack",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Dense UTF-16 payloads with a Rust/Wasm decoder and gzip/base64 ESM loader",
   "license": "0BSD",
   "type": "commonjs",

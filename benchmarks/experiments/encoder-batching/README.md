@@ -23,7 +23,7 @@ stable, and the public candidate count follows results considered in order.
 
 `browser.cjs` compares the demo's browser encoder modules, including input copy
 and conversion of output u16 units into a JS string. Build the demo at commit
-`436b780` in a separate checkout for the scalar baseline, then build the current
+`f1ec364` in a separate checkout for the scalar baseline, then build the current
 demo and pass both `encoder.mjs` paths:
 
 ```sh

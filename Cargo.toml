@@ -1,6 +1,6 @@
 [package]
 name = "glyphpack"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 rust-version = "1.85"
 description = "Dense UTF-16 payload encoding with a specialized Rust/Wasm decoder"
@@ -16,6 +16,7 @@ categories = ["encoding", "command-line-utilities", "web-programming"]
 [features]
 default = ["tools"]
 tools = ["dep:serde_json"]
+parallel-encoder = []
 
 [dependencies]
 serde_json = { version = "=1.0.154", optional = true }
@@ -63,4 +64,12 @@ required-features = ["tools"]
 
 [[example]]
 name = "paired_report"
+required-features = ["tools"]
+
+[[example]]
+name = "encoder_compare"
+required-features = ["tools"]
+
+[[example]]
+name = "encoder_report"
 required-features = ["tools"]

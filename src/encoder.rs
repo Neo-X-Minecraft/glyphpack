@@ -1,6 +1,10 @@
 //! Format-3 encoding and exact adaptive XOR selection. No HTML or compression.
 use crate::hash::{blake3, xxhash32};
-use std::{borrow::Cow, sync::OnceLock};
+use std::sync::OnceLock;
+
+#[cfg(not(target_family = "wasm"))]
+#[path = "encoder/parallel.rs"]
+mod parallel;
 
 pub const FORMAT_VERSION: u8 = 3;
 pub const RADIX: u64 = 63385;
@@ -84,66 +88,132 @@ pub struct MaskSelection {
     pub candidates: usize,
 }
 
+// Treat the message and its small digest as one bitstream without copying the
+// message. The third slice is used by sampled ranking (prefix, suffix, digest).
+// Queue state spans slice boundaries, including boundaries inside a word.
+struct Input<'a> {
+    parts: [&'a [u8]; 3],
+    len: usize,
+}
+impl<'a> Input<'a> {
+    fn new(data: &'a [u8], trailer: &'a [u8]) -> Self {
+        Self {
+            parts: [data, trailer, &[]],
+            len: data.len() + trailer.len(),
+        }
+    }
+    fn sample(&self) -> Self {
+        debug_assert!(self.len > 32768 && self.parts[2].is_empty());
+        // All callers have at most a 32-byte trailer, so both sample windows
+        // start in the original message. Their concatenation exactly matches
+        // copying the first/last 16 KiB of the complete stored input.
+        Self {
+            parts: [
+                &self.parts[0][..16384],
+                &self.parts[0][self.len - 16384..],
+                self.parts[1],
+            ],
+            len: 32768,
+        }
+    }
+}
+
 /// Count body pairs without allocating translated copies. Appending an input
 /// word needs at most 63 bits; draining leaves at most 31 pending bits.
 pub fn count_pairs(data: &[u8], mask: u8) -> usize {
+    count_pairs_in(&Input::new(data, &[]), mask)
+}
+
+fn count_pairs_in(input: &Input<'_>, mask: u8) -> usize {
     let (mut queue, mut bits, mut count) = (0u64, 0u32, 0usize);
     let xor_word = u32::from(mask) * 0x01010101;
-    for part in data.chunks(4) {
-        // Four input bytes become one LE load and one word-wide XOR. Only the
-        // final short part needs byte assembly; no unaligned/unsafe loads.
-        let word = if let Ok(bytes) = <[u8; 4]>::try_from(part) {
-            u64::from(u32::from_le_bytes(bytes) ^ xor_word)
-        } else {
-            part.iter()
-                .enumerate()
-                .fold(0u64, |v, (i, &b)| v | (u64::from(b ^ mask) << (8 * i)))
-        };
-        queue |= word << bits;
-        bits += (part.len() * 8) as u32;
-        while bits >= 32 {
-            let width = if queue & 0x7fffffff > THRESHOLD {
-                31
+    for data in input.parts {
+        for part in data.chunks(4) {
+            // Four input bytes become one LE load and one word-wide XOR. Only the
+            // final short part needs byte assembly; no unaligned/unsafe loads.
+            let word = if let Ok(bytes) = <[u8; 4]>::try_from(part) {
+                u64::from(u32::from_le_bytes(bytes) ^ xor_word)
             } else {
-                32
+                part.iter()
+                    .enumerate()
+                    .fold(0u64, |v, (i, &b)| v | (u64::from(b ^ mask) << (8 * i)))
             };
-            queue >>= width;
-            bits -= width;
-            count += 1;
+            queue |= word << bits;
+            bits += (part.len() * 8) as u32;
+            while bits >= 32 {
+                let width = if queue & 0x7fffffff > THRESHOLD {
+                    31
+                } else {
+                    32
+                };
+                queue >>= width;
+                bits -= width;
+                count += 1;
+            }
         }
     }
     count + usize::from(bits != 0)
 }
 
-// Four independent carry chains expose instruction-level parallelism while
-// sharing the input load. This is deliberately four masks, not a wider batch:
-// it fits register files well and keeps the stack scratch small (no SIMD or
-// unsafe reads). Mask order, scores and tie-breaking remain exact.
-fn score_four(data: &[u8], masks: [u8; 4]) -> [usize; 4] {
-    let mut queues = [0u64; 4];
+// Count one complete input word with a 32-bit carry. Normally this emits one
+// pair and retains 0..31 bits. At the rare 31->32-bit transition, the previous
+// carry forms one narrow pair and the new word forms a second pair.
+#[inline(always)]
+fn score_word(carry: &mut u32, bits: &mut u32, count: &mut usize, word: u32) {
+    let value = *carry | (word << *bits);
+    let next = *bits + u32::from(u64::from(value & 0x7fffffff) > THRESHOLD);
+    if next < 32 {
+        *carry = if next == 0 { 0 } else { word >> (32 - next) };
+        *bits = next;
+        *count += 1;
+    } else {
+        debug_assert_eq!(next, 32);
+        let reduced = u64::from(word & 0x7fffffff) > THRESHOLD;
+        *carry = if reduced { word >> 31 } else { 0 };
+        *bits = u32::from(reduced);
+        *count += 2;
+    }
+}
+
+// Four independent carry chains share each load. Mask order, exact scores and
+// deterministic ties are unchanged. Short slice tails use the general queue;
+// subsequent slices continue from exactly that carry state.
+fn score_four(input: &Input<'_>, masks: [u8; 4]) -> [usize; 4] {
+    let mut queues = [0u32; 4];
     let mut bits = [0u32; 4];
     let mut counts = [0usize; 4];
     let masks = masks.map(|m| u32::from(m) * 0x01010101);
-    for part in data.chunks(4) {
-        for lane in 0..4 {
-            let word = if let Ok(bytes) = <[u8; 4]>::try_from(part) {
-                u64::from(u32::from_le_bytes(bytes) ^ masks[lane])
+    for data in input.parts {
+        for part in data.chunks(4) {
+            if let Ok(bytes) = <[u8; 4]>::try_from(part) {
+                let word = u32::from_le_bytes(bytes);
+                for lane in 0..4 {
+                    score_word(
+                        &mut queues[lane],
+                        &mut bits[lane],
+                        &mut counts[lane],
+                        word ^ masks[lane],
+                    );
+                }
             } else {
-                part.iter().enumerate().fold(0u64, |v, (i, &b)| {
-                    v | (u64::from(b ^ (masks[lane] as u8)) << (8 * i))
-                })
-            };
-            queues[lane] |= word << bits[lane];
-            bits[lane] += (part.len() * 8) as u32;
-            while bits[lane] >= 32 {
-                let width = if queues[lane] & 0x7fffffff > THRESHOLD {
-                    31
-                } else {
-                    32
-                };
-                queues[lane] >>= width;
-                bits[lane] -= width;
-                counts[lane] += 1;
+                for lane in 0..4 {
+                    let word = part.iter().enumerate().fold(0u64, |v, (i, &b)| {
+                        v | (u64::from(b ^ masks[lane] as u8) << (8 * i))
+                    });
+                    let mut queue = u64::from(queues[lane]) | word << bits[lane];
+                    bits[lane] += (part.len() * 8) as u32;
+                    while bits[lane] >= 32 {
+                        let width = if queue & 0x7fffffff > THRESHOLD {
+                            31
+                        } else {
+                            32
+                        };
+                        queue >>= width;
+                        bits[lane] -= width;
+                        counts[lane] += 1;
+                    }
+                    queues[lane] = queue as u32;
+                }
             }
         }
     }
@@ -153,76 +223,128 @@ fn score_four(data: &[u8], masks: [u8; 4]) -> [usize; 4] {
     counts
 }
 
-fn scores(data: &[u8], masks: &[u8]) -> Vec<(u8, usize)> {
-    let mut out = Vec::with_capacity(masks.len());
-    for chunk in masks.chunks(4) {
-        if let Ok(group) = <[u8; 4]>::try_from(chunk) {
-            out.extend(chunk.iter().copied().zip(score_four(data, group)));
-        } else {
-            out.extend(chunk.iter().map(|&mask| (mask, count_pairs(data, mask))));
+const PRIORITY: [u8; 7] = [255, 85, 170, 51, 204, 15, 240];
+// Stable priority is part of deterministic encoder output. Construct it once at
+// compile time rather than allocating and filtering 255 masks on every call.
+const MASKS: [u8; 255] = {
+    let mut out = [0; 255];
+    let mut i = 0;
+    while i < PRIORITY.len() {
+        out[i] = PRIORITY[i];
+        i += 1;
+    }
+    let mut mask = 1;
+    while mask < 256 {
+        let mut k = 0;
+        let mut priority = false;
+        while k < PRIORITY.len() {
+            priority |= mask as u8 == PRIORITY[k];
+            k += 1;
         }
+        if !priority {
+            out[i] = mask as u8;
+            i += 1;
+        }
+        mask += 1;
     }
     out
+};
+
+// Keep the ranking scratch off the exact/small-input call stack. The original
+// priority index makes every key unique: unstable selection + sorting eight
+// keys is equivalent to the former stable sort of all 255 scores, without heap
+// allocation or a full O(n log n) sort.
+#[inline(never)]
+fn shortlist(input: &Input<'_>) -> [u8; 8] {
+    let mut ranked = [(0usize, 0u8); 255];
+    for (batch, masks) in MASKS.chunks(4).enumerate() {
+        let counts = if let Ok(group) = <[u8; 4]>::try_from(masks) {
+            score_four(input, group)
+        } else {
+            let mut counts = [0; 4];
+            for (i, &mask) in masks.iter().enumerate() {
+                counts[i] = count_pairs_in(input, mask);
+            }
+            counts
+        };
+        for (lane, &count) in counts.iter().take(masks.len()).enumerate() {
+            let index = batch * 4 + lane;
+            ranked[index] = (count, index as u8);
+        }
+    }
+    ranked.select_nth_unstable(8);
+    ranked[..8].sort_unstable();
+    std::array::from_fn(|i| MASKS[ranked[i].1 as usize])
 }
 
 /// Full search is exact; sampled fast search retains identity on ties and never
 /// enlarges its body. Header width is independent of the selected byte mask.
 pub fn choose_mask(data: &[u8], effort: Effort) -> MaskSelection {
-    let baseline = count_pairs(data, 0);
+    choose_mask_in(&Input::new(data, &[]), effort)
+}
+
+fn consider(best: &mut MaskSelection, mask: u8, count: usize, minimum: usize) -> bool {
+    best.candidates += 1;
+    if count < best.pairs {
+        best.mask = mask;
+        best.pairs = count;
+    }
+    best.pairs == minimum
+}
+
+fn choose_mask_in(input: &Input<'_>, effort: Effort) -> MaskSelection {
+    let baseline = count_pairs_in(input, 0);
     let mut best = MaskSelection {
         mask: 0,
         pairs: baseline,
         baseline_pairs: baseline,
         candidates: 1,
     };
-    let minimum = data.len().div_ceil(4);
+    let minimum = input.len.div_ceil(4);
     if best.pairs == minimum {
         return best;
     }
-    let priority = [255, 85, 170, 51, 204, 15, 240];
-    let mut masks: Vec<u8> = priority
-        .into_iter()
-        .chain((1..=255).filter(|m| !priority.contains(m)))
-        .collect();
-    let sampled = effort == Effort::Fast && data.len() > 32768;
-    if sampled {
-        let mut sample = data[..16384].to_vec();
-        sample.extend_from_slice(&data[data.len() - 16384..]);
-        // Stable sorting preserves the original priority among equal scores.
-        let mut ranked = scores(&sample, &masks);
-        ranked.sort_by_key(|&(_, pairs)| pairs);
-        masks = ranked.into_iter().take(8).map(|(mask, _)| mask).collect();
-    }
-    let mut consider = |mask, count| {
-        best.candidates += 1;
-        if count < best.pairs {
-            best.mask = mask;
-            best.pairs = count;
-        }
-        best.pairs == minimum
+    let sampled = effort == Effort::Fast && input.len > 32768;
+    let selected;
+    let masks: &[u8] = if sampled {
+        selected = shortlist(&input.sample());
+        &selected
+    } else {
+        &MASKS
     };
     // Preserve cheap early exits for common low-entropy inputs. The sampled
     // shortlist already ranks the strongest candidate first.
-    let early = if sampled { 1 } else { priority.len() }.min(masks.len());
+    let early = if sampled { 1 } else { PRIORITY.len() }.min(masks.len());
     for &mask in &masks[..early] {
-        if consider(mask, count_pairs(data, mask)) {
+        if consider(&mut best, mask, count_pairs_in(input, mask), minimum) {
+            return best;
+        }
+    }
+    #[cfg(not(target_family = "wasm"))]
+    if !sampled {
+        if let Some(counts) = parallel::scores(input, &masks[early..], best.pairs) {
+            for (&mask, count) in masks[early..].iter().zip(counts) {
+                if consider(&mut best, mask, count, minimum) {
+                    return best;
+                }
+            }
             return best;
         }
     }
     for chunk in masks[early..].chunks(4) {
         let counts = if let Ok(group) = <[u8; 4]>::try_from(chunk) {
-            score_four(data, group)
+            score_four(input, group)
         } else {
             let mut counts = [0; 4];
             for (i, &mask) in chunk.iter().enumerate() {
-                counts[i] = count_pairs(data, mask);
+                counts[i] = count_pairs_in(input, mask);
             }
             counts
         };
         for (&mask, count) in chunk.iter().zip(counts) {
             // candidates counts results considered in order; later parallel
             // results can be discarded after the exact minimum is reached.
-            if consider(mask, count) {
+            if consider(&mut best, mask, count, minimum) {
                 return best;
             }
         }
@@ -234,20 +356,18 @@ pub fn choose_mask(data: &[u8], effort: Effort) -> MaskSelection {
 // format dispatcher. Byte output writes a whole symbol pair with one LE store;
 // UTF-8 text and u16 callers never build an intermediate representation.
 trait Output {
-    type Buffer;
-    fn reserve(units: usize) -> Self;
+    fn reset(&mut self, units: usize);
     fn unit(&mut self, unit: u16);
     fn pair(&mut self, low: u16, high: u16) {
         self.unit(low);
         self.unit(high);
     }
-    fn finish(self) -> Self::Buffer;
 }
-struct Units(Vec<u16>);
-impl Output for Units {
-    type Buffer = Vec<u16>;
-    fn reserve(n: usize) -> Self {
-        Self(Vec::with_capacity(n))
+struct Units<'a>(&'a mut Vec<u16>);
+impl Output for Units<'_> {
+    fn reset(&mut self, n: usize) {
+        self.0.clear();
+        self.0.reserve(n);
     }
     fn unit(&mut self, c: u16) {
         self.0.push(c);
@@ -255,15 +375,12 @@ impl Output for Units {
     fn pair(&mut self, low: u16, high: u16) {
         self.0.extend_from_slice(&[low, high]);
     }
-    fn finish(self) -> Vec<u16> {
-        self.0
-    }
 }
-struct LittleEndian(Vec<u8>);
-impl Output for LittleEndian {
-    type Buffer = Vec<u8>;
-    fn reserve(n: usize) -> Self {
-        Self(Vec::with_capacity(n * 2))
+struct LittleEndian<'a>(&'a mut Vec<u8>);
+impl Output for LittleEndian<'_> {
+    fn reset(&mut self, n: usize) {
+        self.0.clear();
+        self.0.reserve(n * 2);
     }
     fn unit(&mut self, c: u16) {
         self.0.extend_from_slice(&c.to_le_bytes());
@@ -272,25 +389,19 @@ impl Output for LittleEndian {
         self.0
             .extend_from_slice(&(u32::from(low) | (u32::from(high) << 16)).to_le_bytes());
     }
-    fn finish(self) -> Vec<u8> {
-        self.0
-    }
 }
-struct Text(String);
-impl Output for Text {
-    type Buffer = String;
-    fn reserve(n: usize) -> Self {
-        Self(String::with_capacity(n * 3))
+struct Text<'a>(&'a mut String);
+impl Output for Text<'_> {
+    fn reset(&mut self, n: usize) {
+        self.0.clear();
+        self.0.reserve(n * 3);
     }
     fn unit(&mut self, c: u16) {
         self.0.push(char::from_u32(u32::from(c)).unwrap());
     }
-    fn finish(self) -> String {
-        self.0
-    }
 }
 
-fn encode<O: Output>(data: &[u8], options: &EncodeOptions) -> Result<O::Buffer, String> {
+fn encode<O: Output>(data: &[u8], options: &EncodeOptions, out: &mut O) -> Result<(), String> {
     if options.legacy
         && (options.integrity != Integrity::None || options.mask.is_some_and(|m| m != 0))
     {
@@ -305,20 +416,16 @@ fn encode<O: Output>(data: &[u8], options: &EncodeOptions) -> Result<O::Buffer, 
     if length as u64 >= RADIX * RADIX {
         return Err("Payload too large".into());
     }
-    // No-checksum encoding borrows the caller's bytes. Protected packets copy
-    // once into an exactly sized buffer to append their real digest.
-    let stored: Cow<'_, [u8]> = if trailer == 0 {
-        Cow::Borrowed(data)
-    } else {
-        let mut bytes = Vec::with_capacity(length);
-        bytes.extend_from_slice(data);
-        match options.integrity {
-            Integrity::Fast => bytes.extend_from_slice(&xxhash32(data).to_le_bytes()),
-            Integrity::Secure => bytes.extend_from_slice(&blake3(data)),
-            _ => unreachable!(),
-        }
-        Cow::Owned(bytes)
-    };
+    // Hash original bytes and append the trailer virtually. Both mask search
+    // and packing carry queue state across slices; no message-sized temporary
+    // or copied 32 KiB sample is required in any verification mode.
+    let mut digest = [0; 32];
+    match options.integrity {
+        Integrity::Fast => digest[..4].copy_from_slice(&xxhash32(data).to_le_bytes()),
+        Integrity::Secure => digest = blake3(data),
+        Integrity::None => {}
+    }
+    let stored = Input::new(data, &digest[..trailer]);
     // Reuse the exact pair count already obtained by automatic mask search.
     // Explicit masks reserve a conservative 31-bit bound instead of adding an
     // entire counting pass. Both strategies avoid output-buffer growth/copies.
@@ -327,14 +434,14 @@ fn encode<O: Output>(data: &[u8], options: &EncodeOptions) -> Result<O::Buffer, 
     } else if let Some(mask) = options.mask {
         (mask, (length as u64 * 8).div_ceil(31) as usize)
     } else {
-        let choice = choose_mask(&stored, options.effort);
+        let choice = choose_mask_in(&stored, options.effort);
         (choice.mask, choice.pairs)
     };
     let mode = u16::from(mask) | (options.integrity.kind() << 8);
     let n = length as u64;
     let a = alphabet();
     debug_assert_eq!(a.len() as u64, RADIX);
-    let mut out = O::reserve(pairs * 2 + 3);
+    out.reset(pairs * 2 + 3);
     if options.legacy {
         out.pair(a[(n % RADIX) as usize], a[(n / RADIX) as usize]);
     } else if n < 32 * RADIX {
@@ -348,49 +455,158 @@ fn encode<O: Output>(data: &[u8], options: &EncodeOptions) -> Result<O::Buffer, 
     }
     let xor_word = u32::from(mask) * 0x01010101;
     let (mut queue, mut bits) = (0u64, 0u32);
-    for part in stored.chunks(4) {
-        let word = if let Ok(bytes) = <[u8; 4]>::try_from(part) {
-            u64::from(u32::from_le_bytes(bytes) ^ xor_word)
-        } else {
-            part.iter()
-                .enumerate()
-                .fold(0u64, |v, (i, &b)| v | (u64::from(b ^ mask) << (8 * i)))
-        };
-        queue |= word << bits;
-        bits += (part.len() * 8) as u32;
-        while bits >= 32 {
-            let narrow = queue & 0x7fffffff > THRESHOLD;
-            let value = queue & if narrow { 0x7fffffff } else { 0xffffffff };
-            let width = if narrow { 31 } else { 32 };
-            out.pair(a[(value % RADIX) as usize], a[(value / RADIX) as usize]);
-            queue >>= width;
-            bits -= width;
+    for data in stored.parts {
+        for part in data.chunks(4) {
+            let word = if let Ok(bytes) = <[u8; 4]>::try_from(part) {
+                u64::from(u32::from_le_bytes(bytes) ^ xor_word)
+            } else {
+                part.iter()
+                    .enumerate()
+                    .fold(0u64, |v, (i, &b)| v | (u64::from(b ^ mask) << (8 * i)))
+            };
+            queue |= word << bits;
+            bits += (part.len() * 8) as u32;
+            while bits >= 32 {
+                let narrow = queue & 0x7fffffff > THRESHOLD;
+                // Packed values always fit in u32. Keeping constant division at
+                // that width avoids a wider quotient sequence, especially in Wasm.
+                let value = (queue & if narrow { 0x7fffffff } else { 0xffffffff }) as u32;
+                let width = if narrow { 31 } else { 32 };
+                out.pair(
+                    a[(value % RADIX as u32) as usize],
+                    a[(value / RADIX as u32) as usize],
+                );
+                queue >>= width;
+                bits -= width;
+            }
         }
     }
     if bits != 0 {
-        out.pair(a[(queue % RADIX) as usize], a[(queue / RADIX) as usize]);
+        let value = queue as u32;
+        out.pair(
+            a[(value % RADIX as u32) as usize],
+            a[(value / RADIX as u32) as usize],
+        );
     }
-    Ok(out.finish())
+    Ok(())
 }
 
 /// Format-3 UTF-16 code units, without a document BOM. Hash original bytes,
 /// append the optional trailer, XOR actual bytes, and zero-pad only the final
 /// packed pair. The header length always includes the trailer.
 pub fn encode_units(data: &[u8], options: &EncodeOptions) -> Result<Vec<u16>, String> {
-    encode::<Units>(data, options)
+    let mut out = Vec::new();
+    encode_units_into(data, options, &mut out)?;
+    Ok(out)
 }
 /// UTF-8 Rust string for callers doing their own document/text serialization.
 pub fn encode_text(data: &[u8], options: &EncodeOptions) -> Result<String, String> {
-    encode::<Text>(data, options)
+    let mut out = String::new();
+    encode_text_into(data, options, &mut out)?;
+    Ok(out)
 }
 /// Direct UTF-16LE bytes, without an intermediate u16 buffer or document BOM.
 pub fn dense16(data: &[u8], options: &EncodeOptions) -> Result<Vec<u8>, String> {
-    encode::<LittleEndian>(data, options)
+    let mut out = Vec::new();
+    dense16_into(data, options, &mut out)?;
+    Ok(out)
+}
+
+/// Replace UTF-16 output while retaining its allocation. Validation errors
+/// leave the previous contents intact. After warming the alphabet, serial
+/// encoding needs no heap allocation when this capacity is already sufficient.
+pub fn encode_units_into(
+    data: &[u8],
+    options: &EncodeOptions,
+    out: &mut Vec<u16>,
+) -> Result<(), String> {
+    encode(data, options, &mut Units(out))
+}
+/// Replace UTF-16LE output, reusing capacity and preserving it on validation errors.
+pub fn dense16_into(data: &[u8], options: &EncodeOptions, out: &mut Vec<u8>) -> Result<(), String> {
+    encode(data, options, &mut LittleEndian(out))
+}
+/// Replace UTF-8 output, reusing capacity and preserving it on validation errors.
+pub fn encode_text_into(
+    data: &[u8],
+    options: &EncodeOptions,
+    out: &mut String,
+) -> Result<(), String> {
+    encode(data, options, &mut Text(out))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn segmented_queues_match_concatenated_bytes() {
+        let mut seed = 917u32;
+        for len in (0usize..40).chain([63, 65, 127, 4095, 32769]) {
+            let data: Vec<_> = (0..len)
+                .map(|_| {
+                    seed = seed.wrapping_mul(1664525).wrapping_add(1013904223);
+                    (seed >> 24) as u8
+                })
+                .collect();
+            for a in [0, 1.min(len), len / 3, len / 2, len] {
+                for b in [a, (a + 3).min(len), len.saturating_sub(1).max(a), len] {
+                    let input = Input {
+                        parts: [&data[..a], &data[a..b], &data[b..]],
+                        len,
+                    };
+                    for masks in [[0, 1, 2, 3], [85, 170, 15, 240], [252, 253, 254, 255]] {
+                        assert_eq!(
+                            score_four(&input, masks),
+                            masks.map(|m| count_pairs(&data, m)),
+                            "{len}, {a}, {b}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+    #[test]
+    fn virtual_digest_samples_match_copied_windows() {
+        for len in [32737, 32765, 32768, 32769, 65537] {
+            let data: Vec<_> = (0..len).map(|i| i as u8).collect();
+            for trailer in [&[0u8; 32][..0], &[0u8; 32][..4], &[0u8; 32][..32]] {
+                let input = Input::new(&data, trailer);
+                if input.len <= 32768 {
+                    continue;
+                }
+                let joined = input.parts.concat();
+                let expected = [&joined[..16384], &joined[joined.len() - 16384..]].concat();
+                assert_eq!(input.sample().parts.concat(), expected);
+            }
+        }
+    }
+    #[test]
+    fn reusable_outputs_keep_capacity_and_preserve_failed_results() {
+        let options = EncodeOptions::default();
+        let large: Vec<_> = (0..4097).map(|i| i as u8).collect();
+        let mut units = encode_units(&large, &options).unwrap();
+        let mut bytes = dense16(&large, &options).unwrap();
+        let mut text = encode_text(&large, &options).unwrap();
+        let pointers = (units.as_ptr(), bytes.as_ptr(), text.as_ptr());
+        for data in [b"short".as_slice(), &[], &large[..63]] {
+            encode_units_into(data, &options, &mut units).unwrap();
+            dense16_into(data, &options, &mut bytes).unwrap();
+            encode_text_into(data, &options, &mut text).unwrap();
+            assert_eq!(units, encode_units(data, &options).unwrap());
+            assert_eq!(bytes, dense16(data, &options).unwrap());
+            assert_eq!(text, encode_text(data, &options).unwrap());
+            assert_eq!(pointers, (units.as_ptr(), bytes.as_ptr(), text.as_ptr()));
+        }
+        let before = (units.clone(), bytes.clone(), text.clone());
+        let bad = EncodeOptions {
+            legacy: true,
+            ..options
+        };
+        assert!(encode_units_into(b"bad", &bad, &mut units).is_err());
+        assert!(dense16_into(b"bad", &bad, &mut bytes).is_err());
+        assert!(encode_text_into(b"bad", &bad, &mut text).is_err());
+        assert_eq!((units, bytes, text), before);
+    }
     #[test]
     fn parallel_scores_match_scalar_for_every_mask_and_short_tail() {
         let mut seed = 833u32;
@@ -405,7 +621,7 @@ mod tests {
                 for first in (0u8..=252).step_by(4) {
                     let masks = [first, first + 1, first + 2, first + 3];
                     assert_eq!(
-                        score_four(&data, masks),
+                        score_four(&Input::new(&data, &[]), masks),
                         masks.map(|m| count_pairs(&data, m)),
                         "length {n}, masks {masks:?}"
                     );

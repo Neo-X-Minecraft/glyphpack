@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.2 · 2026-11-10
+
+- Borrow message/digest slices and sampled windows, removing full-input and
+  32 KiB sample copies. Reuse static mask priority and select only eight ranks.
+- Count mask scores with 32-bit carry state and convert packed values with
+  32-bit division, preserving exact output, ties and candidate accounting.
+- Add `dense16_into`, `encode_units_into` and `encode_text_into` for capacity
+  reuse; validation errors preserve previous output. Reuse the browser buffer.
+- Convert browser output through native UTF-16 decoding and use standard SIMD128
+  BLAKE3 in the optional encoder. Keep Chrome 109 and scalar build support.
+- Add opt-in native `parallel-encoder` exact search, capped at four workers;
+  keep serial defaults and browser execution unchanged.
+- Compare complete calls with a frozen generic encoder across public fixtures,
+  all integrity modes and all three native output representations.
+
 ## 0.2.1 · 2026-11-10
 
 - Hash four complete BLAKE3 chunks in parallel with portable Wasm SIMD128,

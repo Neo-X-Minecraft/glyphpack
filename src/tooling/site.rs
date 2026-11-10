@@ -29,6 +29,18 @@ pub fn build(root: &Path, out: &Path) -> Result<(), String> {
     // esbuild runs from the checkout; output paths retain the caller's meaning.
     let out = io(fs::canonicalize(out))?;
     let target = root.join("generated/site-build");
+    // Standard SIMD128 is within the Chrome 109 target. Keep an explicit scalar
+    // build for paired measurements and environments choosing smaller modules.
+    let simd = match env::var("GLYPHPACK_ENCODER_SIMD").as_deref() {
+        Ok("0") => false,
+        Ok("1") | Err(env::VarError::NotPresent) => true,
+        _ => return Err("GLYPHPACK_ENCODER_SIMD must be 0 or 1".into()),
+    };
+    let flags = if simd {
+        "+mutable-globals,+simd128"
+    } else {
+        "+mutable-globals"
+    };
     let cargo = env::var_os("CARGO").unwrap_or_else(|| "cargo".into());
     run(Command::new(cargo)
         .args([
@@ -36,14 +48,14 @@ pub fn build(root: &Path, out: &Path) -> Result<(), String> {
             "wasm32-unknown-unknown", "-p", "glyphpack-encoder-wasm", "--target-dir",
         ])
         .arg(&target)
-        .env("CARGO_ENCODED_RUSTFLAGS", "-C\x1flink-arg=-zstack-size=65536\x1f-C\x1ftarget-cpu=mvp\x1f-C\x1ftarget-feature=+mutable-globals")
+        .env("CARGO_ENCODED_RUSTFLAGS", format!("-C\x1flink-arg=-zstack-size=65536\x1f-C\x1ftarget-cpu=mvp\x1f-C\x1ftarget-feature={flags}"))
         .current_dir(root))?;
     let optimizer = env::var_os("WASM_OPT")
         .map(std::path::PathBuf::from)
         .unwrap_or_else(|| root.join("node_modules/.bin/wasm-opt"));
     let raw = target.join("wasm32-unknown-unknown/wasm-release/glyphpack_encoder_wasm.wasm");
     let lowered = target.join("encoder.wasm");
-    let validated = target.join("encoder-mvp.wasm");
+    let validated = target.join("encoder-validated.wasm");
     // The shared encoder uses std. Lower instructions in Rust's prebuilt std,
     // then validate baseline Wasm independently, just like the decoder build.
     run(Command::new(&optimizer)
@@ -62,10 +74,15 @@ pub fn build(root: &Path, out: &Path) -> Result<(), String> {
             "-o",
         ])
         .arg(&lowered))?;
-    run(Command::new(&optimizer)
+    let mut validate = Command::new(&optimizer);
+    validate
         .arg(&lowered)
         .args(["--mvp-features", "--enable-mutable-globals", "-o"])
-        .arg(&validated))?;
+        .arg(&validated);
+    if simd {
+        validate.arg("--enable-simd");
+    }
+    run(&mut validate)?;
     let wasm = io(fs::read(validated))?;
     let compressed = gzip9(&wasm)?;
     let source = format!(
@@ -110,6 +127,7 @@ pub fn build(root: &Path, out: &Path) -> Result<(), String> {
         .args([
             "site/app.mjs",
             "site/codec-worker.mjs",
+            "site/encoder-host.mjs",
             "site/styles.css",
             "--format=esm",
             "--target=chrome109",

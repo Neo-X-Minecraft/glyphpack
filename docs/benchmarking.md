@@ -42,6 +42,31 @@ glyphpack summary --input generated/results/encoding-decode-benchmark.csv \
 ## Encoder measurements
 
 ```sh
+cargo run --release --locked --example encoder_compare -- --prepare
+cargo run --release --locked --example encoder_compare -- \
+  --output generated/results/encoder-paired.json
+cargo run --release --locked --features parallel-encoder --example encoder_compare -- \
+  --output generated/results/encoder-parallel.json
+node benchmarks/encoder.cjs before/encoder.mjs after/encoder.mjs \
+  generated/results/encoder-browser.json
+```
+
+The Rust example prepares public patterns, JSON logs, compressed logs, UTF-8 text
+and the decoder's own bytecode. `--quick` narrows native coverage; `--large` adds
+10 MiB. Browser controls are `ENCODER_RUNS`, `ENCODER_QUICK` and `ENCODER_LARGE`.
+The browser comparison checks encoded text and round-trip bytes before timing,
+and verifies all 63,385 alphabet units through the native UTF-16 bridge. It
+compares the frozen legacy bridge with the actual current host module. It times
+input copy, packing, selected verification, JS output construction and character
+consumption. This can materialize a legacy concatenated string. Fresh output is
+measured natively; the browser reuses each engine's output capacity.
+
+The frozen Rust reference is `benchmarks/fixtures/encoder-v0.2.1.rs`. Build its
+browser encoder from the retained v0.2.1 tag in a separate worktree. Treat
+parallel-enabled native runs as a separate configuration. Do not combine their
+absolute timings with another process or browser campaign.
+
+```sh
 cargo run --release --locked --example encode_bench -- \
   --output generated/results/encoder.json > generated/results/encoder.csv
 ```

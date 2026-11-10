@@ -41,9 +41,8 @@ pub extern "C" fn encode(mode: u32, exact: u32) -> u32 {
             },
             ..encoder::EncodeOptions::default()
         };
-        match encoder::encode_units(&b.input, &options) {
-            Ok(output) => {
-                b.output = output;
+        match encoder::encode_units_into(&b.input, &options, &mut b.output) {
+            Ok(()) => {
                 b.error.clear();
                 0
             }

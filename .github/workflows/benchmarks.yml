@@ -5,7 +5,7 @@ on:
       comparison:
         description: Browser coverage (cloud measurements are not the Chromium 156 baseline)
         type: choice
-        options: [full, smoke, history, history-smoke, paired]
+        options: [full, smoke, history, history-smoke, paired, encoder]
         default: full
 permissions:
   contents: read
@@ -21,7 +21,7 @@ jobs:
           cache: npm
       - uses: dtolnay/rust-toolchain@1.99.1
         with:
-          targets: wasm32v1-none
+          targets: wasm32v1-none,wasm32-unknown-unknown
       - uses: actions/cache@v4
         with:
           path: |
@@ -34,7 +34,7 @@ jobs:
       - run: cargo build --release --locked
       - run: npx playwright install --with-deps chromium
       - name: Decode comparison
-        if: inputs.comparison != 'paired'
+        if: inputs.comparison != 'paired' && inputs.comparison != 'encoder'
         env:
           MODE: ${{ inputs.comparison }}
         run: |
@@ -61,6 +61,21 @@ jobs:
           CHROMIUM_BIN="$browser" CHROMIUM_VERSION="$version" COMPARE_DATASETS=all node benchmarks/compare.cjs generated/results/baseline-v0.2.0.mjs dist/full.min.mjs generated/results/paired.json
       - name: Native encoder comparison
         run: cargo run --release --locked --example encode_bench -- --quick --output generated/results/encoder.json > generated/results/encoder.csv
+      - name: Paired encoder comparison
+        if: inputs.comparison == 'encoder'
+        run: |
+          target/release/glyphpack build --all
+          cargo run --release --locked --example encoder_compare -- --prepare
+          cargo run --release --locked -- site --output generated/encoder-site
+          git fetch origin tag v0.2.1 --depth=1
+          git worktree add --detach generated/encoder-baseline v0.2.1
+          ln -s "$PWD/node_modules" generated/encoder-baseline/node_modules
+          (cd generated/encoder-baseline && cargo run --release --locked -- site --output ../encoder-before)
+          browser=$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')
+          version=$("$browser" --version | sed -E 's/.* ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          CHROMIUM_BIN="$browser" CHROMIUM_VERSION="$version" node benchmarks/encoder.cjs generated/encoder-before/encoder.mjs generated/encoder-site/encoder.mjs generated/results/encoder-browser.json
+          cargo run --release --locked --example encoder_compare -- --quick --output generated/results/encoder-native.json
+          cargo run --release --locked --features parallel-encoder --example encoder_compare -- --quick --output generated/results/encoder-native-parallel.json
       - name: Summarize full comparison
         if: inputs.comparison == 'full'
         run: |

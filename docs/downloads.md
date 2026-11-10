@@ -33,7 +33,7 @@ afterward. No companion Wasm fetch is needed. Target: Chrome 109+.
 Default options: format on, BLAKE3 on, heavy lookup off. The wire format and
 public decoder API are unchanged from v0.1.0.
 
-The npm tarball can be installed directly with `npm install ./glyphpack-0.2.1.tgz`;
+The npm tarball can be installed directly with `npm install ./glyphpack-0.2.2.tgz`;
 it contains the same modules and specialized TypeScript declarations.
 
 ## Native tools and results

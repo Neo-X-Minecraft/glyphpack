@@ -2,6 +2,7 @@
 // and keeps whole-input encoding and warmed timing loops off the main thread.
 import { binary } from "./lib/full.min.mjs";
 import { api } from "./encoder.mjs";
+import { encode as encodeWith } from "./encoder-host.mjs";
 const modes = { none: 0, fast: 1, secure: 2 },
   limit = 16 * 1024 * 1024;
 function encode(bytes, mode, exact) {
@@ -9,23 +10,9 @@ function encode(bytes, mode, exact) {
     throw Error(
       "The playground accepts files up to 16 MiB. Use the Rust CLI for larger files.",
     );
-  const pointer = api.input_ptr(bytes.length);
-  new Uint8Array(api.memory.buffer, pointer, bytes.length).set(bytes);
-  if (api.encode(modes[mode], +exact))
-    throw Error(
-      new TextDecoder().decode(
-        new Uint8Array(api.memory.buffer, api.error_ptr(), api.error_len()),
-      ) || "Unable to encode",
-    );
-  const view = new Uint16Array(
-    api.memory.buffer,
-    api.output_ptr(),
-    api.output_len(),
-  );
-  let text = "";
-  for (let i = 0; i < view.length; i += 8192)
-    text += String.fromCharCode(...view.subarray(i, i + 8192));
-  return text;
+  const requested = modes[mode];
+  if (requested === undefined) throw Error("Unknown integrity mode");
+  return encodeWith(api, bytes, requested, exact);
 }
 async function transform(bytes, kind) {
   const stream = new Blob([bytes])
