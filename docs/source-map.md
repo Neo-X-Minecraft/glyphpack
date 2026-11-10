@@ -36,3 +36,7 @@ Frozen JS sources in `tests/reference/` and optimization archives support exact
 byte/error comparisons. They are excluded from production bundles. The old
 reference BLAKE3 final shuffle remains intentionally documented where it was
 measured; the active Rust hash omits that unused operation.
+
+Native Rust users can disable the default `tools` feature. Encoding, hashes,
+injection and transport then compile without third-party Rust dependencies;
+the CLI and source/build/report modules are omitted. CI tests both feature sets.

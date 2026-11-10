@@ -11,8 +11,29 @@ exclude = ["benchmarks/results/*", "benchmarks/experiments/snapshots/*", "tests/
 keywords = ["encoding", "utf16", "html", "payload", "javascript"]
 categories = ["encoding", "command-line-utilities", "web-programming"]
 
+[features]
+default = ["tools"]
+tools = ["dep:serde_json"]
+
 [dependencies]
-serde_json = "=1.0.154"
+serde_json = { version = "=1.0.154", optional = true }
+
+[[bin]]
+name = "glyphpack"
+path = "src/main.rs"
+required-features = ["tools"]
+
+[[example]]
+name = "encode_bench"
+required-features = ["tools"]
+
+[[test]]
+name = "native"
+required-features = ["tools"]
+
+[[test]]
+name = "cli"
+required-features = ["tools"]
 
 [profile.release]
 lto = "thin"

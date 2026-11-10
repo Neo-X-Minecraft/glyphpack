@@ -53,5 +53,6 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
       - run: cargo check --locked --all-targets
+      - run: cargo test --locked --no-default-features --lib
       - name: Native vectors, CLI and reports
         run: cargo test --locked --lib --test native --test cli -- --skip all_63_specialized_wasm_builds --skip invalid_build_choices_and_minimal_code

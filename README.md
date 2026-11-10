@@ -206,3 +206,21 @@ matching sources without depending on its original build-machine paths.
 GitHub CI covers the pinned production toolchain, native ARM64, and the declared
 Rust 1.85 minimum. The manual **benchmarks** workflow publishes raw measurements,
 CPU/browser details, compact CSVs and a chart as downloadable Actions artifacts.
+
+## Use the Rust codec without build tools
+
+Encoding, hashing and HTML injection need no third-party Rust dependencies:
+
+```toml
+[dependencies]
+glyphpack = { path = "path/to/glyphpack", default-features = false }
+```
+
+```rust
+use glyphpack::encoder::{dense16, EncodeOptions};
+let packed = dense16(b"hello", &EncodeOptions::default())?;
+# Ok::<(), String>(())
+```
+
+The default `tools` feature adds the CLI, decoder compilation, benchmark/report
+utilities and their JSON dependency. Disabling it leaves the codec APIs intact.
