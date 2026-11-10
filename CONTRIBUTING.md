@@ -25,3 +25,9 @@ or different inputs. New local output belongs under `generated/results/`.
 
 Folder names are lowercase. Rust owns native tooling and decoding; JS owns loading, the ABI adapter, and
 execution-specific browser/Node tests.
+
+CLI changes must work outside the compile-time source directory. `tests/cli.rs`
+checks encoding, injection, version output and source-checkout errors from an
+unrelated directory. Build tools discover the checkout at runtime; use
+`GLYPHPACK_ROOT` for explicit selection. The native CI jobs check Rust 1.85 and
+ARM64 independently of the full Wasm/browser suite.

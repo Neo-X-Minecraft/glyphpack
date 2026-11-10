@@ -193,3 +193,16 @@ docs/                    wire format and methodology
 ```
 
 [Contributing](CONTRIBUTING.md) · [Third-party notices](docs/third-party.md)
+
+## Relocatable CLI
+
+`glyphpack encode`, `glyphpack inject` and `glyphpack --version` work from any
+directory. They do not require Node, Wasm tools, or a source checkout. Source-only
+commands (`build`, `demo`, `site`, `fixtures`, tests and browser benchmarks) find
+the checkout in the current directory or its ancestors. Set `GLYPHPACK_ROOT` to
+select another checkout explicitly. This also lets a downloaded CLI build the
+matching sources without depending on its original build-machine paths.
+
+GitHub CI covers the pinned production toolchain, native ARM64, and the declared
+Rust 1.85 minimum. The manual **benchmarks** workflow publishes raw measurements,
+CPU/browser details, compact CSVs and a chart as downloadable Actions artifacts.

@@ -64,8 +64,8 @@ fn booleans(values: Vec<String>) -> Result<Vec<bool>> {
         })
         .collect()
 }
-fn root() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+fn root() -> Result<PathBuf> {
+    glyphpack::project::root()
 }
 
 fn main_impl() -> Result<()> {
@@ -73,6 +73,10 @@ fn main_impl() -> Result<()> {
     let command = args.first().map(String::as_str).unwrap_or("help");
     let args = &args[1.min(args.len())..];
     match command {
+        "--version" | "-V" => {
+            println!("GlyphPack {}", env!("CARGO_PKG_VERSION"));
+            Ok(())
+        }
         "encode" => {
             let mut options = EncodeOptions::default();
             let (mut input, mut output, mut text) = ("-", None, false);
@@ -156,7 +160,7 @@ fn main_impl() -> Result<()> {
                 return Err("--full already selects every setting".into());
             }
             if all {
-                println!("{}", tooling::profiles::build_all(&root())?);
+                println!("{}", tooling::profiles::build_all(&root()?)?);
                 return Ok(());
             }
             if full {
@@ -212,12 +216,12 @@ fn main_impl() -> Result<()> {
             )
         }
         "fixtures" => {
-            let path = tooling::fixtures::write_vectors(&root())?;
+            let path = tooling::fixtures::write_vectors(&root()?)?;
             println!("{}", path.display());
             Ok(())
         }
         "test-js" => {
-            let path = tooling::fixtures::write_vectors(&root())?;
+            let path = tooling::fixtures::write_vectors(&root()?)?;
             for file in [
                 "tests/regression.cjs",
                 "tests/payload_decoder_test.js",
@@ -225,9 +229,9 @@ fn main_impl() -> Result<()> {
                 "tests/wasm.cjs",
             ] {
                 let status = Command::new("node")
-                    .arg(root().join(file))
+                    .arg(root()?.join(file))
                     .arg(&path)
-                    .current_dir(root())
+                    .current_dir(root()?)
                     .env(
                         "GLYPHPACK_BIN",
                         env::current_exe().map_err(|e| e.to_string())?,
@@ -242,20 +246,20 @@ fn main_impl() -> Result<()> {
         }
         "bench" => {
             if args.first().is_some_and(|s| s == "smoke") {
-                tooling::fixtures::write_vectors(&root())?;
+                tooling::fixtures::write_vectors(&root()?)?;
             }
-            tooling::benchmark::run(&root(), args)
+            tooling::benchmark::run(&root()?, args)
         }
         "site" => {
             let out = match args {
-                [] => root().join("generated/pages"),
+                [] => root()?.join("generated/pages"),
                 [flag, path] if flag == "--output" => PathBuf::from(path),
                 _ => return Err("Usage: glyphpack site [--output directory]".into()),
             };
-            tooling::site::build(&root(), &out)
+            tooling::site::build(&root()?, &out)
         }
         "summary" => match args {
-            [] => tooling::summary::compact(&root()),
+            [] => tooling::summary::compact(&root()?),
             [input_flag, input, output_flag, output]
                 if input_flag == "--input" && output_flag == "--output" =>
             {

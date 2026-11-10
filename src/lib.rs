@@ -7,6 +7,7 @@ pub mod builder;
 pub mod encoder;
 pub mod hash;
 pub mod injector;
+pub mod project;
 pub mod tooling;
 
 pub mod transport;

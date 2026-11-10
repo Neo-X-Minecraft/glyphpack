@@ -52,9 +52,6 @@ impl BuildOptions {
         }
     }
 }
-fn root() -> &'static Path {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
-}
 fn io<T>(result: std::io::Result<T>) -> Result<T, String> {
     result.map_err(|e| e.to_string())
 }
@@ -63,7 +60,10 @@ fn tool(explicit: Option<&Path>, variable: &str, name: &str) -> PathBuf {
         .map(Path::to_path_buf)
         .or_else(|| env::var_os(variable).map(PathBuf::from))
         .or_else(|| {
-            let p = root().join("node_modules/.bin").join(name);
+            let p = crate::project::root()
+                .ok()?
+                .join("node_modules/.bin")
+                .join(name);
             p.is_file().then_some(p)
         })
         .unwrap_or_else(|| name.into());
@@ -147,8 +147,9 @@ fn version(executable: &Path) -> Result<Vec<u8>, String> {
 /// between readable/minified adapters and repeated builds of the same profile.
 pub fn build_wasm(options: &BuildOptions) -> Result<PathBuf, String> {
     let options = canonical(options)?;
+    let root = crate::project::root()?;
     let key = profile_key(&options);
-    let folder = root().join("generated/wasm/profiles");
+    let folder = root.join("generated/wasm/profiles");
     io(fs::create_dir_all(&folder))?;
     let output = folder.join(format!("{key}.wasm"));
     let fingerprint = folder.join(format!("{key}.blake3"));
@@ -177,7 +178,7 @@ pub fn build_wasm(options: &BuildOptions) -> Result<PathBuf, String> {
         "crates/decoder-wasm/src/unpack.rs",
         "src/hash.rs",
     ] {
-        source.extend(io(fs::read(root().join(path)))?);
+        source.extend(io(fs::read(root.join(path)))?);
     }
     source.extend(
         version(&optimizer)
@@ -189,7 +190,7 @@ pub fn build_wasm(options: &BuildOptions) -> Result<PathBuf, String> {
     if output.is_file() && fs::read_to_string(&fingerprint).is_ok_and(|s| s == digest) {
         return Ok(output);
     }
-    let target = root().join("generated/wasm/build").join(&key);
+    let target = root.join("generated/wasm/build").join(&key);
     let result = io(Command::new(&cargo)
         .args([
             "build",
@@ -207,7 +208,7 @@ pub fn build_wasm(options: &BuildOptions) -> Result<PathBuf, String> {
         .env("CARGO_ENCODED_RUSTFLAGS", &flags)
         .arg("--target-dir")
         .arg(&target)
-        .current_dir(root())
+        .current_dir(&root)
         .output())?;
     if !result.status.success() {
         return Err(format!(

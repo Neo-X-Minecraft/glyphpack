@@ -26,6 +26,8 @@ fn run(command: &mut Command) -> Result<(), String> {
 
 pub fn build(root: &Path, out: &Path) -> Result<(), String> {
     io(fs::create_dir_all(out))?;
+    // esbuild runs from the checkout; output paths retain the caller's meaning.
+    let out = io(fs::canonicalize(out))?;
     let target = root.join("generated/site-build");
     let cargo = env::var_os("CARGO").unwrap_or_else(|| "cargo".into());
     run(Command::new(cargo)

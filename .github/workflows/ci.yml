@@ -15,6 +15,14 @@ jobs:
         with:
           components: rustfmt, clippy
           targets: wasm32v1-none
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            target
+            generated/wasm
+          key: rust-${{ runner.os }}-${{ runner.arch }}-1.99.1-${{ hashFiles('Cargo.lock', 'Cargo.toml', 'src/**/*.rs', 'crates/**', 'package-lock.json') }}
+          restore-keys: rust-${{ runner.os }}-${{ runner.arch }}-1.99.1-
       - run: npm ci
       - run: cargo fmt --all -- --check
       - run: cargo clippy --locked --all-targets -- -D warnings
@@ -28,3 +36,22 @@ jobs:
           browser=$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')
           version=$("$browser" --version | sed -E 's/.* ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
           CHROMIUM_BIN="$browser" CHROMIUM_VERSION="$version" npm run test:browser
+  native:
+    name: native (${{ matrix.runner }}, Rust ${{ matrix.rust }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            rust: 1.85.0
+          - runner: ubuntu-24.04-arm
+            rust: 1.99.1
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - run: cargo check --locked --all-targets
+      - name: Native vectors, CLI and reports
+        run: cargo test --locked --lib --test native --test cli -- --skip all_63_specialized_wasm_builds --skip invalid_build_choices_and_minimal_code
