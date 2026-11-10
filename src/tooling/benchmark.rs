@@ -124,7 +124,7 @@ fn bundle(root: &Path, entry: &Path, out: &Path, defines: &[&str]) -> Result<(),
         Err(String::from_utf8_lossy(&result.stderr).into())
     }
 }
-fn browser_sources(root: &Path, work: &Path) -> Result<(), String> {
+pub(super) fn browser_sources(root: &Path, work: &Path) -> Result<(), String> {
     let vendor = root.join("benchmarks/vendor/encoding-bench");
     let web = io(fs::read_to_string(
         vendor.join("kevinAlbs-Base122-decode.js"),
@@ -315,7 +315,11 @@ fn browser_run(root: &Path, mode: &str) -> Result<(), String> {
         }
     });
     let status = Command::new("node")
-        .arg(root.join("benchmarks/run.cjs"))
+        .arg(root.join(if mode.starts_with("history") {
+            "benchmarks/history.cjs"
+        } else {
+            "benchmarks/run.cjs"
+        }))
         .arg(format!("http://127.0.0.1:{port}"))
         .arg(mode)
         .current_dir(root)
@@ -334,10 +338,25 @@ pub fn run(root: &Path, args: &[String]) -> Result<(), String> {
     let mode = args.first().map(String::as_str).unwrap_or("run");
     let mut quick = false;
     let mut extras = Vec::new();
+    let (mut manifest, mut asset_root, mut comparison_manifest) = (None, None, None);
     let mut at = 1;
     while at < args.len() {
         match args[at].as_str() {
             "--quick" => quick = true,
+            "--comparison-manifest" => {
+                at += 1;
+                comparison_manifest = Some(Path::new(
+                    args.get(at).ok_or("Missing comparison manifest")?,
+                ));
+            }
+            "--input-manifest" => {
+                at += 1;
+                manifest = Some(Path::new(args.get(at).ok_or("Missing manifest path")?));
+            }
+            "--input-root" => {
+                at += 1;
+                asset_root = Some(Path::new(args.get(at).ok_or("Missing input root")?));
+            }
             "--input" => {
                 at += 1;
                 extras.push(args.get(at).ok_or("Missing input path")?.clone());
@@ -347,11 +366,18 @@ pub fn run(root: &Path, args: &[String]) -> Result<(), String> {
         at += 1;
     }
     match mode {
+        "history" => {
+            super::history::prepare(root, manifest, asset_root, quick)?;
+            super::history::prepare_peers(root, comparison_manifest, asset_root, quick)?;
+            super::history::pattern_sizes(root, quick)?;
+            browser_run(root, if quick { "history-smoke" } else { "history" })?;
+            super::history_report::write(root)
+        }
         "prepare" => prepare(root, quick, &extras),
         "run" | "smoke" => {
             prepare(root, quick || mode == "smoke", &extras)?;
             browser_run(root, mode)
         }
-        _ => Err("Expected bench prepare, run, or smoke".into()),
+        _ => Err("Expected bench prepare, run, smoke, or history".into()),
     }
 }

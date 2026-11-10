@@ -13,3 +13,6 @@ reports are under `../results/`. The archive is excluded from production builds.
 These frozen files retain their historical algorithms and measurements. The
 active decoder source is `src/decoder/`; current Rust build logic is
 `src/builder.rs`. Use the current benchmark for measurements on new inputs.
+
+Fresh local rechecks of the complete optimization archive are documented in
+[historical rechecks](../../docs/historical-recheck.md).

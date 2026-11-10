@@ -259,6 +259,7 @@ fn main_impl() -> Result<()> {
             }
             tooling::benchmark::run(&root()?, args)
         }
+        "history-report" => tooling::history_report::write(&root()?),
         "site" => {
             let out = match args {
                 [] => root()?.join("generated/pages"),
@@ -277,7 +278,7 @@ fn main_impl() -> Result<()> {
             _ => Err("Usage: glyphpack summary [--input CSV --output directory]".into()),
         },
         "help" | "--help" | "-h" => {
-            println!("GlyphPack\n\n  encode [input|-] [--checksum secure|fast|none] [--mask N] [--text] [-o path]\n  build [--full|--all] [--format on off] [--data none fast secure]\n        [--memory-heavy off on] [--module] [--readable] [--types path] [-o path]\n  inject template.html payload.utf16 output.html\n  demo [output.html]\n  fixtures\n  test-js\n  bench prepare|run|smoke [--quick]\n  site [--output directory]\n  summary");
+            println!("GlyphPack\n\n  encode [input|-] [--checksum secure|fast|none] [--mask N] [--text] [-o path]\n  build [--full|--all] [--format on off] [--data none fast secure]\n        [--memory-heavy off on] [--module] [--readable] [--types path] [-o path]\n  inject template.html payload.utf16 output.html\n  demo [output.html]\n  fixtures\n  test-js\n  bench prepare|run|smoke|history [--quick]\n  history-report\n  site [--output directory]\n  summary");
             Ok(())
         }
         s => Err(format!("Unknown command: {s}")),

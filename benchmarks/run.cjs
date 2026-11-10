@@ -7,7 +7,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE_PATH||'playwright');
 const root=path.resolve(__dirname,'..'),origin=process.argv[2],smoke=process.argv[3]==='smoke';
 const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const inputs=read('generated/encoding-comparison/inputs.json'),vectors=read('generated/encoding-comparison/vectors.json');
-for(const input of inputs)input.sha256=crypto.createHash('sha256').update(fs.readFileSync(path.join(root,input.binary))).digest('hex');
+for(const input of inputs){input.sha256=crypto.createHash('sha256').update(fs.readFileSync(path.join(root,input.binary))).digest('hex');if(input.expectedSha256)assert.equal(input.sha256,input.expectedSha256,'Original transport bytes changed');}
 const config=read('benchmarks/chromium.json'),version=process.env.CHROMIUM_VERSION||config.version;
 const executable=process.env.CHROMIUM_BIN||['/usr/bin/chromium','/usr/bin/chromium-browser'].find(p=>fs.existsSync(p));
 const out=path.join(root,'generated/results');fs.mkdirSync(out,{recursive:true});

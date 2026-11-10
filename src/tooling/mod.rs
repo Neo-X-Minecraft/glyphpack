@@ -2,6 +2,8 @@
 //! benchmark preparation. None of this is downloaded by the browser decoder.
 pub mod benchmark;
 pub mod fixtures;
+pub mod history;
+pub mod history_report;
 pub mod profiles;
 pub mod report;
 pub mod site;

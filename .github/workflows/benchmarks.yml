@@ -5,7 +5,7 @@ on:
       comparison:
         description: Browser coverage (cloud measurements are not the Chromium 156 baseline)
         type: choice
-        options: [full, smoke]
+        options: [full, smoke, history, history-smoke]
         default: full
 permissions:
   contents: read
@@ -41,7 +41,12 @@ jobs:
           version=$("$browser" --version | sed -E 's/.* ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
           mode=run
           if [ "$MODE" = smoke ]; then mode=smoke; fi
-          CHROMIUM_BIN="$browser" CHROMIUM_VERSION="$version" target/release/glyphpack bench "$mode"
+          if [ "$MODE" = history ]; then mode=history; fi
+          if [ "$MODE" = history-smoke ]; then
+            CHROMIUM_BIN="$browser" CHROMIUM_VERSION="$version" target/release/glyphpack bench history --quick
+          else
+            CHROMIUM_BIN="$browser" CHROMIUM_VERSION="$version" target/release/glyphpack bench "$mode"
+          fi
       - name: Native encoder comparison
         run: cargo run --release --locked --example encode_bench -- --quick --output generated/results/encoder.json > generated/results/encoder.csv
       - name: Summarize full comparison
