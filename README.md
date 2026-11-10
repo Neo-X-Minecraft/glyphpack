@@ -229,3 +229,14 @@ Release downloads are explained in [Start here](docs/downloads.md). Native CLI
 archives are built and tested as static musl binaries for Linux x86_64/aarch64.
 The manual packages workflow produces reviewable archives; it never publishes a
 release automatically. [Release checklist](docs/releasing.md).
+
+TypeScript declarations accompany each distribution and expose only its selected
+runtime options. Custom builds can write matching declarations separately:
+
+```sh
+glyphpack build --full -o decoder.mjs --types decoder.d.mts
+```
+
+`npm run test:types` checks accepted/rejected policies, and `npm run test:package`
+installs a real local tarball in a clean directory and tests all six exports.
+GitHub runs these consumer checks on Node 20 and 22.

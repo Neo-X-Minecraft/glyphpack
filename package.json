@@ -26,15 +26,27 @@
     "bench:encode": "cargo run --release --locked --example encode_bench",
     "summary": "cargo run --release --locked -- summary",
     "build:site": "cargo run --release --locked -- site --output generated/pages",
-    "test:site": "node tests/site.cjs"
+    "test:site": "node tests/site.cjs",
+    "test:types": "tsc --noEmit --strict --module nodenext --target es2022 tests/types.mts",
+    "test:package": "node tests/package.cjs"
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
+    "binaryen": "129.0.0",
     "esbuild": "0.28.2",
     "playwright": "1.63.0",
-    "binaryen": "129.0.0"
+    "typescript": "5.9.3"
   },
-  "author": "NeoX"
+  "author": "NeoX",
+  "types": "./dist/default.min.d.mts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Neo-X-Minecraft/glyphpack.git"
+  },
+  "homepage": "https://neo-x-minecraft.github.io/glyphpack/",
+  "bugs": {
+    "url": "https://github.com/Neo-X-Minecraft/glyphpack/issues"
+  }
 }

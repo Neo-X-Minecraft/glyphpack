@@ -382,3 +382,38 @@ pub fn build_decoder(options: &BuildOptions) -> Result<String, String> {
     }
     String::from_utf8(output.stdout).map_err(|e| e.to_string())
 }
+
+/// Emit declarations for the same specialized signature as the JS module.
+/// Fixed profiles expose no ignored option fields; only selected runtime axes
+/// appear. Declarations are separate assets and add no bytes to the decoder.
+pub fn type_declaration(options: &BuildOptions) -> Result<String, String> {
+    let options = canonical(options)?;
+    let mut fields = Vec::new();
+    if options.formats.len() > 1 {
+        fields.push("  verifyFormat?: boolean;".to_string());
+    }
+    if options.data.len() > 1 {
+        let mut modes = Vec::new();
+        for mode in &options.data {
+            modes.push(format!("'{}'", mode.name()));
+            if *mode == Integrity::None {
+                modes.push("false".into());
+            }
+            if *mode == Integrity::Secure {
+                modes.push("true".into());
+            }
+        }
+        fields.push(format!("  verifyData?: {};", modes.join(" | ")));
+    }
+    if options.memory.len() > 1 {
+        fields.push("  memoryHeavy?: boolean;".to_string());
+    }
+    let header = "// Generated GlyphPack declaration; policies match this specialized module.\n";
+    if fields.is_empty() {
+        Ok(format!(
+            "{header}export declare function binary(text: string): Uint8Array;\n"
+        ))
+    } else {
+        Ok(format!("{header}export interface DecodeOptions {{\n{}\n}}\nexport declare function binary(text: string, options?: DecodeOptions): Uint8Array;\n",fields.join("\n")))
+    }
+}

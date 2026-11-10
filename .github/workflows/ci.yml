@@ -56,3 +56,18 @@ jobs:
       - run: cargo test --locked --no-default-features --lib
       - name: Native vectors, CLI and reports
         run: cargo test --locked --lib --test native --test cli -- --skip all_63_specialized_wasm_builds --skip invalid_build_choices_and_minimal_code
+  modules:
+    name: npm package (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run test:types
+      - run: npm run test:package

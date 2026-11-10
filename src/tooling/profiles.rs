@@ -87,6 +87,11 @@ pub fn build_all(root: &Path) -> Result<Value, String> {
                     "base64Bytes":gzip_bytes.div_ceil(3)*4
                 }),
             );
+            fs::write(
+                out.join(file.replace(".mjs", ".d.mts")),
+                crate::builder::type_declaration(&options)?,
+            )
+            .map_err(|e| e.to_string())?;
             fs::write(out.join(&file), source).map_err(|e| e.to_string())?;
         }
     }

@@ -124,8 +124,10 @@ fn main_impl() -> Result<()> {
             let mut options = BuildOptions::default();
             let (mut at, mut output, mut full, mut selected, mut all) =
                 (0, None, false, false, false);
+            let mut types = None;
             while at < args.len() {
                 match args[at].as_str() {
+                    "--types" => types = Some(next(args, &mut at)?),
                     "--data" => {
                         options.data = switches(args, &mut at)?
                             .iter()
@@ -159,6 +161,9 @@ fn main_impl() -> Result<()> {
             if full && selected {
                 return Err("--full already selects every setting".into());
             }
+            if all && types.is_some() {
+                return Err("--all writes declarations beside each profile; omit --types".into());
+            }
             if all {
                 println!("{}", tooling::profiles::build_all(&root()?)?);
                 return Ok(());
@@ -168,7 +173,11 @@ fn main_impl() -> Result<()> {
                 options.data = vec![Integrity::None, Integrity::Fast, Integrity::Secure];
                 options.memory = vec![false, true];
             }
-            write(output, builder::build_decoder(&options)?.as_bytes())
+            let source = builder::build_decoder(&options)?;
+            if let Some(path) = types {
+                write(Some(path), builder::type_declaration(&options)?.as_bytes())?;
+            }
+            write(output, source.as_bytes())
         }
         "inject" => {
             if args.len() != 3 {
@@ -268,7 +277,7 @@ fn main_impl() -> Result<()> {
             _ => Err("Usage: glyphpack summary [--input CSV --output directory]".into()),
         },
         "help" | "--help" | "-h" => {
-            println!("GlyphPack\n\n  encode [input|-] [--checksum secure|fast|none] [--mask N] [--text] [-o path]\n  build [--full|--all] [--format on off] [--data none fast secure]\n        [--memory-heavy off on] [--module] [--readable] [-o path]\n  inject template.html payload.utf16 output.html\n  demo [output.html]\n  fixtures\n  test-js\n  bench prepare|run|smoke [--quick]\n  site [--output directory]\n  summary");
+            println!("GlyphPack\n\n  encode [input|-] [--checksum secure|fast|none] [--mask N] [--text] [-o path]\n  build [--full|--all] [--format on off] [--data none fast secure]\n        [--memory-heavy off on] [--module] [--readable] [--types path] [-o path]\n  inject template.html payload.utf16 output.html\n  demo [output.html]\n  fixtures\n  test-js\n  bench prepare|run|smoke [--quick]\n  site [--output directory]\n  summary");
             Ok(())
         }
         s => Err(format!("Unknown command: {s}")),
