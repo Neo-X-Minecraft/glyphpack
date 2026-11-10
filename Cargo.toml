@@ -1,12 +1,14 @@
 [package]
 name = "glyphpack"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 rust-version = "1.85"
 description = "Dense UTF-16 payload encoding with a specialized Rust/Wasm decoder"
 license = "0BSD"
 readme = "README.md"
 authors = ["NeoX"]
+repository = "https://github.com/Neo-X-Minecraft/glyphpack"
+homepage = "https://neo-x-minecraft.github.io/glyphpack/"
 exclude = ["benchmarks/results/*", "benchmarks/experiments/snapshots/*", "tests/vendor/*", ".github/*"]
 keywords = ["encoding", "utf16", "html", "payload", "javascript"]
 categories = ["encoding", "command-line-utilities", "web-programming"]
