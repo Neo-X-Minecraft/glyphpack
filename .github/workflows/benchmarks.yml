@@ -60,7 +60,9 @@ jobs:
           version=$("$browser" --version | sed -E 's/.* ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
           CHROMIUM_BIN="$browser" CHROMIUM_VERSION="$version" COMPARE_DATASETS=all node benchmarks/compare.cjs generated/results/baseline-v0.2.0.mjs dist/full.min.mjs generated/results/paired.json
       - name: Native encoder comparison
-        run: cargo run --release --locked --example encode_bench -- --quick --output generated/results/encoder.json > generated/results/encoder.csv
+        run: |
+          mkdir -p generated/results
+          cargo run --release --locked --example encode_bench -- --quick --output generated/results/encoder.json > generated/results/encoder.csv
       - name: Paired encoder comparison
         if: inputs.comparison == 'encoder'
         run: |

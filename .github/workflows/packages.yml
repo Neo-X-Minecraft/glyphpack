@@ -77,10 +77,11 @@ jobs:
         run: |
           version=$(target/release/glyphpack --version | cut -d ' ' -f 2)
           stage=generated/web-package
-          mkdir -p "$stage/examples" "$stage/licenses" generated/packages
+          mkdir -p "$stage/examples" "$stage/licenses" "$stage/benchmarks" generated/packages
           cp -r dist docs "$stage/"
+          cp -r benchmarks/results "$stage/benchmarks/"
           cp examples/usage*.mjs "$stage/examples/"
-          cp LICENSE README.md "$stage/"
+          cp LICENSE README.md CONTRIBUTING.md "$stage/"
           cp docs/downloads.md "$stage/START-HERE.md"
           cp "$(rustc --print sysroot)/share/doc/rust/COPYRIGHT-library.html" "$stage/licenses/rust-library.html"
           git rev-parse HEAD > "$stage/COMMIT"
