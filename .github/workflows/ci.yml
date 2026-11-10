@@ -41,6 +41,11 @@ jobs:
           browser=$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')
           version=$("$browser" --version | sed -E 's/.* ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
           CHROMIUM_BIN="$browser" CHROMIUM_VERSION="$version" target/release/glyphpack bench history --quick
+      - name: Offline file protocol
+        run: |
+          browser=$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')
+          version=$("$browser" --version | sed -E 's/.* ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          CHROMIUM_BIN="$browser" CHROMIUM_VERSION="$version" npm run test:file
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -22,6 +22,7 @@
     "build": "cargo run --release --locked -- build --all",
     "test": "cargo test --locked && cargo run --release --locked -- test-js",
     "test:browser": "cargo run --release --locked -- bench smoke",
+    "test:file": "node tests/file.cjs",
     "bench": "cargo run --release --locked -- bench run",
     "bench:encode": "cargo run --release --locked --example encode_bench",
     "summary": "cargo run --release --locked -- summary",
