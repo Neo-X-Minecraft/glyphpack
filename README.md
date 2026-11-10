@@ -9,6 +9,13 @@ The browser's `DecompressionStream('gzip')` inflates it once during module impor
 There is one production backend, with small JS glue for options and memory I/O.
 Target: **Chrome 109+**.
 
+[**Open the live workbench →**](https://neo-x-minecraft.github.io/glyphpack/)
+
+Try JSON, multilingual text, SVG, arbitrary bytes, gzip logs, and empty files.
+The page encodes local files with Rust/Wasm, explains verification failures,
+compares actual transport sizes, and exports offline HTML viewers. Nothing is
+uploaded.
+
 ## Use a ready-built module
 
 ```js
@@ -146,6 +153,25 @@ archives for differential testing, never as a shipped runtime fallback.
 
 [Benchmark methodology](docs/benchmarking.md) · [Source map](docs/source-map.md)
 
+## Build the demo
+
+```sh
+rustup target add wasm32-unknown-unknown
+npm run build:site
+npm run test:site
+# Serve generated/pages/ with any static HTTP server.
+```
+
+`site/` contains plain HTML, CSS and browser JS. A module worker runs both
+engines. `crates/encoder-wasm/` reuses the native Rust encoder and is built only
+for the workbench; it adds no bytes to the decoder distributions. The browser
+encoder is lowered to baseline Wasm and packaged with native gzip + base64.
+
+The Pages workflow builds, tests and deploys `generated/pages/` on main pushes.
+The demo limits files and inflated output to 16 MiB, and previews large inputs
+without rendering the entire file. Use the CLI for larger assets. Local timing
+is a warmed decode-only comparison, including the chosen verification.
+
 ## Layout
 
 ```text
@@ -157,6 +183,8 @@ src/transport.rs         native gzip and base64 output
 src/decoder/             browser loader, ABI adapter and option selectors
 src/tooling/             Rust fixtures, hosting, reports and distributions
 crates/decoder-wasm/     allocator-free Wasm parser and hot loops
+crates/encoder-wasm/     optional workbench encoder, shared native source
+site/                    framework-free Pages workbench
 dist/                    standalone ESM distributions
 examples/                usage examples and encoder benchmark
 tests/                   vectors, regressions and frozen references

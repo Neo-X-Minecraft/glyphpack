@@ -24,7 +24,9 @@
     "test:browser": "cargo run --release --locked -- bench smoke",
     "bench": "cargo run --release --locked -- bench run",
     "bench:encode": "cargo run --release --locked --example encode_bench",
-    "summary": "cargo run --release --locked -- summary"
+    "summary": "cargo run --release --locked -- summary",
+    "build:site": "cargo run --release --locked -- site --output generated/pages",
+    "test:site": "node tests/site.cjs"
   },
   "engines": {
     "node": ">=20"

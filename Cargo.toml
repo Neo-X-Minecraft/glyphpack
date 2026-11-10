@@ -20,7 +20,7 @@ codegen-units = 1
 strip = true
 
 [workspace]
-members = ["crates/decoder-wasm"]
+members = ["crates/decoder-wasm", "crates/encoder-wasm"]
 default-members = ["."]
 resolver = "2"
 

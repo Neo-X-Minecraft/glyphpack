@@ -14,6 +14,9 @@
 | Const-specialized bulk/tail pair loops | `crates/decoder-wasm/src/unpack.rs` |
 | CLI | `src/main.rs` |
 | Build profiles, test vectors, hosting and reports | `src/tooling/` |
+| Demo encoder ABI, reusing the native encoder | `crates/encoder-wasm/src/lib.rs` |
+| Static Pages build and encoded fixtures | `src/tooling/site.rs` |
+| Workbench UI and background worker | `site/` |
 
 The Wasm crate uses `no_std`, fixed hash scratch and reusable arenas. It imports
 no host functions and uses neither a general-purpose allocator nor exception

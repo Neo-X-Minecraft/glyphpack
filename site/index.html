@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Encode files, inspect packed payloads, and make offline HTML with GlyphPack. A small, local Rust/Wasm workbench."
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self';script-src 'self' 'wasm-unsafe-eval';worker-src 'self';style-src 'self';img-src 'self' blob: data:;object-src 'none';base-uri 'none'"
+    />
+    <title>GlyphPack — local byte workbench</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="app.mjs"></script>
+  </head>
+  <body>
+    <header class="top">
+      <a class="wordmark" href="#">[gp] <span>GlyphPack</span></a>
+      <nav aria-label="Main">
+        <a href="#workbench">Workbench</a><a href="#recipes">Recipes</a
+        ><a href="#checks">Checks</a
+        ><a href="https://github.com/Neo-X-Minecraft/glyphpack">GitHub ↗</a>
+      </nav>
+    </header>
+    <main>
+      <section class="intro">
+        <div class="eyebrow">RUST / WASM · CHROME 109+ · 0BSD</div>
+        <h1>Binary, packed into text.</h1>
+        <p>
+          Turn files into glyphs, get the exact bytes back, and take them
+          offline.<br />Files stay in your browser. No uploads. No framework.
+        </p>
+        <div class="engine">
+          <span id="engine-dot" class="dot"></span
+          ><span id="engine-status" role="status"
+            >Loading the local engines…</span
+          >
+        </div>
+      </section>
+      <section id="workbench" class="section">
+        <div class="section-heading">
+          <h2>01 <span>Workbench</span></h2>
+          <span class="muted">Start with a real example</span>
+        </div>
+        <div id="examples" class="examples" aria-label="Example payloads"></div>
+        <div class="options">
+          <label
+            >Integrity<select id="integrity">
+              <option value="secure">BLAKE3 · secure</option>
+              <option value="fast">XXH32 · fast</option>
+              <option value="none">None</option>
+            </select></label
+          >
+          <label class="check"
+            ><input id="format" type="checkbox" checked />Check format</label
+          >
+          <label class="check"
+            ><input id="memory" type="checkbox" />256 KiB lookup</label
+          >
+          <details class="advanced">
+            <summary>Encoding options</summary>
+            <label class="check"
+              ><input id="gzip" type="checkbox" />gzip before packing</label
+            ><label
+              >Mask search<select id="effort">
+                <option value="fast">Sampled · faster</option>
+                <option value="full">Exact · all 256 masks</option>
+              </select></label
+            >
+            <p>
+              Browser gzip is separate from the codec. Its compression level is
+              chosen by the browser.
+            </p>
+          </details>
+        </div>
+        <div class="panes">
+          <section class="pane" id="file-drop">
+            <div class="pane-heading">
+              <h3>Bytes in</h3>
+              <label class="file-button"
+                >Open file<input id="file" type="file"
+              /></label>
+            </div>
+            <label class="sr-only" for="input">Text to encode</label
+            ><textarea
+              id="input"
+              spellcheck="false"
+              placeholder="Type text, choose a file, or drop one here."
+            ></textarea>
+            <div class="pane-foot">
+              <span id="input-name">UTF-8 text</span
+              ><button id="encode" class="primary" disabled>Encode →</button>
+            </div>
+          </section>
+          <section class="pane">
+            <div class="pane-heading">
+              <h3>GlyphPack payload</h3>
+              <label class="file-button"
+                >Open payload<input
+                  id="payload-file"
+                  type="file"
+                  accept=".gp16,.utf16,.txt"
+              /></label>
+            </div>
+            <label class="sr-only" for="payload">Encoded GlyphPack text</label
+            ><textarea
+              id="payload"
+              spellcheck="false"
+              placeholder="Encoded glyphs appear here. You can also paste an existing payload."
+            ></textarea>
+            <div class="pane-foot">
+              <span id="payload-note">UTF-16 code units</span
+              ><button id="decode" class="primary" disabled>Decode →</button>
+            </div>
+          </section>
+        </div>
+        <div class="statusbar">
+          <p id="status" role="status" aria-live="polite">
+            Choose an example to get started.
+          </p>
+          <button id="restore" class="quiet" disabled>
+            Restore good payload
+          </button>
+        </div>
+        <div class="stats" aria-label="Payload sizes">
+          <div>
+            <span>Codec input bytes</span><strong id="stat-original">—</strong>
+          </div>
+          <div>
+            <span>GlyphPack · UTF-16LE</span><strong id="stat-packed">—</strong>
+          </div>
+          <div>
+            <span>Same glyphs · UTF-8</span><strong id="stat-utf8">—</strong>
+          </div>
+          <div>
+            <span>Equivalent base64</span><strong id="stat-base64">—</strong>
+          </div>
+        </div>
+        <p class="fine">
+          GlyphPack is an encoding, not compression. Its dense size applies to
+          UTF-16LE. UTF-8 files can be larger; both sizes are shown above.
+        </p>
+        <section class="output-box">
+          <div class="pane-heading">
+            <h3 id="output-title">Bytes out</h3>
+            <label
+              >View<select id="view">
+                <option value="auto">Auto</option>
+                <option value="text">Text</option>
+                <option value="hex">Hex</option>
+              </select></label
+            >
+          </div>
+          <div id="image-preview" hidden></div>
+          <pre id="output">The decoded result will appear here.</pre>
+          <div class="output-meta">
+            <span id="output-meta">A preview of the actual decoded bytes.</span
+            ><span id="timing"></span>
+          </div>
+        </section>
+        <div class="actions">
+          <button id="download-bytes" disabled>Download bytes</button
+          ><button id="download-payload" disabled>Download .gp16</button
+          ><button id="copy-payload" disabled>Copy glyphs</button
+          ><button id="download-html" disabled>Make standalone HTML</button
+          ><button id="inflate" hidden>Inflate gzip</button
+          ><button id="benchmark" disabled>Time this payload</button>
+        </div>
+        <details id="bench-panel" class="result-panel" hidden>
+          <summary>Local decode timing</summary>
+          <div id="bench-result"></div>
+          <p class="fine">
+            Warmed median of seven batches; loading and encoding are excluded;
+            the selected verification is included. Small inputs are batched.
+            This is a local comparison, not a cross-device claim.
+          </p>
+        </details>
+        <details class="code-panel">
+          <summary>Use this decoder in your code</summary>
+          <pre id="current-code"></pre>
+        </details>
+      </section>
+      <section id="recipes" class="section">
+        <div class="section-heading">
+          <h2>02 <span>Small, useful recipes</span></h2>
+        </div>
+        <div class="recipe-grid">
+          <article>
+            <h3>Load a packed file</h3>
+            <p>
+              A .gp16 payload contains UTF-16LE code units. Read bytes before
+              decoding text.
+            </p>
+            <pre>
+import {binary} from './full.min.mjs';
+
+const res = await fetch('asset.gp16');
+const payload = new TextDecoder('utf-16le')
+  .decode(await res.arrayBuffer());
+const bytes = binary(payload);</pre
+            >
+          </article>
+          <article>
+            <h3>Restore structured data</h3>
+            <p>
+              JSON, manifests and configuration keep their exact original UTF-8
+              bytes.
+            </p>
+            <pre>
+const bytes = binary(payload);
+const json = JSON.parse(
+  new TextDecoder().decode(bytes)
+);
+console.log(json);</pre
+            >
+            <button data-example="json">Try JSON settings</button>
+          </article>
+          <article>
+            <h3>Restore a compressed asset</h3>
+            <p>
+              Inflation is a second, explicit step. The gzip log example uses
+              this exact flow.
+            </p>
+            <pre>
+const compressed = binary(payload);
+const stream = new Blob([compressed])
+  .stream().pipeThrough(
+    new DecompressionStream('gzip')
+  );
+const bytes = new Uint8Array(
+  await new Response(stream).arrayBuffer()
+);</pre
+            >
+            <button data-example="gzip">Try the gzip log</button>
+          </article>
+          <article>
+            <h3>Package a file offline</h3>
+            <p>
+              “Make standalone HTML” includes the decoder and your payload. It
+              runs from a local file with no neighboring assets.
+            </p>
+            <pre>
+glyphpack encode input.bin \
+  --checksum secure -o asset.gp16
+
+# Get the Rust tools from the repository.
+# Or encode your file in this workbench.</pre
+            >
+            <button id="recipe-html" disabled>
+              Download the current viewer
+            </button>
+          </article>
+        </div>
+      </section>
+      <section id="checks" class="section">
+        <div class="section-heading">
+          <h2>03 <span>See the checks work</span></h2>
+          <button id="run-checks" disabled>Run examples</button>
+        </div>
+        <p class="muted">
+          Real inputs sent to the decoder: a changed byte, a truncated header,
+          and a noncanonical representation. These do not change your workbench.
+        </p>
+        <div id="checks-result" class="checks-result" aria-live="polite">
+          Run the examples to compare byte integrity with format verification.
+        </div>
+        <p class="fine">
+          BLAKE3 is an unkeyed digest. It detects corruption; someone who can
+          replace both data and digest can calculate a new one.
+        </p>
+      </section>
+      <section id="downloads" class="section">
+        <div class="section-heading">
+          <h2>04 <span>Take only what you need</span></h2>
+          <a href="https://github.com/Neo-X-Minecraft/glyphpack/releases/latest"
+            >All release files ↗</a
+          >
+        </div>
+        <div class="download-grid">
+          <a href="lib/default.min.mjs" download
+            ><strong>Default</strong
+            ><span>6,473 bytes · fixed BLAKE3 + format checks</span
+            ><code>default.min.mjs ↓</code></a
+          ><a href="lib/full.min.mjs" download
+            ><strong>Full</strong
+            ><span>9,403 bytes · all 12 runtime combinations</span
+            ><code>full.min.mjs ↓</code></a
+          ><a href="lib/core.min.mjs" download
+            ><strong>Core</strong
+            ><span>2,988 bytes · no optional verification</span
+            ><code>core.min.mjs ↓</code></a
+          >
+        </div>
+        <p class="fine">
+          Each file is self-contained. Native gzip + base64 loads its Wasm once
+          during import; binary() is synchronous afterward. The optional memory
+          lookup is off by default.
+        </p>
+      </section>
+    </main>
+    <footer>
+      <span>[gp] GlyphPack · by NeoX · 0BSD</span
+      ><span
+        >Plain HTML, CSS, JS and Rust/Wasm.
+        <a href="https://github.com/Neo-X-Minecraft/glyphpack/tree/main/site"
+          >View this demo’s source ↗</a
+        ></span
+      >
+    </footer>
+  </body>
+</html>
