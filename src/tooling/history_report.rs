@@ -54,196 +54,6 @@ fn load(path: &Path) -> Result<Value, String> {
     serde_json::from_slice(&fs::read(path).map_err(|e| e.to_string())?).map_err(|e| e.to_string())
 }
 
-type TransportMap = BTreeMap<[String; 3], (Vec<String>, f64)>;
-struct TransportRun {
-    metadata: Vec<String>,
-    runs: BTreeMap<String, Vec<f64>>,
-}
-fn transport_cells(path: &Path) -> Result<TransportMap, String> {
-    let rows = super::summary::parse_csv(&fs::read_to_string(path).map_err(|e| e.to_string())?)?;
-    let header = rows.first().ok_or("Empty transport CSV")?;
-    let mut groups: BTreeMap<[String; 3], TransportRun> = BTreeMap::new();
-    for row in &rows[1..] {
-        let get = |name: &str| -> Result<&str, String> {
-            let i = header
-                .iter()
-                .position(|h| h == name)
-                .ok_or_else(|| format!("Missing column: {name}"))?;
-            row.get(i)
-                .map(String::as_str)
-                .ok_or("Short transport CSV row".into())
-        };
-        if get("record_type")? != "sample"
-            || get("stage")? != "comparison"
-            || get("phase")? != "measured"
-        {
-            continue;
-        }
-        if get("correct")? != "true" {
-            return Err("Incorrect transport result".into());
-        }
-        let key = [
-            get("dataset")?.into(),
-            get("variant_id")?.into(),
-            get("expected_decoded_sha256")?.into(),
-        ];
-        let metadata = [
-            "family",
-            "implementation",
-            "integrity_mode",
-            "verify_format",
-            "memory_heavy",
-        ]
-        .into_iter()
-        .map(|k| get(k).map(String::from))
-        .collect::<Result<Vec<_>, _>>()?;
-        let ms: f64 = get("decode_ms")?
-            .parse()
-            .map_err(|_| "Invalid transport timing")?;
-        if !ms.is_finite() || ms < 0.0 {
-            return Err("Invalid transport timing".into());
-        }
-        groups
-            .entry(key)
-            .or_insert_with(|| TransportRun {
-                metadata,
-                runs: BTreeMap::new(),
-            })
-            .runs
-            .entry(get("run")?.into())
-            .or_default()
-            .push(ms);
-    }
-    Ok(groups
-        .into_iter()
-        .map(|(key, TransportRun { metadata, runs })| {
-            let medians = runs.values().map(|s| median(s)).collect::<Vec<_>>();
-            (key, (metadata, median(&medians)))
-        })
-        .collect())
-}
-
-fn transport_past_present(root: &Path, out: &Path) -> Result<(), String> {
-    let old = transport_cells(&root.join("benchmarks/results/encoding-decode-benchmark.csv"))?;
-    let current = transport_cells(&out.join("peers.csv"))?;
-    let mut csv=String::from("dataset,variant_id,input_sha256,historical_backend,fresh_backend,historical_implementation,fresh_implementation,integrity,format_option,memory_heavy,historical_ms,fresh_ms,comparison_kind\n");
-    for (key, (metadata, ms)) in current {
-        if let Some((previous, prior)) = old.get(&key) {
-            let mut fields = key.to_vec();
-            fields.extend([
-                previous[0].clone(),
-                metadata[0].clone(),
-                previous[1].clone(),
-                metadata[1].clone(),
-                metadata[2].clone(),
-                metadata[3].clone(),
-                metadata[4].clone(),
-                format!("{prior:.6}"),
-                format!("{ms:.6}"),
-                "identical input bytes; unpaired dates; backend/method may differ".into(),
-            ]);
-            line(&mut csv, &fields);
-        }
-    }
-    fs::write(out.join("transport-past-present.csv"), csv).map_err(|e| e.to_string())
-}
-
-/// Across-date values are context, not a paired speedup measurement. Only
-/// compare the original named byte inputs; synthetic RNG streams can differ.
-fn past_present(
-    root: &Path,
-    out: &Path,
-    cells: &[Cell],
-    originals: &[String],
-) -> Result<(), String> {
-    let mut csv = String::from("category,dataset,implementation,integrity,format_option,historical_report,historical_ms,fresh_ms,comparison_kind\n");
-    for (file, family) in [
-        ("decoder-optimization-benchmark.json", "guide"),
-        ("decoder-optimization-recheck.json", "guide"),
-        ("decoder-store-benchmark.json", "stores"),
-        ("decoder-pattern-benchmark.json", "patterns"),
-        ("decoder-pattern-recheck.json", "patterns"),
-        ("decoder-pattern-lean-benchmark.json", "patterns"),
-        ("decoder-production-recheck.json", "patterns"),
-        ("decoder-high-table-benchmark.json", "high-digits"),
-        ("decoder-high-table-clean-benchmark.json", "high-digits"),
-        ("hash-chrome-benchmark.json", "hash"),
-    ] {
-        let old = load(&root.join("benchmarks/results").join(file))?;
-        let groups = old["cases"]
-            .as_array()
-            .or_else(|| old["runs"].as_array())
-            .ok_or("Missing historical groups")?;
-        let mut prior: BTreeMap<(String, String, String, String), Vec<f64>> = BTreeMap::new();
-        for group in groups {
-            let dataset = text(group, "label");
-            if !originals.contains(&dataset) {
-                continue;
-            }
-            let rows = group["rows"]
-                .as_array()
-                .or_else(|| group["variants"].as_array())
-                .ok_or("Missing historical variants")?;
-            for row in rows {
-                let Some(ms) = row["medianMs"].as_f64() else {
-                    continue;
-                };
-                let id = if family == "hash" {
-                    match row["name"].as_str().unwrap_or("") {
-                        "BLAKE3 own loop" => "BLAKE3 loop".into(),
-                        "BLAKE3 own loop stop" => "BLAKE3 loop-stop".into(),
-                        "BLAKE3 own unrolled" => "BLAKE3 unrolled".into(),
-                        "BLAKE3 wasm reference" => "BLAKE3 hash-wasm".into(),
-                        name => name.into(),
-                    }
-                } else {
-                    format!("{family}/{}-{}", text(row, "variant"), text(row, "profile"))
-                };
-                let mode = text(row, "verifyData");
-                let format = if row["verifyFormat"].is_boolean() {
-                    row["verifyFormat"].to_string()
-                } else {
-                    String::new()
-                };
-                prior
-                    .entry((dataset.clone(), id, mode, format))
-                    .or_default()
-                    .push(ms);
-            }
-        }
-        for ((dataset, id, mode, format), values) in prior {
-            let current = cells.iter().find(|c| {
-                c.dataset == dataset
-                    && if family == "hash" {
-                        c.stage == "hashes" && c.id == id
-                    } else {
-                        c.stage == "confirmation"
-                            && c.id.starts_with(&(id.clone() + "/"))
-                            && c.mode == mode
-                            && c.format == format
-                    }
-            });
-            if let Some(current) = current {
-                line(
-                    &mut csv,
-                    &[
-                        family.into(),
-                        dataset,
-                        id,
-                        mode,
-                        format,
-                        file.into(),
-                        format!("{:.6}", median(&values)),
-                        format!("{:.6}", current.center()),
-                        "same archived candidate; unpaired dates/methods".into(),
-                    ],
-                );
-            }
-        }
-    }
-    fs::write(out.join("past-present.csv"), csv).map_err(|e| e.to_string())
-}
-
 pub fn write(root: &Path) -> Result<(), String> {
     let out = root.join("generated/results/history");
     let native = load(&root.join("generated/history/manifest.json"))?;
@@ -416,21 +226,24 @@ pub fn write(root: &Path) -> Result<(), String> {
     }
     fs::write(out.join("raw.csv"), raw).map_err(|e| e.to_string())?;
     fs::write(out.join("summary.csv"), summary).map_err(|e| e.to_string())?;
-    let originals: Vec<_> = native["inputs"]
+    let datasets: Vec<_> = native["inputs"]
         .as_array()
         .unwrap()
         .iter()
-        .filter(|r| r["original"] == true)
+        .filter(|r| {
+            matches!(
+                r["label"].as_str(),
+                Some("random-65536" | "random-1048576" | "sequential-1048576")
+            )
+        })
         .map(|r| text(r, "label"))
         .collect();
     let mut compact=String::from("dataset,integrity,format_option,wasm_compact_ms,wasm_heavy_ms,frozen_js_compact_ms,best_archived_ms,best_archived_id,best_archived_ms_div_wasm_ms\n");
-    past_present(root, &out, &cells, &originals)?;
-    transport_past_present(root, &out)?;
     super::report::write(&out.join("peers.csv"), &out.join("transport-report"))?;
     let mut markdown=String::from("# Local historical recheck\n\nAll listed times are new local measurements, in milliseconds per complete call.\nArchived sources and the released backend are measured within the same campaign.\nThe table reports median browser-run medians; it is not a cross-device guarantee.\nHistorical validation policies and table layouts differ; none of the archived code is promoted to production.\n\n");
-    let mut svg=String::from("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"940\" height=\"680\" viewBox=\"0 0 940 680\"><rect width=\"940\" height=\"680\" fill=\"#101214\"/><g fill=\"#e7ebe8\" font-family=\"system-ui,sans-serif\"><text x=\"24\" y=\"32\" font-size=\"22\">Fresh local recheck · original binaries</text><text x=\"24\" y=\"57\" font-size=\"12\">BLAKE3 + format checks · milliseconds · separate scale per dataset</text>");
+    let mut svg=String::from("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"940\" height=\"680\" viewBox=\"0 0 940 680\"><rect width=\"940\" height=\"680\" fill=\"#101214\"/><g fill=\"#e7ebe8\" font-family=\"system-ui,sans-serif\"><text x=\"24\" y=\"32\" font-size=\"22\">Fresh local recheck · public fixtures</text><text x=\"24\" y=\"57\" font-size=\"12\">BLAKE3 + format checks · milliseconds · separate scale per dataset</text>");
     let mut y = 91;
-    for dataset in &originals {
+    for dataset in &datasets {
         for (mode, format) in [("none", "false"), ("fast", "true"), ("secure", "true")] {
             let candidates: Vec<_> = cells
                 .iter()
@@ -547,7 +360,7 @@ pub fn write(root: &Path) -> Result<(), String> {
         serde_json::to_vec_pretty(&patterns).unwrap(),
     )
     .map_err(|e| e.to_string())?;
-    fs::write(out.join("coverage.json"),serde_json::to_vec_pretty(&json!({"campaignSha256":expected_campaign,"quick":native["quick"],"phases":phases,"additional":checks,"originalDatasets":originals,"archivedSourceFiles":native["sources"].as_array().unwrap().len(),"summaryRows":cells.len(),"sizes":sizes,"releaseRuntimeChanged":false,"summaryBlake3":hex(&blake3(&fs::read(out.join("summary.csv")).unwrap()))})).unwrap()).map_err(|e|e.to_string())?;
+    fs::write(out.join("coverage.json"),serde_json::to_vec_pretty(&json!({"campaignSha256":expected_campaign,"quick":native["quick"],"phases":phases,"additional":checks,"selectedDatasets":datasets,"archivedSourceFiles":native["sources"].as_array().unwrap().len(),"summaryRows":cells.len(),"sizes":sizes,"releaseRuntimeChanged":false,"summaryBlake3":hex(&blake3(&fs::read(out.join("summary.csv")).unwrap()))})).unwrap()).map_err(|e|e.to_string())?;
     println!(
         "{} historical comparison rows: {}",
         cells.len(),

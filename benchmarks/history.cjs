@@ -866,7 +866,6 @@ async function hashes() {
 async function permutation() {
   const results = [];
   const sample =
-    inputs.find((i) => i.label === "runtime") ||
     inputs.find((i) => i.label === "random-1048576") ||
     inputs.find((i) => i.label === "random-65536");
   for (let run = 0; run < (quick ? 1 : 5); run++) {

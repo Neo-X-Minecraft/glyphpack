@@ -159,7 +159,7 @@ pub(super) fn browser_sources(root: &Path, work: &Path) -> Result<(), String> {
 }
 
 /// Prepare deterministic synthetic inputs and optional caller-owned binary files.
-/// Stored movie assets are deliberately unnecessary for running this repository.
+/// All built-in data is generated locally; callers can add their own files.
 pub fn prepare(root: &Path, quick: bool, extras: &[String]) -> Result<(), String> {
     super::profiles::build_all(root)?;
     let work = root.join("generated/encoding-comparison");
@@ -173,7 +173,7 @@ pub fn prepare(root: &Path, quick: bool, extras: &[String]) -> Result<(), String
         ),
         (
             "runtime".to_string(),
-            random(if quick { 65536 } else { 3185724 }, &mut rng),
+            random(if quick { 65536 } else { 4 * 1048576 }, &mut rng),
         ),
         ("random-1KiB".into(), random(1024, &mut rng)),
         ("random-64KiB".into(), random(65536, &mut rng)),

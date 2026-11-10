@@ -146,13 +146,12 @@ npm run test:file                # offline file://, UTF-8 and UTF-16LE
 npm run test:browser              # Browser matrix, peers and offline HTML
 npm run bench                    # Decode-only comparison in Chromium
 npm run bench:encode             # Native encoder CSV
-npm run summary                  # Small historical sharing CSV
+npm run summary                  # Summarize the latest public-fixture comparison
 ```
 
 `CHROMIUM_BIN` selects the browser and `CHROMIUM_VERSION` its expected exact
-version. The historical benchmark baseline remains Chromium 156.0.8078.79;
-the compatibility floor is Chrome 109. Historical CSV results describe the former
-JS implementation. New Wasm measurements go into `generated/results/`.
+version. Benchmarks use reproducible public fixtures and the browser version recorded in
+each report. New measurements go into `generated/results/`.
 The pure-JS implementation is retained only under tests/reference and optimization
 archives for differential testing, never as a shipped runtime fallback.
 
@@ -245,5 +244,3 @@ glyphpack build --full -o decoder.mjs --types decoder.d.mts
 `npm run test:types` checks accepted/rejected policies, and `npm run test:package`
 installs a real local tarball in a clean directory and tests all six exports.
 GitHub runs these consumer checks on Node 20 and 22.
-
-[Fresh local recheck of the optimization archive](benchmarks/results/historical-recheck/README.md) includes the exact original inputs, archived JavaScript, all build profiles, hashes, and transports.

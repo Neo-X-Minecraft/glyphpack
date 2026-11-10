@@ -23,10 +23,7 @@ CHROMIUM_BIN=/usr/bin/chromium CHROMIUM_VERSION=156.0.8078.79 COMPARE_DATASETS=a
   dist/full.min.mjs generated/performance/paired.json
 ```
 
-Preparation reads the v0.2.0 tag, so fetch that tag in a shallow checkout. Default
-inputs are deterministic public fixtures; the published local comparison also
-used the four original local inputs from the earlier audit. Those binaries and
-encoded payloads are not distributed. Set `COMPARE_DATASETS` to a comma-separated
+Preparation reads the v0.2.0 tag, so fetch that tag in a shallow checkout. Inputs are deterministic public fixtures. Set `COMPARE_DATASETS` to a comma-separated
 selection to narrow a run; omitted means the five public pattern/size cases.
 The GitHub benchmark workflow's `paired` choice measures public fixtures on x64.
 
@@ -65,7 +62,7 @@ are for manual inspection/reproduction, not an automatic supported build mode:
 
 | Candidate | Observation in the tested complete calls |
 | --- | --- |
-| JS reference + SIMD hash (`hybrid_prototype.rs`, `hash-loader.js`) | Faster on one 1 MiB case, slower on the original 14 MB case; rejected. |
+| JS reference + SIMD hash (`hybrid_prototype.rs`, `hash-loader.js`) | Faster on one 1 MiB case, slower on larger inputs; rejected. |
 | Native string builtins (`string-input.patch`, `string-shim.wat`) | Higher bridge/runtime cost and larger module; rejected. Requires a modern engine or the experiment's fallback. |
 | Eight-character copy loop (`copy-unroll8.patch`) | No reliable gain; rejected. |
 | Paired 32-bit input stores (`copy-words.patch`) | Small, inconsistent gains, extra code; rejected. |

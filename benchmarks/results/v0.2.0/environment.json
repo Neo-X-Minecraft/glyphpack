@@ -1,0 +1,446 @@
+{
+  "schema": 1,
+  "startedAt": "2026-11-10T02:32:46.245Z",
+  "commit": "40736754b95883e626764f3cdb1da91a02052774",
+  "environment": {
+    "os": "linux",
+    "release": "6.1.0-34-avf-arm64",
+    "node": "v24.21.0",
+    "cpuModels": [
+      "unknown"
+    ],
+    "logicalCpus": 8,
+    "totalMemoryBytes": 6221209600
+  },
+  "pass": true,
+  "mode": "comparison",
+  "targetVersion": "156.0.8078.79",
+  "architecture": "arm64",
+  "runs": [
+    {
+      "run": 1,
+      "dataset": "bootstrap",
+      "bytes": 15200,
+      "variants": 27
+    },
+    {
+      "run": 1,
+      "dataset": "runtime",
+      "bytes": 3185724,
+      "variants": 27
+    },
+    {
+      "run": 1,
+      "dataset": "random-1KiB",
+      "bytes": 1024,
+      "variants": 27
+    },
+    {
+      "run": 1,
+      "dataset": "random-64KiB",
+      "bytes": 65536,
+      "variants": 27
+    },
+    {
+      "run": 1,
+      "dataset": "random-1MiB",
+      "bytes": 1048576,
+      "variants": 27
+    },
+    {
+      "run": 1,
+      "dataset": "zeros-1MiB",
+      "bytes": 1048576,
+      "variants": 27
+    },
+    {
+      "run": 1,
+      "dataset": "sequential-1MiB",
+      "bytes": 1048576,
+      "variants": 27
+    },
+    {
+      "run": 2,
+      "dataset": "bootstrap",
+      "bytes": 15200,
+      "variants": 27
+    },
+    {
+      "run": 2,
+      "dataset": "runtime",
+      "bytes": 3185724,
+      "variants": 27
+    },
+    {
+      "run": 2,
+      "dataset": "random-1KiB",
+      "bytes": 1024,
+      "variants": 27
+    },
+    {
+      "run": 2,
+      "dataset": "random-64KiB",
+      "bytes": 65536,
+      "variants": 27
+    },
+    {
+      "run": 2,
+      "dataset": "random-1MiB",
+      "bytes": 1048576,
+      "variants": 27
+    },
+    {
+      "run": 2,
+      "dataset": "zeros-1MiB",
+      "bytes": 1048576,
+      "variants": 27
+    },
+    {
+      "run": 2,
+      "dataset": "sequential-1MiB",
+      "bytes": 1048576,
+      "variants": 27
+    },
+    {
+      "run": 3,
+      "dataset": "bootstrap",
+      "bytes": 15200,
+      "variants": 27
+    },
+    {
+      "run": 3,
+      "dataset": "runtime",
+      "bytes": 3185724,
+      "variants": 27
+    },
+    {
+      "run": 3,
+      "dataset": "random-1KiB",
+      "bytes": 1024,
+      "variants": 27
+    },
+    {
+      "run": 3,
+      "dataset": "random-64KiB",
+      "bytes": 65536,
+      "variants": 27
+    },
+    {
+      "run": 3,
+      "dataset": "random-1MiB",
+      "bytes": 1048576,
+      "variants": 27
+    },
+    {
+      "run": 3,
+      "dataset": "zeros-1MiB",
+      "bytes": 1048576,
+      "variants": 27
+    },
+    {
+      "run": 3,
+      "dataset": "sequential-1MiB",
+      "bytes": 1048576,
+      "variants": 27
+    }
+  ],
+  "methodology": {
+    "timed": "resident JS string -> freshly allocated bytes, including selected verification",
+    "excluded": "encoding, I/O, module/text parsing, SHA-256 correctness checks",
+    "statistics": "3 fresh browser processes; 3 warm-up rounds excluded; 9 measured batches; rotated order",
+    "cache": "one shared full-module instance per browser; heavy table lazy and then warm",
+    "selection": "fastest correct tested candidate by geometric mean of two screening datasets; no global fastest claim",
+    "base121": "local Base122 extension excluding <; not a published standard",
+    "format": "all timed inputs valid; peer structural checks differ",
+    "backend": "Rust/Wasm; gzip decompression, base64 decoding and Wasm compilation/instantiation finish before timers; peer verifiers use the historical JS reference",
+    "fixtures": "deterministic synthetic data plus caller-supplied binaries; historical asset inputs are not bundled"
+  },
+  "hashes": {
+    "codec_sha256": "a26581292c61b9aa8334a3a5558005bf79ab5d4d16c39cc2fc4d132e6f6ac765",
+    "competitors_sha256": "40b1e19dd58ead7a406584fb74ffb36d351f8c32ec08e5276301ba5bd92abba0",
+    "verifier_sha256": "bd64e436c2fb0d0bf7f2ba398611437d7d82408e03408146d08e05e6caeefa6d"
+  },
+  "validation": {
+    "results": [
+      {
+        "id": "base64-setFromBase64",
+        "family": "Base64",
+        "input": "base64",
+        "source": "native setFromBase64 with fresh allocation",
+        "correct": true,
+        "checks": 216,
+        "error": ""
+      },
+      {
+        "id": "base64-fromBase64",
+        "family": "Base64",
+        "input": "base64",
+        "source": "native Uint8Array.fromBase64",
+        "correct": true,
+        "checks": 216,
+        "error": ""
+      },
+      {
+        "id": "base64-atob",
+        "family": "Base64",
+        "input": "base64",
+        "source": "local native-atob adapter",
+        "correct": true,
+        "checks": 216,
+        "error": ""
+      },
+      {
+        "id": "base122-reference",
+        "family": "Base122",
+        "input": "base122",
+        "source": "kevinAlbs/Base122",
+        "correct": true,
+        "checks": 216,
+        "error": ""
+      },
+      {
+        "id": "base122-fork",
+        "family": "Base122",
+        "input": "base122",
+        "source": "code4fukui/Base122",
+        "correct": true,
+        "checks": 216,
+        "error": ""
+      },
+      {
+        "id": "base122-inline",
+        "family": "Base122",
+        "input": "base122",
+        "source": "local optimized JS",
+        "correct": true,
+        "checks": 216,
+        "error": ""
+      },
+      {
+        "id": "base122-block",
+        "family": "Base122",
+        "input": "base122",
+        "source": "local optimized JS",
+        "correct": true,
+        "checks": 216,
+        "error": ""
+      },
+      {
+        "id": "base122-counted",
+        "family": "Base122",
+        "input": "base122",
+        "source": "local optimized JS",
+        "correct": true,
+        "checks": 216,
+        "error": ""
+      },
+      {
+        "id": "base121-inline",
+        "family": "Base121",
+        "input": "base121",
+        "source": "local < excluding extension",
+        "correct": true,
+        "checks": 216,
+        "error": ""
+      },
+      {
+        "id": "base121-block",
+        "family": "Base121",
+        "input": "base121",
+        "source": "local < excluding extension",
+        "correct": true,
+        "checks": 216,
+        "error": ""
+      },
+      {
+        "id": "base85-ascii-direct",
+        "family": "Base85",
+        "input": "ascii85",
+        "source": "local optimized JS",
+        "correct": true,
+        "checks": 216,
+        "error": ""
+      },
+      {
+        "id": "base85-z85-direct",
+        "family": "Base85",
+        "input": "z85",
+        "source": "local optimized JS",
+        "correct": true,
+        "checks": 216,
+        "error": ""
+      },
+      {
+        "id": "base85-alttiri-ascii",
+        "family": "Base85",
+        "input": "ascii85",
+        "source": "AlttiRi/base85",
+        "correct": true,
+        "checks": 216,
+        "error": ""
+      },
+      {
+        "id": "base85-alttiri-z85",
+        "family": "Base85",
+        "input": "z85",
+        "source": "AlttiRi/base85",
+        "correct": true,
+        "checks": 216,
+        "error": ""
+      },
+      {
+        "id": "base85-sheep-ascii",
+        "family": "Base85",
+        "input": "ascii85",
+        "source": "Sheep-y/Base85",
+        "correct": true,
+        "checks": 216,
+        "error": ""
+      },
+      {
+        "id": "base85-sheep-z85",
+        "family": "Base85",
+        "input": "z85",
+        "source": "Sheep-y/Base85",
+        "correct": true,
+        "checks": 216,
+        "error": ""
+      }
+    ],
+    "referenceEncoderChecks": 216
+  },
+  "verification": {
+    "checksumAndDigestCorruptionRejected": 2
+  },
+  "nativeSupport": {
+    "fromBase64": true,
+    "setFromBase64": true,
+    "candidates": [
+      {
+        "id": "base64-setFromBase64",
+        "family": "Base64",
+        "input": "base64",
+        "source": "native setFromBase64 with fresh allocation"
+      },
+      {
+        "id": "base64-fromBase64",
+        "family": "Base64",
+        "input": "base64",
+        "source": "native Uint8Array.fromBase64"
+      },
+      {
+        "id": "base64-atob",
+        "family": "Base64",
+        "input": "base64",
+        "source": "local native-atob adapter"
+      },
+      {
+        "id": "base122-reference",
+        "family": "Base122",
+        "input": "base122",
+        "source": "kevinAlbs/Base122"
+      },
+      {
+        "id": "base122-fork",
+        "family": "Base122",
+        "input": "base122",
+        "source": "code4fukui/Base122"
+      },
+      {
+        "id": "base122-inline",
+        "family": "Base122",
+        "input": "base122",
+        "source": "local optimized JS"
+      },
+      {
+        "id": "base122-block",
+        "family": "Base122",
+        "input": "base122",
+        "source": "local optimized JS"
+      },
+      {
+        "id": "base122-counted",
+        "family": "Base122",
+        "input": "base122",
+        "source": "local optimized JS"
+      },
+      {
+        "id": "base121-inline",
+        "family": "Base121",
+        "input": "base121",
+        "source": "local < excluding extension"
+      },
+      {
+        "id": "base121-block",
+        "family": "Base121",
+        "input": "base121",
+        "source": "local < excluding extension"
+      },
+      {
+        "id": "base85-ascii-direct",
+        "family": "Base85",
+        "input": "ascii85",
+        "source": "local optimized JS"
+      },
+      {
+        "id": "base85-z85-direct",
+        "family": "Base85",
+        "input": "z85",
+        "source": "local optimized JS"
+      },
+      {
+        "id": "base85-alttiri-ascii",
+        "family": "Base85",
+        "input": "ascii85",
+        "source": "AlttiRi/base85"
+      },
+      {
+        "id": "base85-alttiri-z85",
+        "family": "Base85",
+        "input": "z85",
+        "source": "AlttiRi/base85"
+      },
+      {
+        "id": "base85-sheep-ascii",
+        "family": "Base85",
+        "input": "ascii85",
+        "source": "Sheep-y/Base85"
+      },
+      {
+        "id": "base85-sheep-z85",
+        "family": "Base85",
+        "input": "z85",
+        "source": "Sheep-y/Base85"
+      }
+    ]
+  },
+  "selectedImplementations": {
+    "Base64": {
+      "id": "base64-setFromBase64",
+      "family": "Base64",
+      "input": "base64",
+      "source": "native setFromBase64 with fresh allocation"
+    },
+    "Base122": {
+      "id": "base122-inline",
+      "family": "Base122",
+      "input": "base122",
+      "source": "local optimized JS"
+    },
+    "Base121": {
+      "id": "base121-inline",
+      "family": "Base121",
+      "input": "base121",
+      "source": "local < excluding extension"
+    },
+    "Base85": {
+      "id": "base85-ascii-direct",
+      "family": "Base85",
+      "input": "ascii85",
+      "source": "local optimized JS"
+    }
+  },
+  "utf16HtmlRoundTrip": true,
+  "finishedAt": "2026-11-10T02:34:17.441Z",
+  "csvRows": 8290
+}

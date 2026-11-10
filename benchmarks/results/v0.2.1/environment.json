@@ -1,0 +1,34 @@
+{
+  "architecture": "arm64",
+  "browser": "156.0.8078.79",
+  "cpuModels": [
+    "unknown"
+  ],
+  "date": "2026-11-10T15:44:15.573Z",
+  "methodology": {
+    "calibration": "both implementations; >=2 ms per measured batch, capped at 4096 calls",
+    "excluded": "fixture construction, imports, byte comparison",
+    "limits": "single unpinned host; warmed instances and lookup tables; medians are not tail latencies",
+    "measured": 9,
+    "order": "alternate implementations each round",
+    "runs": 3,
+    "timed": "complete binary() with fresh output and selected verification",
+    "warmups": 3
+  },
+  "modules": [
+    {
+      "path": "generated/performance/baseline.mjs",
+      "sha256": "a26581292c61b9aa8334a3a5558005bf79ab5d4d16c39cc2fc4d132e6f6ac765"
+    },
+    {
+      "path": "generated/performance/final.mjs",
+      "sha256": "79cb147fea7a47f10c2f04ff24b2da9a69c58eb10f44b5fa3d1423c7aa16efb4"
+    }
+  ],
+  "observations": {
+    "measuredBatchAverages": 3240,
+    "runs": 180,
+    "settings": 60
+  },
+  "schema": 1
+}
