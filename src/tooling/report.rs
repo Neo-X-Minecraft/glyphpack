@@ -26,6 +26,9 @@ struct Cell {
 }
 fn median(values: &mut [f64]) -> f64 {
     values.sort_by(f64::total_cmp);
+    center(values)
+}
+fn center(values: &[f64]) -> f64 {
     (values[(values.len() - 1) / 2] + values[values.len() / 2]) / 2.0
 }
 fn csv(s: &str) -> String {
@@ -70,6 +73,8 @@ fn cells(text: &str) -> Result<Vec<Cell>, String> {
         }
     }
     let mut groups: BTreeMap<(Variant, String, usize, usize), Vec<f64>> = BTreeMap::new();
+    let mut contexts = BTreeMap::new();
+    let mut sizes = BTreeMap::new();
     for row in &rows[1..] {
         let get = |name| {
             row.get(columns[name])
@@ -85,6 +90,23 @@ fn cells(text: &str) -> Result<Vec<Cell>, String> {
         if get("correct")? != "true" {
             return Err("Cannot summarize incorrect output".into());
         }
+        for name in [
+            "browser",
+            "v8",
+            "architecture",
+            "codec_sha256",
+            "competitors_sha256",
+            "verifier_sha256",
+        ] {
+            if columns.contains_key(name) {
+                let value = get(name)?;
+                if let Some(previous) = contexts.insert(name, value.to_string()) {
+                    if previous != value {
+                        return Err(format!("Mixed benchmark contexts: {name}"));
+                    }
+                }
+            }
+        }
         let time: f64 = get("decode_ms")?.parse().map_err(|_| "Invalid timing")?;
         if !time.is_finite() || time < 0.0 {
             return Err("Invalid timing".into());
@@ -99,6 +121,12 @@ fn cells(text: &str) -> Result<Vec<Cell>, String> {
         let bytes = get("decoded_bytes")?
             .parse()
             .map_err(|_| "Invalid byte count")?;
+        let dataset = get("dataset")?;
+        if let Some(previous) = sizes.insert(dataset.to_string(), bytes) {
+            if previous != bytes {
+                return Err("Inconsistent dataset byte count".into());
+            }
+        }
         let run = get("run")?.parse().map_err(|_| "Invalid run")?;
         groups
             .entry((variant, get("dataset")?.into(), bytes, run))
@@ -206,13 +234,13 @@ pub fn write(input: &Path, out: &Path) -> Result<(), String> {
             .iter()
             .filter(|c| c.variant.integrity == mode)
             .collect();
-        rows.sort_by(|a, b| a.runs[a.runs.len() / 2].total_cmp(&b.runs[b.runs.len() / 2]));
+        rows.sort_by(|a, b| center(&a.runs).total_cmp(&center(&b.runs)));
         if rows.is_empty() {
             continue;
         }
         let max = rows
             .iter()
-            .map(|c| c.runs[c.runs.len() / 2])
+            .map(|c| center(&c.runs))
             .fold(0.0, f64::max)
             .max(f64::EPSILON);
         svg.push_str(&format!(
@@ -221,7 +249,7 @@ pub fn write(input: &Path, out: &Path) -> Result<(), String> {
         y += 27;
         markdown.push_str(&format!("## {title} · random 1 MiB\n\n| Decoder | Median ms | Run range ms |\n| --- | ---: | ---: |\n"));
         for cell in rows {
-            let center = cell.runs[cell.runs.len() / 2];
+            let center = center(&cell.runs);
             let family = &cell.variant.family;
             let low = cell.runs[0];
             let high = cell.runs.last().unwrap();
@@ -260,6 +288,9 @@ mod tests {
     fn excludes_warmups_and_summaries_and_groups_by_run() {
         let header="record_type,stage,phase,correct,family,integrity_mode,verify_format,memory_heavy,implementation,dataset,decoded_bytes,run,decode_ms\n";
         let raw=format!("{header}sample,comparison,measured,true,GlyphPack-Wasm,none,true,false,full,random-1MiB,1048576,1,1\nsample,comparison,measured,true,GlyphPack-Wasm,none,true,false,full,random-1MiB,1048576,1,3\nsample,comparison,measured,true,GlyphPack-Wasm,none,true,false,full,random-1MiB,1048576,2,4\nsummary,comparison,measured,true,ignore,none,,,x,d,1,1,999\nsample,comparison,warmup,true,ignore,none,,,x,d,1,1,999\n");
+        assert_eq!(center(&[1.0, 3.0]), 2.0);
+        assert_eq!(center(&[1.0, 2.0, 3.0]), 2.0);
+        assert!(cells(&raw.replace(",1048576,2,", ",99,2,")).is_err());
         let data = cells(&raw).unwrap();
         assert_eq!(data.len(), 1);
         assert_eq!(data[0].runs, vec![2.0, 4.0]);

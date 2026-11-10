@@ -91,10 +91,19 @@ pub fn build(root: &Path, out: &Path) -> Result<(), String> {
         return Err(String::from_utf8_lossy(&result.stderr).into());
     }
     io(fs::write(out.join("encoder.mjs"), result.stdout))?;
-    io(fs::copy(
-        root.join("site/index.html"),
-        out.join("index.html"),
-    ))?;
+    let mut html = io(fs::read_to_string(root.join("site/index.html")))?;
+    for (profile, marker) in [
+        ("default", "__DEFAULT_BYTES__"),
+        ("full", "__FULL_BYTES__"),
+        ("core", "__CORE_BYTES__"),
+    ] {
+        let bytes = io(fs::metadata(
+            root.join("dist").join(format!("{profile}.min.mjs")),
+        ))?
+        .len();
+        html = html.replace(marker, &bytes.to_string());
+    }
+    io(fs::write(out.join("index.html"), html))?;
     // Keep readable sources in git; ship small independent browser modules.
     run(Command::new(esbuild_path(None))
         .current_dir(root)

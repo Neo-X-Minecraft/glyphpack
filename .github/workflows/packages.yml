@@ -28,6 +28,7 @@ jobs:
           cargo build --release --locked --target "$TARGET"
           "target/$TARGET/release/glyphpack" --version
           file "target/$TARGET/release/glyphpack"
+          export GLYPHPACK_TEST_BIN="$PWD/target/$TARGET/release/glyphpack"
           cargo test --locked --target "$TARGET" --lib --test native --test cli -- --skip all_63_specialized_wasm_builds --skip invalid_build_choices_and_minimal_code
       - name: Package native CLI and notices
         env:

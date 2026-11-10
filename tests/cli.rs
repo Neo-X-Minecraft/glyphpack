@@ -5,7 +5,10 @@ use std::{
     process::{Command, Stdio},
 };
 fn binary() -> Command {
-    Command::new(env!("CARGO_BIN_EXE_glyphpack"))
+    Command::new(
+        std::env::var_os("GLYPHPACK_TEST_BIN")
+            .unwrap_or_else(|| env!("CARGO_BIN_EXE_glyphpack").into()),
+    )
 }
 #[test]
 fn version_and_encoding_are_relocatable() {

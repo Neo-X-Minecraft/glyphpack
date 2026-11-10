@@ -219,7 +219,6 @@ glyphpack = { path = "path/to/glyphpack", default-features = false }
 ```rust
 use glyphpack::encoder::{dense16, EncodeOptions};
 let packed = dense16(b"hello", &EncodeOptions::default())?;
-# Ok::<(), String>(())
 ```
 
 The default `tools` feature adds the CLI, decoder compilation, benchmark/report

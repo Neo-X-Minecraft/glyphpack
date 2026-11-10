@@ -12,6 +12,32 @@ fn median(samples: &mut [f64]) -> f64 {
     samples.sort_by(f64::total_cmp);
     (samples[(samples.len() - 1) / 2] + samples[samples.len() / 2]) / 2.0
 }
+fn cpu_context() -> String {
+    // Keep useful CPU classes/features, excluding device serials and unrelated
+    // machine identifiers from reports intended for public release archives.
+    let mut fields = std::collections::BTreeSet::new();
+    for line in fs::read_to_string("/proc/cpuinfo")
+        .unwrap_or_default()
+        .lines()
+    {
+        let key = line.split(':').next().unwrap_or("").trim();
+        if [
+            "model name",
+            "CPU implementer",
+            "CPU architecture",
+            "CPU variant",
+            "CPU part",
+            "CPU revision",
+            "Features",
+            "flags",
+        ]
+        .contains(&key)
+        {
+            fields.insert(line.to_string());
+        }
+    }
+    fields.into_iter().collect::<Vec<_>>().join("\n")
+}
 fn main() {
     if let Err(error) = run() {
         eprintln!("{error}");
@@ -144,7 +170,7 @@ fn run() -> Result<(), String> {
             .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
             .unwrap_or_default()
     };
-    let report = json!({"schema":1,"version":env!("CARGO_PKG_VERSION"),"commit":command("git",&["rev-parse","HEAD"]),"rustc":command("rustc",&["-Vv"]),"os":env::consts::OS,"architecture":env::consts::ARCH,"logical_cpus":std::thread::available_parallelism().map(|n|n.get()).unwrap_or(0),"cpu_info":fs::read_to_string("/proc/cpuinfo").unwrap_or_default(),"rustflags":env::var("RUSTFLAGS").unwrap_or_default(),"methodology":{"timed":"input bytes to new encoded buffer; selected hash and mask search included","excluded":"input construction, output hashing, serialization and buffer drop","warmups":3,"measured":9,"order":"three policies rotate each round","limits":"single process and host; no affinity, frequency or temperature control"},"rows":rows});
+    let report = json!({"schema":1,"version":env!("CARGO_PKG_VERSION"),"commit":command("git",&["rev-parse","HEAD"]),"rustc":command("rustc",&["-Vv"]),"os":env::consts::OS,"architecture":env::consts::ARCH,"logical_cpus":std::thread::available_parallelism().map(|n|n.get()).unwrap_or(0),"cpu_info":cpu_context(),"rustflags":env::var("RUSTFLAGS").unwrap_or_default(),"methodology":{"timed":"input bytes to new encoded buffer; selected hash and mask search included","excluded":"input construction, output hashing, serialization and buffer drop","warmups":3,"measured":9,"order":"three policies rotate each round","limits":"single process and host; no affinity, frequency or temperature control"},"rows":rows});
     println!("pattern,bytes,integrity,mask_policy,backend,median_ms,min_ms,max_ms,output_bytes");
     for row in report["rows"].as_array().unwrap() {
         println!(
