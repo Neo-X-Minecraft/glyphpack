@@ -334,7 +334,7 @@ pub fn build_adapter(options: &BuildOptions, wasm: &[u8]) -> Result<String, Stri
     let options = canonical(options)?;
     let payload = transport::base64(&transport::gzip9(wasm)?);
     let mut imports = String::from(
-        "import {runWasm} from './wasm-runtime.js';\nimport {loadWasm} from './loader.js';\n",
+        "import {runWasm,warmWasm} from './wasm-runtime.js';\nimport {loadWasm} from './loader.js';\n",
     );
     let mut selectors = Vec::new();
     let mut statements = Vec::new();
@@ -376,7 +376,22 @@ pub fn build_adapter(options: &BuildOptions, wasm: &[u8]) -> Result<String, Stri
     } else {
         "text,options={}"
     };
-    let entry=format!("{imports}\nconst api=await loadWasm({payload:?});\nexport function binary({parameters}){{\n{}\nreturn runWasm(api,text,{format},{data},{memory});\n}}\n",statements.join("\n"));
+    let warmup = if options.packings.len() == 1 {
+        format!(
+            "export function warmup(){{warmWasm(api,{});}}\n",
+            1u32 << options.packings[0] as u32
+        )
+    } else {
+        // Build only selected names into the selector. Accumulate a bitmask
+        // before entering Wasm so an invalid list never partially warms caches.
+        let cases = options
+            .packings
+            .iter()
+            .map(|p| format!("case {:?}:mask|={};break;", p.name(), 1u32 << *p as u32))
+            .collect::<String>();
+        format!("export function warmup(codecs){{\nif(!Array.isArray(codecs))throw TypeError('Expected an array of payload codecs');\nlet mask=0;\nfor(const codec of codecs){{switch(codec){{{cases}default:throw Error('Unsupported payload codec');}}}}\nwarmWasm(api,mask);\n}}\n")
+    };
+    let entry=format!("{imports}\nconst api=await loadWasm({payload:?});\n{warmup}export function binary({parameters}){{\n{}\nreturn runWasm(api,text,{format},{data},{memory});\n}}\n",statements.join("\n"));
     let scratch = Scratch::new()?;
     for &(name, contents) in FILES {
         io(fs::write(scratch.0.join(name), contents))?;
@@ -480,11 +495,23 @@ pub fn type_declaration(options: &BuildOptions) -> Result<String, String> {
         fields.push("  memoryHeavy?: boolean;".to_string());
     }
     let header = "// Generated GlyphPack declaration; policies match this specialized module.\n";
-    if fields.is_empty() {
-        Ok(format!(
-            "{header}export declare function binary(text: string): Uint8Array;\n"
-        ))
+    let mut declaration = if fields.is_empty() {
+        format!("{header}export declare function binary(text: string): Uint8Array;\n")
     } else {
-        Ok(format!("{header}export interface DecodeOptions {{\n{}\n}}\nexport declare function binary(text: string, options?: DecodeOptions): Uint8Array;\n",fields.join("\n")))
+        format!("{header}export interface DecodeOptions {{\n{}\n}}\nexport declare function binary(text: string, options?: DecodeOptions): Uint8Array;\n",fields.join("\n"))
+    };
+    if options.packings.len() == 1 {
+        declaration.push_str("export declare function warmup(): void;\n");
+    } else {
+        let names = options
+            .packings
+            .iter()
+            .map(|p| format!("'{}'", p.name()))
+            .collect::<Vec<_>>()
+            .join(" | ");
+        declaration.push_str(&format!(
+            "export declare function warmup(codecs: readonly ({names})[]): void;\n"
+        ));
     }
+    Ok(declaration)
 }

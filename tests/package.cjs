@@ -57,13 +57,14 @@ const fs = require("node:fs/promises"),
     const script = `import assert from 'node:assert/strict';
 const fixture=${JSON.stringify(fixture)};
 const check=bytes=>assert.equal(Buffer.from(bytes).toString('hex'),fixture.rawHex);
-for(const name of ['glyphpack','glyphpack/high-memory'])check((await import(name)).binary(fixture.packets.secure));
-for(const name of ['glyphpack/core','glyphpack/none'])check((await import(name)).binary(fixture.packets.none));
-const {binary}=await import('glyphpack/full');let cases=4;
+for(const name of ['glyphpack','glyphpack/high-memory']){const m=await import(name);m.warmup();check(m.binary(fixture.packets.secure));}
+for(const name of ['glyphpack/core','glyphpack/none']){const m=await import(name);m.warmup();check(m.binary(fixture.packets.none));}
+const {binary,warmup}=await import('glyphpack/full');warmup(['pair','ans','windows']);warmup([]);let cases=4;
 for(const verifyData of ['none','fast','secure'])for(const verifyFormat of [false,true])for(const memoryHeavy of [false,true]){check(binary(fixture.packets[verifyData],{verifyData,verifyFormat,memoryHeavy}));cases++;}
-const {binary:fast}=await import('glyphpack/fast-none');for(const verifyData of ['none','fast'])for(const verifyFormat of [false,true]){check(fast(fixture.packets[verifyData],{verifyData,verifyFormat}));cases++;}
+const {binary:fast,warmup:warmFast}=await import('glyphpack/fast-none');warmFast();for(const verifyData of ['none','fast'])for(const verifyFormat of [false,true]){check(fast(fixture.packets[verifyData],{verifyData,verifyFormat}));cases++;}
 for(const packing of ['pair','ans','windows']){
- const name=packing==='pair'?'glyphpack':'glyphpack/'+packing, selected=(await import(name)).binary;
+ const name=packing==='pair'?'glyphpack':'glyphpack/'+packing, mod=await import(name), selected=mod.binary;
+ assert.equal(mod.warmup.length,0);assert.equal(mod.warmup(),undefined);mod.warmup();
  check(selected(fixture.tagged[packing].secure));cases++;
  for(const other of ['pair','ans','windows'])if(other!==packing){assert.throws(()=>selected(fixture.tagged[other].secure),/Unsupported payload codec/);cases++;}
  for(const verifyData of ['none','fast','secure'])for(const verifyFormat of [false,true])for(const memoryHeavy of [false,true]){check(binary(fixture.tagged[packing][verifyData],{verifyData,verifyFormat,memoryHeavy}));cases++;}

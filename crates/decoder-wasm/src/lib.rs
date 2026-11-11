@@ -173,6 +173,48 @@ impl State {
         self.heap_end = end;
         Some(start)
     }
+    // Shared by explicit warm-up and lazy decode initialization. This cache
+    // never aliases the input/output arenas, and is committed only once.
+    fn initialize_high(&mut self) -> u32 {
+        if self.high_ptr == 0 {
+            let Some(pointer) = self.allocate(65536 * 4) else {
+                return ALLOCATION;
+            };
+            self.high_ptr = pointer;
+            let table = lookup_table(false);
+            // SAFETY: allocate reserved an aligned region of exactly this size.
+            let high = unsafe { core::slice::from_raw_parts_mut(pointer as *mut u32, 65536) };
+            for (c, &value) in table.iter().enumerate() {
+                high[c] = if value == 0 {
+                    0
+                } else {
+                    63385 * (u32::from(value) - 1) + 1
+                };
+            }
+        }
+        0
+    }
+    fn warmup(&mut self, codecs: u32) -> u32 {
+        // A bit per compiled codec: pair=1, ans=2, windows=4. Reject the whole
+        // request before allocating or initializing any selected cache.
+        let available = u32::from(cfg!(feature = "pair"))
+            | (u32::from(cfg!(feature = "ans")) << 1)
+            | (u32::from(cfg!(feature = "windows")) << 2);
+        if codecs & !available != 0 {
+            return CODEC;
+        }
+        // Pair and UTF-16 ANS deliberately share their alphabet table.
+        if codecs & 3 != 0 {
+            self.initialize(false);
+        }
+        if codecs & 4 != 0 {
+            self.initialize(true);
+        }
+        if codecs & 1 != 0 && cfg!(feature = "memory-heavy") {
+            return self.initialize_high();
+        }
+        0
+    }
     fn decode(&mut self, format_arg: u32, data_arg: u32, memory_arg: u32) -> u32 {
         let input =
             unsafe { core::slice::from_raw_parts(self.input_ptr as *const u16, self.input_len) };
@@ -310,18 +352,10 @@ impl State {
         let length = length as usize;
         // Cache storage is committed only after header/allocation/policy guards.
         // Allocating a later arena never moves existing input/table addresses.
-        if heavy && self.high_ptr == 0 {
-            let Some(pointer) = self.allocate(65536 * 4) else {
-                return ALLOCATION;
-            };
-            self.high_ptr = pointer;
-            let high = unsafe { core::slice::from_raw_parts_mut(pointer as *mut u32, 65536) };
-            for (c, &value) in table.iter().enumerate() {
-                high[c] = if value == 0 {
-                    0
-                } else {
-                    63385 * (u32::from(value) - 1) + 1
-                };
+        if heavy {
+            let result = self.initialize_high();
+            if result != 0 {
+                return result;
             }
         }
         if length > self.output_cap {
@@ -452,6 +486,12 @@ pub extern "C" fn input_ptr(length: u32) -> u32 {
 #[no_mangle]
 pub extern "C" fn decode(format: u32, data: u32, memory: u32) -> u32 {
     unsafe { (&mut *STATE.0.get()).decode(format, data, memory) }
+}
+/// Initialize selected codec caches without changing any input/output state.
+/// Repeated calls reuse the same tables. Payload-sized arenas remain lazy.
+#[no_mangle]
+pub extern "C" fn warmup(codecs: u32) -> u32 {
+    unsafe { (&mut *STATE.0.get()).warmup(codecs) }
 }
 #[no_mangle]
 pub extern "C" fn output_ptr() -> u32 {

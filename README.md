@@ -33,6 +33,28 @@ Import waits for decompression and Wasm instantiation. After import resolves,
 reused. Returned bytes own a fresh buffer and remain valid across later calls.
 Module initialization uses no network requests or neighboring files.
 
+Every module also exports synchronous `warmup`. Single-codec builds have no
+parameters; mixed builds take an array containing only their compiled codecs:
+
+```js
+// A pair-only (or ANS-only / Windows-only) module:
+import {warmup} from './dist/default.min.mjs';
+warmup();
+
+// In a mixed build:
+// import {warmup} from './dist/full.min.mjs';
+// warmup(['pair', 'ans']);
+// warmup(['windows']);
+```
+
+Warm-up prepares reusable lookup tables, including the 256 KiB heavy pair table
+when that strategy was built in and pair was requested. It is idempotent; duplicate
+names are harmless and an empty array does nothing. Unsupported names throw before
+any selected cache is initialized. Pair and ANS share their alphabet table.
+`binary()` automatically initializes whatever its selected path needs, so explicit
+warm-up is optional. Warming preserves pending input and previous output; it
+does not reserve payload-sized arenas or promise a particular V8 optimization tier.
+
 The full module supports all three payload codecs and all twelve verification/
 memory combinations for each codec. The payload chooses its codec automatically:
 

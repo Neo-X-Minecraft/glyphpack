@@ -88,9 +88,115 @@ function physicalFiles() {
 }
 (async () => {
   let abi = 0;
+  let warmupAbi = 0;
+  let automaticAbi = 0;
   for (const b of v.builds) {
-    const api = (await WebAssembly.instantiate(fs.readFileSync(b.wasm)))
-      .instance.exports;
+    const compiled = await WebAssembly.compile(fs.readFileSync(b.wasm));
+    const api = new WebAssembly.Instance(compiled).exports;
+    // Each selected codec also starts from its own completely cold instance.
+    // Decoding with every needed strategy must leave no cache work for warmup.
+    for (const name of b.packings) {
+      const cold = new WebAssembly.Instance(compiled).exports;
+      const row = v.rows.find(
+          (r) => r.kind === "none" && r.rawHex.length === 514,
+        ),
+        text = row.packets[name];
+      const pointer = cold.input_ptr(text.length),
+        input = new Uint16Array(cold.memory.buffer, pointer, text.length);
+      for (let i = 0; i < text.length; i++) input[i] = text.charCodeAt(i);
+      assert.equal(cold.decode(0, 0, 1), 0);
+      assert.equal(
+        Buffer.from(
+          new Uint8Array(
+            cold.memory.buffer,
+            cold.output_ptr(),
+            cold.payload_len(),
+          ),
+        ).toString("hex"),
+        row.rawHex,
+      );
+      const ready = Buffer.from(new Uint8Array(cold.memory.buffer));
+      assert.equal(cold.warmup(1 << names.indexOf(name)), 0);
+      assert(
+        ready.equals(Buffer.from(new Uint8Array(cold.memory.buffer))),
+        "Decode left codec caches cold",
+      );
+      automaticAbi++;
+    }
+    if (b.packings.length === 3 && !b.core) {
+      const selected = new WebAssembly.Instance(compiled).exports,
+        initial = selected.memory.buffer.byteLength;
+      assert.equal(selected.warmup(4), 0);
+      assert.equal(selected.warmup(2), 0);
+      assert.equal(
+        selected.memory.buffer.byteLength,
+        initial,
+        "Non-pair warming allocated the heavy lookup",
+      );
+      assert.equal(selected.warmup(1), 0);
+      assert(
+        selected.memory.buffer.byteLength > initial,
+        "Pair warming missed the heavy lookup",
+      );
+      assert.equal(selected.stored_len(), 0);
+      assert.equal(selected.payload_len(), 0);
+    }
+    const mask = b.packings.reduce((m, n) => m | (1 << names.indexOf(n)), 0);
+    const snapshot = () => Buffer.from(new Uint8Array(api.memory.buffer));
+    const before = snapshot();
+    assert.equal(api.warmup(0), 0);
+    assert.equal(api.warmup(mask | 8), 9);
+    assert(before.equals(snapshot()), "Empty/invalid warm-up changed memory");
+    // Preserve pending input and completed output even when warming the heavy
+    // lookup grows linear memory. Snapshot by value, never alias Wasm memory.
+    const name = b.packings[0],
+      row = v.rows.find((r) => r.kind === "none" && r.rawHex.length === 514),
+      text = row.packets[name];
+    const pointer = api.input_ptr(text.length);
+    const pending = new Uint16Array(api.memory.buffer, pointer, text.length);
+    for (let i = 0; i < text.length; i++) pending[i] = text.charCodeAt(i);
+    assert.equal(api.decode(0, 0, 0), 0);
+    const output = api.output_ptr(),
+      stored = api.stored_len(),
+      length = api.payload_len();
+    const inputCopy = Buffer.from(
+      new Uint8Array(api.memory.buffer, pointer, text.length * 2),
+    );
+    const outputCopy = Buffer.from(
+      new Uint8Array(api.memory.buffer, output, stored),
+    );
+    assert.equal(api.warmup(mask), 0);
+    assert(
+      inputCopy.equals(
+        Buffer.from(
+          new Uint8Array(api.memory.buffer, pointer, text.length * 2),
+        ),
+      ),
+    );
+    assert(
+      outputCopy.equals(
+        Buffer.from(new Uint8Array(api.memory.buffer, output, stored)),
+      ),
+    );
+    assert.deepEqual(
+      [api.output_ptr(), api.stored_len(), api.payload_len()],
+      [output, stored, length],
+    );
+    const ready = snapshot();
+    for (let bit = 1; bit <= 4; bit <<= 1)
+      if (mask & bit) assert.equal(api.warmup(bit), 0);
+    assert.equal(api.warmup(mask), 0);
+    assert(
+      ready.equals(snapshot()),
+      "Repeated warm-up changed state or allocated again",
+    );
+    assert.equal(api.decode(0, 0, 0), 0);
+    assert(
+      outputCopy.equals(
+        Buffer.from(new Uint8Array(api.memory.buffer, output, stored)),
+      ),
+    );
+    warmupAbi++;
     for (const name of names) {
       if (b.packings.includes(name)) continue;
       const text = v.rows.find(
@@ -140,10 +246,36 @@ function physicalFiles() {
       unsupported = 0,
       rejected = 0;
     for (const b of v.builds) {
-      const { binary } = await import(
+      const { binary, warmup } = await import(
         "data:text/javascript;base64," +
           Buffer.from(b.source).toString("base64")
       );
+      const sample = v.rows.find(
+        (r) =>
+          r.kind === (b.core ? "none" : "secure") && r.rawHex.length === 514,
+      );
+      const saved = binary(sample.packets[b.packings[0]]); // automatic cold initialization
+      assert.equal(warmup.length, b.packings.length === 1 ? 0 : 1);
+      if (b.packings.length === 1) {
+        assert.equal(warmup(), undefined);
+        warmup();
+      } else {
+        assert.throws(() => warmup(), /Expected an array of payload codecs/);
+        assert.throws(
+          () => warmup("pair"),
+          /Expected an array of payload codecs/,
+        );
+        assert.throws(
+          () => warmup([...b.packings, "unknown"]),
+          /Unsupported payload codec/,
+        );
+        for (const name of names.filter((n) => !b.packings.includes(n)))
+          assert.throws(() => warmup([name]), /Unsupported payload codec/);
+        warmup([]);
+        for (const name of b.packings) warmup([name]);
+        warmup([...b.packings, ...b.packings]);
+      }
+      assert.equal(Buffer.from(saved).toString("hex"), sample.rawHex);
       for (const row of v.rows) {
         if (b.core && row.kind !== "none") continue;
         for (const name of names) {
@@ -188,6 +320,8 @@ function physicalFiles() {
       pass: true,
       node: process.version,
       directAbiCases: abi,
+      warmupAbi,
+      automaticAbi,
       positive,
       unsupported,
       rejected,
@@ -225,6 +359,74 @@ function physicalFiles() {
               "data:text/javascript;base64," +
               Buffer.from(b.source).toString("base64"),
           ),
+        );
+        const warmed = await page.evaluate(
+          ({ builds, rows }) => {
+            let count = 0;
+            for (let i = 0; i < builds.length; i++) {
+              const b = builds[i],
+                m = modules[i],
+                row = rows.find(
+                  (r) =>
+                    r.kind === (b.core ? "none" : "secure") &&
+                    r.rawHex.length === 514,
+                );
+              const first = m.binary(row.packets[b.packings[0]]); // lazy cold path
+              if (m.warmup.length !== (b.packings.length === 1 ? 0 : 1))
+                throw Error("Warm-up signature");
+              if (b.packings.length === 1) {
+                if (m.warmup() !== undefined)
+                  throw Error("Warm-up return value");
+                m.warmup();
+              } else {
+                for (const bad of [
+                  undefined,
+                  "pair",
+                  [...b.packings, "unknown"],
+                ]) {
+                  let failed = false;
+                  try {
+                    m.warmup(bad);
+                  } catch {
+                    failed = true;
+                  }
+                  if (!failed) throw Error("Invalid warm-up accepted");
+                }
+                for (const name of ["pair", "ans", "windows"].filter(
+                  (n) => !b.packings.includes(n),
+                )) {
+                  let failed = false;
+                  try {
+                    m.warmup([name]);
+                  } catch (e) {
+                    failed = e.message === "Unsupported payload codec";
+                  }
+                  if (!failed) throw Error("Omitted warm-up codec accepted");
+                }
+                m.warmup([]);
+                for (const name of b.packings) m.warmup([name]);
+                m.warmup([...b.packings, ...b.packings]);
+              }
+              if (
+                Array.from(first, (x) => x.toString(16).padStart(2, "0")).join(
+                  "",
+                ) !== row.rawHex
+              )
+                throw Error("Warm-up changed output");
+              for (const name of b.packings) {
+                const out = m.binary(row.packets[name]);
+                if (
+                  Array.from(out, (x) => x.toString(16).padStart(2, "0")).join(
+                    "",
+                  ) !== row.rawHex
+                )
+                  throw Error("Warm decode bytes");
+                count++;
+              }
+            }
+            return count;
+          },
+          { builds: v.builds.map(({ source, wasm, ...b }) => b), rows: v.rows },
         );
         const counts = await page.evaluate(
           ({ builds, rows, names, tags }) => {
@@ -388,7 +590,13 @@ function physicalFiles() {
           assert(result.pass, JSON.stringify(result));
           offline += result.cases;
         }
-        results.push({ browser: browser.version(), ...counts, large, offline });
+        results.push({
+          browser: browser.version(),
+          ...counts,
+          large,
+          offline,
+          warmed,
+        });
         console.log(JSON.stringify(results.at(-1)));
       } finally {
         await browser.close();
@@ -400,6 +608,8 @@ function physicalFiles() {
   const report = {
     pass: true,
     directAbiCases: abi,
+    warmupAbi,
+    automaticAbi,
     results,
     sourceSha256: v.builds.map((b) =>
       crypto.createHash("sha256").update(b.source).digest("hex"),

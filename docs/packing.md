@@ -21,7 +21,8 @@ See [the wire specification](format.md).
 
 ## Fresh production measurements
 
-These measurements use the actual full distribution on Linux aarch64, Node
+These measurements use the full distribution from commit `eef9cab`, before the
+explicit warm-up API, on Linux aarch64, Node
 24.21.0, Chromium **156.0.8078.79** and Chrome **109.0.5414.119**. Every input is
 the same deterministic pseudorandom prefix (LCG seed 815), with sampled automatic
 mask selection. All 12 integrity/format/memory settings were timed for every
@@ -44,8 +45,8 @@ decoder or HTML shell. At 1 KiB the corresponding sizes were 1,066 / 1,086 /
 1,079 bytes; pair's smaller framing wins there. At 64 KiB they were 65,826 /
 65,790 / 65,683 bytes. Input structure and masking can change these comparisons.
 
-The secure single-codec ESMs are roughly 9.2–9.4 KB each as ASCII files;
-the full module is 15,570 bytes. Consult `dist/profiles.json` for exact module,
+In that campaign the secure single-codec ESMs were roughly 9.2–9.4 KB each as
+ASCII files; the full module was 15,570 bytes. Consult `dist/profiles.json` for current module,
 Wasm and gzip sizes. UTF-16 HTML doubles ASCII shell/code bytes relative to a
 single-byte shell; calculate complete-file cost for your own template.
 

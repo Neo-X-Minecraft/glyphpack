@@ -3,6 +3,15 @@
  * Feature constants remove messages for verification absent from the build.
  */
 const littleEndian = new Uint8Array(new Uint16Array([1]).buffer)[0] === 1;
+// Imports have already instantiated Wasm. Explicit warm-up only prepares its
+// selected reusable lookup caches; decoding also initializes them as needed.
+export function warmWasm(api, codecs) {
+  const status = api.warmup(codecs);
+  if (status)
+    throw status === 8
+      ? RangeError("Wasm decoder memory allocation failed")
+      : Error("Unsupported payload codec");
+}
 export function runWasm(api, text, verifyFormat, dataKind, memoryHeavy) {
   // Dispatch before reserving/copying a large input. The kernel independently
   // repeats this guard for direct ABI callers, even in unchecked builds.

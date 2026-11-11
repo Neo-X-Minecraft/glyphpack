@@ -1,214 +1,214 @@
 {
   "ans.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7736,
-    "blake3": "0b86b14641f2f920a4d1831578b299e200fb8c825ae9a8e7474f3fa9a2842997",
+    "base64Bytes": 7796,
+    "blake3": "6c3760b140116c35c0da4664b3a5ef5167690220ab56d27f8776aa6605666fae",
     "browserTarget": "chrome109",
-    "bytes": 9311,
+    "bytes": 9541,
     "formatVersion": 4,
-    "gzip9Bytes": 5800,
+    "gzip9Bytes": 5845,
     "packings": [
       "ans"
     ],
-    "wasmBytes": 16333
+    "wasmBytes": 16534
   },
   "ans.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7736,
-    "blake3": "b4d160eca59c9d06d1ae28af0a88f192770a7eaa97f497f5e32f2ae6ec948def",
+    "base64Bytes": 7796,
+    "blake3": "b3ce41c9c45be99a48a6e4f14d4a29ef0a4e9aa3e26adeb8c74f080b0e76d5f8",
     "browserTarget": "chrome109",
-    "bytes": 10074,
+    "bytes": 10387,
     "formatVersion": 4,
-    "gzip9Bytes": 5800,
+    "gzip9Bytes": 5845,
     "packings": [
       "ans"
     ],
-    "wasmBytes": 16333
+    "wasmBytes": 16534
   },
   "core.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 1776,
-    "blake3": "ccc02cd1043b9f55e687c64291322ec685b705f02787e23c459bf805d9015d42",
+    "base64Bytes": 1848,
+    "blake3": "9038f2fd021095022e7d50498ef31a7a3203b816b1cfbd185d22543e73a36c93",
     "browserTarget": "chrome109",
-    "bytes": 3191,
+    "bytes": 3433,
     "formatVersion": 4,
-    "gzip9Bytes": 1331,
+    "gzip9Bytes": 1386,
     "packings": [
       "pair"
     ],
-    "wasmBytes": 2611
+    "wasmBytes": 2812
   },
   "core.mjs": {
     "backend": "wasm",
-    "base64Bytes": 1776,
-    "blake3": "2da38026deb5e4f7e9b935304f899709dded1b6574a2412b7f52285a002e4ce7",
+    "base64Bytes": 1848,
+    "blake3": "f42101b1bae603210f27aebf318a21d9d7a568d2abafa9425a11d7dfbb7dea86",
     "browserTarget": "chrome109",
-    "bytes": 3920,
+    "bytes": 4245,
     "formatVersion": 4,
-    "gzip9Bytes": 1331,
+    "gzip9Bytes": 1386,
     "packings": [
       "pair"
     ],
-    "wasmBytes": 2611
+    "wasmBytes": 2812
   },
   "default.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7856,
-    "blake3": "4b7d628fb110dbaa4fbd5e2fcbd962252d9f5b3ea014988e281c74447f2f2915",
+    "base64Bytes": 7916,
+    "blake3": "372b58195598a450aebda25eecc7798fcaed1762bd02de6a5cf03f138333a3e3",
     "browserTarget": "chrome109",
-    "bytes": 9448,
+    "bytes": 9678,
     "formatVersion": 4,
-    "gzip9Bytes": 5891,
+    "gzip9Bytes": 5935,
     "packings": [
       "pair"
     ],
-    "wasmBytes": 15943
+    "wasmBytes": 16144
   },
   "default.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7856,
-    "blake3": "45b86b7b27f4fbc0822238fb1476298ef3630da758359997d0e79cbbaea36d9a",
+    "base64Bytes": 7916,
+    "blake3": "35f88521ae46d9dbf17497762701f417cb958b52b3cafe9ca46b678166c21d67",
     "browserTarget": "chrome109",
-    "bytes": 10232,
+    "bytes": 10545,
     "formatVersion": 4,
-    "gzip9Bytes": 5891,
+    "gzip9Bytes": 5935,
     "packings": [
       "pair"
     ],
-    "wasmBytes": 15943
+    "wasmBytes": 16144
   },
   "fast-none.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 3336,
-    "blake3": "897dc92275f58538d299fa0a0cca94d3625fa2f59373e91b7b28b50e84888dfc",
+    "base64Bytes": 3436,
+    "blake3": "2842ac94ea4ec3e36afee3a8195f16bc5b0892442a53d198668b6c8f8da44329",
     "browserTarget": "chrome109",
-    "bytes": 5199,
+    "bytes": 5469,
     "formatVersion": 4,
-    "gzip9Bytes": 2502,
+    "gzip9Bytes": 2575,
     "packings": [
       "pair"
     ],
-    "wasmBytes": 5341
+    "wasmBytes": 5542
   },
   "fast-none.mjs": {
     "backend": "wasm",
-    "base64Bytes": 3336,
-    "blake3": "be606a277053c0e5902ba3b1ac9e7d6e5b0fdbf8b75c8ace412df121036769d9",
+    "base64Bytes": 3436,
+    "blake3": "287e0025e876ccefea2e69d35e30e7402f30368c331c841513fe4edf12ee7f9d",
     "browserTarget": "chrome109",
-    "bytes": 6182,
+    "bytes": 6535,
     "formatVersion": 4,
-    "gzip9Bytes": 2502,
+    "gzip9Bytes": 2575,
     "packings": [
       "pair"
     ],
-    "wasmBytes": 5341
+    "wasmBytes": 5542
   },
   "full.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 13508,
-    "blake3": "7052d364e6d61af0826cf9df70f519729941e654f7452e96fc86b66cd223c6f9",
+    "base64Bytes": 13732,
+    "blake3": "71936c4dc6bdc7b06167abd33138816487930988366989722f4ec75ce2807fcb",
     "browserTarget": "chrome109",
-    "bytes": 15570,
+    "bytes": 16191,
     "formatVersion": 4,
-    "gzip9Bytes": 10131,
+    "gzip9Bytes": 10299,
     "packings": [
       "pair",
       "ans",
       "windows"
     ],
-    "wasmBytes": 30338
+    "wasmBytes": 31358
   },
   "full.mjs": {
     "backend": "wasm",
-    "base64Bytes": 13508,
-    "blake3": "04085aeb3c44bc3bbb6716e25f8462e7cc2085345147d353626d67f5e74a4b0b",
+    "base64Bytes": 13732,
+    "blake3": "5ff234d37e207d29497bf970b92fee263de579c28675d40087748bf902248e19",
     "browserTarget": "chrome109",
-    "bytes": 16708,
+    "bytes": 17577,
     "formatVersion": 4,
-    "gzip9Bytes": 10131,
+    "gzip9Bytes": 10299,
     "packings": [
       "pair",
       "ans",
       "windows"
     ],
-    "wasmBytes": 30338
+    "wasmBytes": 31358
   },
   "high-memory.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7956,
-    "blake3": "e75e18eaac2ca435c9f072e09038f953f8e9389731c937434c9e6c99dd40929a",
+    "base64Bytes": 8260,
+    "blake3": "e0ea8d4dea8c24038c769891f54364c0bbbc522c167cb2d185ae53b7069dbe2b",
     "browserTarget": "chrome109",
-    "bytes": 9548,
+    "bytes": 10022,
     "formatVersion": 4,
-    "gzip9Bytes": 5965,
+    "gzip9Bytes": 6194,
     "packings": [
       "pair"
     ],
-    "wasmBytes": 16314
+    "wasmBytes": 17099
   },
   "high-memory.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7956,
-    "blake3": "9b79ecb177b4d1a0645d7861b4d7238c2b830f6b5f7768a9b9fcdcbea3c42d6c",
+    "base64Bytes": 8260,
+    "blake3": "91f017e07108e6869605e0ae54fe8441958eb76db095b56d24be81a4cf8a0912",
     "browserTarget": "chrome109",
-    "bytes": 10332,
+    "bytes": 10889,
     "formatVersion": 4,
-    "gzip9Bytes": 5965,
+    "gzip9Bytes": 6194,
     "packings": [
       "pair"
     ],
-    "wasmBytes": 16314
+    "wasmBytes": 17099
   },
   "none.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 1776,
-    "blake3": "ccc02cd1043b9f55e687c64291322ec685b705f02787e23c459bf805d9015d42",
+    "base64Bytes": 1848,
+    "blake3": "9038f2fd021095022e7d50498ef31a7a3203b816b1cfbd185d22543e73a36c93",
     "browserTarget": "chrome109",
-    "bytes": 3191,
+    "bytes": 3433,
     "formatVersion": 4,
-    "gzip9Bytes": 1331,
+    "gzip9Bytes": 1386,
     "packings": [
       "pair"
     ],
-    "wasmBytes": 2611
+    "wasmBytes": 2812
   },
   "none.mjs": {
     "backend": "wasm",
-    "base64Bytes": 1776,
-    "blake3": "2da38026deb5e4f7e9b935304f899709dded1b6574a2412b7f52285a002e4ce7",
+    "base64Bytes": 1848,
+    "blake3": "f42101b1bae603210f27aebf318a21d9d7a568d2abafa9425a11d7dfbb7dea86",
     "browserTarget": "chrome109",
-    "bytes": 3920,
+    "bytes": 4245,
     "formatVersion": 4,
-    "gzip9Bytes": 1331,
+    "gzip9Bytes": 1386,
     "packings": [
       "pair"
     ],
-    "wasmBytes": 2611
+    "wasmBytes": 2812
   },
   "windows.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7664,
-    "blake3": "210b3d697b7399a99a595c6f22efd8e5ab7e9c5ac1e8bf1a2dd1b0bc5fe99164",
+    "base64Bytes": 7768,
+    "blake3": "ae9e7df2081955e7d428af70f986e483a0456213cc46ee7cda4ec1311b0fa631",
     "browserTarget": "chrome109",
-    "bytes": 9239,
+    "bytes": 9513,
     "formatVersion": 4,
-    "gzip9Bytes": 5748,
+    "gzip9Bytes": 5824,
     "packings": [
       "windows"
     ],
-    "wasmBytes": 16100
+    "wasmBytes": 16289
   },
   "windows.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7664,
-    "blake3": "bcd0bfed1e62fd0614953e2ae7d4b83381a8b8f0f9006914ae3d55897bc72464",
+    "base64Bytes": 7768,
+    "blake3": "4520633fe1228dedf1d7781c9356e839f3e307eea237ff6171e93e8abab99be7",
     "browserTarget": "chrome109",
-    "bytes": 10002,
+    "bytes": 10359,
     "formatVersion": 4,
-    "gzip9Bytes": 5748,
+    "gzip9Bytes": 5824,
     "packings": [
       "windows"
     ],
-    "wasmBytes": 16100
+    "wasmBytes": 16289
   }
 }

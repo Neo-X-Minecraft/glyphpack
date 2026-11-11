@@ -15,7 +15,7 @@
 | One-time browser decompression and instantiation | `src/decoder/loader.js` |
 | UTF-16 input copy, output ownership and errors | `src/decoder/wasm-runtime.js` |
 | Selected option parsing | `src/decoder/options.js`, `memory-options.js` |
-| Wasm header, arenas, tables and integrity dispatch | `crates/decoder-wasm/src/lib.rs` |
+| Wasm header, arenas, tables, warm-up and integrity dispatch | `crates/decoder-wasm/src/lib.rs` |
 | Const-specialized bulk/tail pair loops | `crates/decoder-wasm/src/unpack.rs` |
 | UTF-16 ANS and Windows decode loops | `crates/decoder-wasm/src/ans.rs`, `windows.rs` |
 | CLI | `src/main.rs` |

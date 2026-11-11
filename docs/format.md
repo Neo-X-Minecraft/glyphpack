@@ -167,3 +167,24 @@ indicator listed above, not an additional numeric version byte.
 Production ESMs embed their decoder as native `gzip -9 -n` + base64. Native
 `DecompressionStream` inflates it during asynchronous module evaluation. After
 import completes, the public decode function remains synchronous.
+
+## Warm-up API and ABI
+
+All modules export `warmup(): void` when one codec is compiled, or
+`warmup(codecs: readonly ('pair' | 'ans' | 'windows')[]): void` for a mixed build,
+with the union narrowed to the selected codecs. Mixed builds require an explicit
+array. Empty arrays do nothing; duplicates are idempotent. Unavailable or unknown
+names throw `Unsupported payload codec` before any cache is initialized. An
+argument that is not an array throws `TypeError('Expected an array of payload codecs')`.
+
+The raw Wasm `warmup(mask: u32) -> status` export uses bits pair=1, ANS=2,
+Windows=4. It validates every bit before changing state. Status 9 rejects unknown
+or unavailable bits; status 8 reports allocation failure. Success is 0. Zero is
+a no-op. A requested pair codec prepares its optional heavy table if compiled;
+pair/ANS share the main lookup. This does not change input/output pointers or
+lengths. Repeated warming never allocates the same cache twice.
+
+Normal decoding still initializes only its needed tables lazily. Its default
+memory strategy remains off; explicit pair warm-up in a heavy-capable build
+intentionally prepares the extra 256 KiB cache without changing decode options.
+Warm-up does not allocate payload-sized arenas or force V8 to optimize kernels.

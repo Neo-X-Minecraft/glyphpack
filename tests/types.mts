@@ -1,8 +1,8 @@
-import { binary as fixed } from "glyphpack";
-import { binary as full, type DecodeOptions } from "glyphpack/full";
+import { binary as fixed, warmup as warmFixed } from "glyphpack";
+import { binary as full, warmup, type DecodeOptions } from "glyphpack/full";
 import { binary as core } from "glyphpack/core";
-import { binary as ans } from "glyphpack/ans";
-import { binary as windows } from "glyphpack/windows";
+import { binary as ans, warmup as warmAns } from "glyphpack/ans";
+import { binary as windows, warmup as warmWindows } from "glyphpack/windows";
 import { binary as fast } from "glyphpack/fast-none";
 const options: DecodeOptions = {
   verifyFormat: true,
@@ -10,6 +10,20 @@ const options: DecodeOptions = {
   memoryHeavy: false,
 };
 const bytes: Uint8Array = full("", options);
+warmFixed();
+warmAns();
+warmWindows();
+warmup(["pair", "ans"]);
+warmup(["windows", "pair", "ans"] as const);
+warmup([]);
+// @ts-expect-error Single-codec warm-up has no parameters.
+warmFixed(["pair"]);
+// @ts-expect-error Mixed builds require an explicit array.
+warmup();
+// @ts-expect-error Warm-up accepts codec names, not verification policies.
+warmup(["secure"]);
+// @ts-expect-error A single name still goes inside an array.
+warmup("ans");
 full("", { verifyData: true });
 full("", { verifyData: false });
 fixed("");
