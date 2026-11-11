@@ -77,3 +77,7 @@ required-features = ["tools"]
 [[example]]
 name = "template_literals"
 required-features = ["tools"]
+
+[[example]]
+name = "packing"
+required-features = ["tools"]

@@ -16,3 +16,7 @@ Local experiments for denser standalone HTML payloads, under 0BSD by NeoX.
 Commands and encoding constraints are in the report. Generated HTML and data
 remain under ignored `generated/template-literals/`. The experiments include
 new alphabets and headers; they are separate from the production wire format.
+
+Follow-up [packing and complete browser-startup measurements](../packing/results/RESULTS.md)
+compare the alphabets with grouped words, interleaved ANS, native Base64 and
+matched verification in real Chrome 109 and Chromium 156.
