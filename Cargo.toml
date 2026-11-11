@@ -73,3 +73,7 @@ required-features = ["tools"]
 [[example]]
 name = "encoder_report"
 required-features = ["tools"]
+
+[[example]]
+name = "template_literals"
+required-features = ["tools"]
