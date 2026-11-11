@@ -1,7 +1,9 @@
 //! Build a specialized Rust/Wasm decoder and an independent, self-contained ESM
 //! adapter. There is one production backend. Gzip/base64 loading happens once at
 //! module evaluation; binary() remains synchronous after import resolves.
-use crate::{encoder::Integrity, hash::blake3, tooling::fixtures::hex, transport};
+use crate::{
+    encoder::Integrity, hash::blake3, packing::Packing, tooling::fixtures::hex, transport,
+};
 use std::{
     env, fs,
     io::Write,
@@ -21,6 +23,7 @@ const FILES: &[(&str, &str)] = &[
 ];
 #[derive(Clone, Debug)]
 pub struct BuildOptions {
+    pub packings: Vec<Packing>,
     pub formats: Vec<bool>,
     pub data: Vec<Integrity>,
     pub memory: Vec<bool>,
@@ -32,6 +35,7 @@ pub struct BuildOptions {
 impl Default for BuildOptions {
     fn default() -> Self {
         Self {
+            packings: vec![Packing::Pair],
             formats: vec![true],
             data: vec![Integrity::Secure],
             memory: vec![false],
@@ -45,6 +49,7 @@ impl Default for BuildOptions {
 impl BuildOptions {
     pub fn full() -> Self {
         Self {
+            packings: vec![Packing::Pair, Packing::Ans, Packing::Windows],
             formats: vec![false, true],
             data: vec![Integrity::None, Integrity::Fast, Integrity::Secure],
             memory: vec![false, true],
@@ -78,17 +83,29 @@ pub fn esbuild_path(explicit: Option<&Path>) -> PathBuf {
 }
 fn canonical(options: &BuildOptions) -> Result<BuildOptions, String> {
     let mut options = options.clone();
+    options.packings.sort();
+    options.packings.dedup();
     options.formats.sort();
     options.formats.dedup();
     options.data.sort();
     options.data.dedup();
     options.memory.sort();
     options.memory.dedup();
-    if options.formats.is_empty() || options.data.is_empty() || options.memory.is_empty() {
+    if options.packings.is_empty()
+        || options.formats.is_empty()
+        || options.data.is_empty()
+        || options.memory.is_empty()
+    {
         return Err("Every build axis must select at least one choice".into());
     }
     if options.legacy && options.data != [Integrity::None] {
         return Err("Legacy format has no digest; select data=none explicitly".into());
+    }
+    if options.legacy && options.packings != [Packing::Pair] {
+        return Err("Legacy format supports only pair packing".into());
+    }
+    if !options.packings.contains(&Packing::Pair) {
+        options.memory = vec![false]
     }
     if !options.module {
         return Err("The Wasm decoder is an ES module; import it before calling binary()".into());
@@ -96,7 +113,15 @@ fn canonical(options: &BuildOptions) -> Result<BuildOptions, String> {
     Ok(options)
 }
 fn features(options: &BuildOptions) -> Vec<&'static str> {
-    let mut out = Vec::new();
+    let mut out = options
+        .packings
+        .iter()
+        .map(|p| match p {
+            Packing::Pair => "pair",
+            Packing::Ans => "ans",
+            Packing::Windows => "windows",
+        })
+        .collect::<Vec<_>>();
     if options.formats.len() > 1 {
         out.push("format-runtime");
     } else if options.formats[0] {
@@ -123,7 +148,16 @@ pub fn profile_key(options: &BuildOptions) -> String {
             .collect::<String>()
     };
     format!(
-        "f{}-d{}-m{}-{}",
+        "p{}-f{}-d{}-m{}-{}",
+        options
+            .packings
+            .iter()
+            .map(|p| match p {
+                Packing::Pair => 'p',
+                Packing::Ans => 'a',
+                Packing::Windows => 'w',
+            })
+            .collect::<String>(),
         flags(&options.formats),
         options
             .data
@@ -186,6 +220,9 @@ pub fn build_wasm(options: &BuildOptions) -> Result<PathBuf, String> {
         "crates/decoder-wasm/Cargo.toml",
         "crates/decoder-wasm/src/lib.rs",
         "crates/decoder-wasm/src/unpack.rs",
+        "crates/decoder-wasm/src/ans.rs",
+        "crates/decoder-wasm/src/windows.rs",
+        "src/packing.rs",
         "src/hash.rs",
         "src/hash/simd.rs",
     ] {
@@ -345,6 +382,19 @@ pub fn build_adapter(options: &BuildOptions, wasm: &[u8]) -> Result<String, Stri
         io(fs::write(scratch.0.join(name), contents))?;
     }
     let defines = [
+        (
+            "PAYLOAD_ALLOW_PAIR",
+            options.packings.contains(&Packing::Pair).to_string(),
+        ),
+        (
+            "PAYLOAD_ALLOW_ANS",
+            options.packings.contains(&Packing::Ans).to_string(),
+        ),
+        (
+            "PAYLOAD_ALLOW_WINDOWS",
+            options.packings.contains(&Packing::Windows).to_string(),
+        ),
+        ("PAYLOAD_LEGACY", options.legacy.to_string()),
         (
             "PAYLOAD_VERIFY_FORMAT",
             options.formats.contains(&true).to_string(),

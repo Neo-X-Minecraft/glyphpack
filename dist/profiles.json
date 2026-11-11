@@ -1,110 +1,214 @@
 {
+  "ans.min.mjs": {
+    "backend": "wasm",
+    "base64Bytes": 7736,
+    "blake3": "0b86b14641f2f920a4d1831578b299e200fb8c825ae9a8e7474f3fa9a2842997",
+    "browserTarget": "chrome109",
+    "bytes": 9311,
+    "formatVersion": 4,
+    "gzip9Bytes": 5800,
+    "packings": [
+      "ans"
+    ],
+    "wasmBytes": 16333
+  },
+  "ans.mjs": {
+    "backend": "wasm",
+    "base64Bytes": 7736,
+    "blake3": "b4d160eca59c9d06d1ae28af0a88f192770a7eaa97f497f5e32f2ae6ec948def",
+    "browserTarget": "chrome109",
+    "bytes": 10074,
+    "formatVersion": 4,
+    "gzip9Bytes": 5800,
+    "packings": [
+      "ans"
+    ],
+    "wasmBytes": 16333
+  },
   "core.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 1748,
-    "blake3": "bbb3bb559546edd3392d7086ab6515f867e00f6b2b21ccbf187c9810654bb058",
+    "base64Bytes": 1776,
+    "blake3": "ccc02cd1043b9f55e687c64291322ec685b705f02787e23c459bf805d9015d42",
     "browserTarget": "chrome109",
-    "bytes": 2988,
-    "gzip9Bytes": 1311,
-    "wasmBytes": 2547
+    "bytes": 3191,
+    "formatVersion": 4,
+    "gzip9Bytes": 1331,
+    "packings": [
+      "pair"
+    ],
+    "wasmBytes": 2611
   },
   "core.mjs": {
     "backend": "wasm",
-    "base64Bytes": 1748,
-    "blake3": "cd8d30a89ce272d7e6e0f7e77cdda00ba4cb1e7617743a6872640b5362af8feb",
+    "base64Bytes": 1776,
+    "blake3": "2da38026deb5e4f7e9b935304f899709dded1b6574a2412b7f52285a002e4ce7",
     "browserTarget": "chrome109",
-    "bytes": 3651,
-    "gzip9Bytes": 1311,
-    "wasmBytes": 2547
+    "bytes": 3920,
+    "formatVersion": 4,
+    "gzip9Bytes": 1331,
+    "packings": [
+      "pair"
+    ],
+    "wasmBytes": 2611
   },
   "default.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7764,
-    "blake3": "ceba06a0e347cbf639e195a0078645553d1a31a669e63999c5dcb43a62bb5a9e",
+    "base64Bytes": 7856,
+    "blake3": "4b7d628fb110dbaa4fbd5e2fcbd962252d9f5b3ea014988e281c74447f2f2915",
     "browserTarget": "chrome109",
-    "bytes": 9181,
-    "gzip9Bytes": 5821,
-    "wasmBytes": 15845
+    "bytes": 9448,
+    "formatVersion": 4,
+    "gzip9Bytes": 5891,
+    "packings": [
+      "pair"
+    ],
+    "wasmBytes": 15943
   },
   "default.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7764,
-    "blake3": "d698198654414330e7eb2853a7d88cb685d65f0fe453cef3aedd87c003e1b0ca",
+    "base64Bytes": 7856,
+    "blake3": "45b86b7b27f4fbc0822238fb1476298ef3630da758359997d0e79cbbaea36d9a",
     "browserTarget": "chrome109",
-    "bytes": 9899,
-    "gzip9Bytes": 5821,
-    "wasmBytes": 15845
+    "bytes": 10232,
+    "formatVersion": 4,
+    "gzip9Bytes": 5891,
+    "packings": [
+      "pair"
+    ],
+    "wasmBytes": 15943
   },
   "fast-none.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 3272,
-    "blake3": "3cf625a04632eee3e2f2bb35f6a56d80a80fab20da29b347b20eb01985dd178a",
+    "base64Bytes": 3336,
+    "blake3": "897dc92275f58538d299fa0a0cca94d3625fa2f59373e91b7b28b50e84888dfc",
     "browserTarget": "chrome109",
-    "bytes": 4960,
-    "gzip9Bytes": 2454,
-    "wasmBytes": 5248
+    "bytes": 5199,
+    "formatVersion": 4,
+    "gzip9Bytes": 2502,
+    "packings": [
+      "pair"
+    ],
+    "wasmBytes": 5341
   },
   "fast-none.mjs": {
     "backend": "wasm",
-    "base64Bytes": 3272,
-    "blake3": "7c1d9e7d831e8497f6c2ae689abc61970def86e1fa3d88c5c9169f138ee8553d",
+    "base64Bytes": 3336,
+    "blake3": "be606a277053c0e5902ba3b1ac9e7d6e5b0fdbf8b75c8ace412df121036769d9",
     "browserTarget": "chrome109",
-    "bytes": 5877,
-    "gzip9Bytes": 2454,
-    "wasmBytes": 5248
+    "bytes": 6182,
+    "formatVersion": 4,
+    "gzip9Bytes": 2502,
+    "packings": [
+      "pair"
+    ],
+    "wasmBytes": 5341
   },
   "full.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 10216,
-    "blake3": "85c24d95ed1cc1f8796b50e2c9aee88b0cd33e2a3a672210e42dfaecbf96fc05",
+    "base64Bytes": 13508,
+    "blake3": "7052d364e6d61af0826cf9df70f519729941e654f7452e96fc86b66cd223c6f9",
     "browserTarget": "chrome109",
-    "bytes": 12087,
-    "gzip9Bytes": 7660,
-    "wasmBytes": 21281
+    "bytes": 15570,
+    "formatVersion": 4,
+    "gzip9Bytes": 10131,
+    "packings": [
+      "pair",
+      "ans",
+      "windows"
+    ],
+    "wasmBytes": 30338
   },
   "full.mjs": {
     "backend": "wasm",
-    "base64Bytes": 10216,
-    "blake3": "72ba93a57dd1424175a84060bc864f0f1b67f8054d813dea1cde54b55a787901",
+    "base64Bytes": 13508,
+    "blake3": "04085aeb3c44bc3bbb6716e25f8462e7cc2085345147d353626d67f5e74a4b0b",
     "browserTarget": "chrome109",
-    "bytes": 13143,
-    "gzip9Bytes": 7660,
-    "wasmBytes": 21281
+    "bytes": 16708,
+    "formatVersion": 4,
+    "gzip9Bytes": 10131,
+    "packings": [
+      "pair",
+      "ans",
+      "windows"
+    ],
+    "wasmBytes": 30338
   },
   "high-memory.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7960,
-    "blake3": "8256a133f00ce95c5e85898858a066c22770f99c75cb76b1b0f42e9bb5a52cd7",
+    "base64Bytes": 7956,
+    "blake3": "e75e18eaac2ca435c9f072e09038f953f8e9389731c937434c9e6c99dd40929a",
     "browserTarget": "chrome109",
-    "bytes": 9377,
-    "gzip9Bytes": 5970,
-    "wasmBytes": 16234
+    "bytes": 9548,
+    "formatVersion": 4,
+    "gzip9Bytes": 5965,
+    "packings": [
+      "pair"
+    ],
+    "wasmBytes": 16314
   },
   "high-memory.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7960,
-    "blake3": "7137ed50af8d0ce1f488d099a961e31a6cee5fd8381655d1a3c5ebde478e14a5",
+    "base64Bytes": 7956,
+    "blake3": "9b79ecb177b4d1a0645d7861b4d7238c2b830f6b5f7768a9b9fcdcbea3c42d6c",
     "browserTarget": "chrome109",
-    "bytes": 10095,
-    "gzip9Bytes": 5970,
-    "wasmBytes": 16234
+    "bytes": 10332,
+    "formatVersion": 4,
+    "gzip9Bytes": 5965,
+    "packings": [
+      "pair"
+    ],
+    "wasmBytes": 16314
   },
   "none.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 1748,
-    "blake3": "bbb3bb559546edd3392d7086ab6515f867e00f6b2b21ccbf187c9810654bb058",
+    "base64Bytes": 1776,
+    "blake3": "ccc02cd1043b9f55e687c64291322ec685b705f02787e23c459bf805d9015d42",
     "browserTarget": "chrome109",
-    "bytes": 2988,
-    "gzip9Bytes": 1311,
-    "wasmBytes": 2547
+    "bytes": 3191,
+    "formatVersion": 4,
+    "gzip9Bytes": 1331,
+    "packings": [
+      "pair"
+    ],
+    "wasmBytes": 2611
   },
   "none.mjs": {
     "backend": "wasm",
-    "base64Bytes": 1748,
-    "blake3": "cd8d30a89ce272d7e6e0f7e77cdda00ba4cb1e7617743a6872640b5362af8feb",
+    "base64Bytes": 1776,
+    "blake3": "2da38026deb5e4f7e9b935304f899709dded1b6574a2412b7f52285a002e4ce7",
     "browserTarget": "chrome109",
-    "bytes": 3651,
-    "gzip9Bytes": 1311,
-    "wasmBytes": 2547
+    "bytes": 3920,
+    "formatVersion": 4,
+    "gzip9Bytes": 1331,
+    "packings": [
+      "pair"
+    ],
+    "wasmBytes": 2611
+  },
+  "windows.min.mjs": {
+    "backend": "wasm",
+    "base64Bytes": 7664,
+    "blake3": "210b3d697b7399a99a595c6f22efd8e5ab7e9c5ac1e8bf1a2dd1b0bc5fe99164",
+    "browserTarget": "chrome109",
+    "bytes": 9239,
+    "formatVersion": 4,
+    "gzip9Bytes": 5748,
+    "packings": [
+      "windows"
+    ],
+    "wasmBytes": 16100
+  },
+  "windows.mjs": {
+    "backend": "wasm",
+    "base64Bytes": 7664,
+    "blake3": "bcd0bfed1e62fd0614953e2ae7d4b83381a8b8f0f9006914ae3d55897bc72464",
+    "browserTarget": "chrome109",
+    "bytes": 10002,
+    "formatVersion": 4,
+    "gzip9Bytes": 5748,
+    "packings": [
+      "windows"
+    ],
+    "wasmBytes": 16100
   }
 }

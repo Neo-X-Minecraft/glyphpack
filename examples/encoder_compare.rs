@@ -42,6 +42,7 @@ fn call(which: usize, data: &[u8], mode: u8, policy: u8, backend: u8) -> Out {
         }
     } else {
         let options = new::EncodeOptions {
+            packing: new::Packing::Pair,
             integrity: match mode {
                 0 => new::Integrity::None,
                 1 => new::Integrity::Fast,
@@ -166,7 +167,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                     let before = bytes(call(0, &data, mode, policy, backend));
                     let after = bytes(call(1, &data, mode, policy, backend));
-                    assert_eq!(before, after, "{label}/{mode}/{policy}/{backend}");
+                    // Current encoding adds a codec field; compare the stable
+                    // pair header/body to the frozen format-3 reference.
+                    // The field remains included in timings and output sizes.
+                    let prefix: &[u8] = if backend == 2 { &[9] } else { &[9, 0] };
+                    assert!(after.starts_with(prefix));
+                    assert_eq!(
+                        before,
+                        after[prefix.len()..],
+                        "{label}/{mode}/{policy}/{backend}"
+                    );
                     let fingerprint = glyphpack::tooling::fixtures::hex(&hash::blake3(&after));
                     let output_bytes = after.len();
                     drop(before);

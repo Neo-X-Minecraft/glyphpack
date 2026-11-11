@@ -62,7 +62,13 @@ for(const name of ['glyphpack/core','glyphpack/none'])check((await import(name))
 const {binary}=await import('glyphpack/full');let cases=4;
 for(const verifyData of ['none','fast','secure'])for(const verifyFormat of [false,true])for(const memoryHeavy of [false,true]){check(binary(fixture.packets[verifyData],{verifyData,verifyFormat,memoryHeavy}));cases++;}
 const {binary:fast}=await import('glyphpack/fast-none');for(const verifyData of ['none','fast'])for(const verifyFormat of [false,true]){check(fast(fixture.packets[verifyData],{verifyData,verifyFormat}));cases++;}
-console.log(JSON.stringify({pass:true,node:process.version,cases,exports:6}));`;
+for(const packing of ['pair','ans','windows']){
+ const name=packing==='pair'?'glyphpack':'glyphpack/'+packing, selected=(await import(name)).binary;
+ check(selected(fixture.tagged[packing].secure));cases++;
+ for(const other of ['pair','ans','windows'])if(other!==packing){assert.throws(()=>selected(fixture.tagged[other].secure),/Unsupported payload codec/);cases++;}
+ for(const verifyData of ['none','fast','secure'])for(const verifyFormat of [false,true])for(const memoryHeavy of [false,true]){check(binary(fixture.tagged[packing][verifyData],{verifyData,verifyFormat,memoryHeavy}));cases++;}
+}
+console.log(JSON.stringify({pass:true,node:process.version,cases,exports:8}));`;
     await fs.writeFile(path.join(temp, "consumer.mjs"), script);
     process.stdout.write(
       execFileSync(process.execPath, ["consumer.mjs"], {

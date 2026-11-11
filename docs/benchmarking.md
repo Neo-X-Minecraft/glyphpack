@@ -66,6 +66,10 @@ browser encoder from the retained v0.2.1 tag in a separate worktree. Treat
 parallel-enabled native runs as a separate configuration. Do not combine their
 absolute timings with another process or browser campaign.
 
+The current pair encoder adds a format-4 codec indicator. The frozen encoder
+does not; equivalence checks compare their pair header/body after removing that
+field. Timings and reported current output sizes include it.
+
 ```sh
 cargo run --release --locked --example encode_bench -- \
   --output generated/results/encoder.json > generated/results/encoder.csv
@@ -78,6 +82,12 @@ the timer. Paired comparisons alternate old/new calls and compare output bytes
 before timing. CPU clocks, temperature and affinity are unpinned.
 
 ## Archived algorithm experiments
+
+The three production packings have a separate [comparison and reproduction
+guide](packing.md), with all codec/policy samples and source-size candidates.
+Earlier template/ANS/transport prototypes are frozen research based on commit
+`52d9763`; check out that revision to run their source-patching harnesses. Their
+recorded results are distinct from the production-codec measurements above.
 
 `glyphpack bench history --quick` rechecks generic frozen decoder implementations
 using public fixtures. Omit `--quick` for the full candidate/profile/hash matrix.

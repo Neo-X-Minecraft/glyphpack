@@ -89,3 +89,11 @@ required-features = ["tools"]
 [[example]]
 name = "transports"
 required-features = ["tools"]
+
+[[example]]
+name = "pair_compactness"
+required-features = ["tools"]
+
+[[example]]
+name = "codec_bench"
+required-features = ["tools"]

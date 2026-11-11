@@ -1,6 +1,8 @@
 import { binary as fixed } from "glyphpack";
 import { binary as full, type DecodeOptions } from "glyphpack/full";
 import { binary as core } from "glyphpack/core";
+import { binary as ans } from "glyphpack/ans";
+import { binary as windows } from "glyphpack/windows";
 import { binary as fast } from "glyphpack/fast-none";
 const options: DecodeOptions = {
   verifyFormat: true,
@@ -11,6 +13,10 @@ const bytes: Uint8Array = full("", options);
 full("", { verifyData: true });
 full("", { verifyData: false });
 fixed("");
+ans("");
+windows("");
+// @ts-expect-error Codec selection is encoded in the data, not a runtime option.
+full("", { packing: "ans" });
 core("");
 fast("", { verifyData: "fast", verifyFormat: false });
 // @ts-expect-error Fixed profiles do not expose ignored runtime options.

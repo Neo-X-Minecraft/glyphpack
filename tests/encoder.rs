@@ -5,8 +5,56 @@ use glyphpack::{encoder as current, hash};
 #[path = "../benchmarks/fixtures/encoder-v0.2.1.rs"]
 mod reference;
 
+#[test]
+fn codec_output_backends_and_windows_mapping() {
+    use glyphpack::{injector, packing};
+    let data: Vec<_> = (0..4097).map(|i| (i * 73 + 19) as u8).collect();
+    for packing in [
+        current::Packing::Pair,
+        current::Packing::Ans,
+        current::Packing::Windows,
+    ] {
+        let options = current::EncodeOptions {
+            packing,
+            mask: Some(85),
+            ..Default::default()
+        };
+        let units = current::encode_units(&data, &options).unwrap();
+        assert_eq!(units[0], packing.tag());
+        let text = current::encode_text(&data, &options).unwrap();
+        assert_eq!(text.encode_utf16().collect::<Vec<_>>(), units);
+        assert!(!text.contains(['<', '\r']));
+        let source = current::encode_bytes(&data, &options).unwrap();
+        if packing == current::Packing::Windows {
+            assert_eq!(source.len(), units.len());
+            assert_eq!(injector::windows1252_payload_text(&source), text);
+            assert_eq!(injector::windows1252_document(&text).unwrap(), source);
+        } else {
+            assert_eq!(source, current::dense16(&data, &options).unwrap());
+        }
+    }
+    for byte in 0..=255u8 {
+        assert_eq!(
+            packing::windows_source_byte(packing::windows_code_point(byte)),
+            Some(byte)
+        );
+    }
+    assert!(injector::windows1252_document("unrepresentable: 漢").is_err());
+    assert!(current::encode_bytes(
+        &data,
+        &current::EncodeOptions {
+            packing: current::Packing::Ans,
+            legacy: true,
+            integrity: current::Integrity::None,
+            ..Default::default()
+        }
+    )
+    .is_err());
+}
+
 fn compare(data: &[u8], mode: current::Integrity, mask: Option<u8>, effort: current::Effort) {
     let options = current::EncodeOptions {
+        packing: current::Packing::Pair,
         integrity: mode,
         mask,
         effort,
@@ -22,17 +70,18 @@ fn compare(data: &[u8], mode: current::Integrity, mask: Option<u8>, effort: curr
         },
         legacy: false,
     };
-    assert_eq!(
-        current::dense16(data, &options).unwrap(),
-        reference::dense16(data, &before).unwrap()
-    );
+    let mut expected = glyphpack::packing::PAIR_TAG.to_le_bytes().to_vec();
+    expected.extend(reference::dense16(data, &before).unwrap());
+    assert_eq!(current::dense16(data, &options).unwrap(), expected);
     assert_eq!(
         current::encode_units(data, &options).unwrap(),
-        reference::encode_units(data, &before).unwrap()
+        std::iter::once(glyphpack::packing::PAIR_TAG)
+            .chain(reference::encode_units(data, &before).unwrap())
+            .collect::<Vec<_>>()
     );
     assert_eq!(
         current::encode_text(data, &options).unwrap(),
-        reference::encode_text(data, &before).unwrap()
+        format!("\t{}", reference::encode_text(data, &before).unwrap())
     );
 }
 
@@ -74,10 +123,9 @@ fn extended_headers_with_virtual_digest_tails() {
             mask: Some(255),
             ..Default::default()
         };
-        assert_eq!(
-            current::dense16(&data, &a).unwrap(),
-            reference::dense16(&data, &b).unwrap()
-        );
+        let mut expected = glyphpack::packing::PAIR_TAG.to_le_bytes().to_vec();
+        expected.extend(reference::dense16(&data, &b).unwrap());
+        assert_eq!(current::dense16(&data, &a).unwrap(), expected);
     }
 }
 

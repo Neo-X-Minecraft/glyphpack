@@ -7,6 +7,8 @@
   "exports": {
     ".": "./dist/default.min.mjs",
     "./full": "./dist/full.min.mjs",
+    "./ans": "./dist/ans.min.mjs",
+    "./windows": "./dist/windows.min.mjs",
     "./core": "./dist/core.min.mjs",
     "./none": "./dist/none.min.mjs",
     "./fast-none": "./dist/fast-none.min.mjs",

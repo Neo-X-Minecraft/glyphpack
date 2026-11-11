@@ -28,6 +28,9 @@ pub fn from_hex(text: &str) -> Result<Vec<u8>, String> {
         .collect()
 }
 pub fn packets(data: &[u8], mask: Option<u8>) -> Result<Value, String> {
+    // Keep this older differential suite on unmarked format 3. Removing the
+    // ASCII TAB indicator preserves its immutable JS oracle and mutations.
+    // tooling::codecs independently exercises every tagged format-4 codec.
     let mut out = serde_json::Map::new();
     for integrity in [Integrity::None, Integrity::Fast, Integrity::Secure] {
         out.insert(
@@ -39,7 +42,8 @@ pub fn packets(data: &[u8], mask: Option<u8>) -> Result<Value, String> {
                     mask,
                     ..EncodeOptions::default()
                 }
-            )?),
+            )?[1..]
+                .to_string()),
         );
     }
     Ok(Value::Object(out))
@@ -48,7 +52,7 @@ pub fn packets(data: &[u8], mask: Option<u8>) -> Result<Value, String> {
 pub fn test_vectors(root: &Path) -> Result<Value, String> {
     let mut profiles = Vec::new();
     for options in super::profiles::matrix() {
-        profiles.push(json!({"formats":options.formats,"modes":options.data.iter().map(|m|m.name()).collect::<Vec<_>>(),"memories":options.memory,"source":build_decoder(&options)?}));
+        profiles.push(json!({"formats":options.formats,"modes":options.data.iter().map(|m|m.name()).collect::<Vec<_>>(),"memories":options.memory,"source":build_decoder(&options)?,"wasm":crate::builder::build_wasm(&options)?}));
     }
     let mut rows = Vec::new();
     let mut state = 0x812331u32;

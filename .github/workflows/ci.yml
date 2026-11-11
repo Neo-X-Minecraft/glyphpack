@@ -43,6 +43,7 @@ jobs:
           browser=$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')
           version=$("$browser" --version | sed -E 's/.* ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
           CHROMIUM_BIN="$browser" CHROMIUM_VERSION="$version" npm run test:browser
+          CHROMIUM_BIN="$browser" target/release/glyphpack test-codecs
       - name: Archived candidate compatibility smoke
         run: |
           browser=$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')

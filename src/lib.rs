@@ -8,6 +8,7 @@ pub mod builder;
 pub mod encoder;
 pub mod hash;
 pub mod injector;
+pub mod packing;
 #[cfg(feature = "tools")]
 pub mod project;
 #[cfg(feature = "tools")]

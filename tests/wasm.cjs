@@ -3,13 +3,14 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),{pathToFileURL}=require('node:url');
 const root=path.resolve(__dirname,'..'),vectors=JSON.parse(fs.readFileSync(path.join(root,'generated/test-vectors.json')));
 const {execFileSync}=require('node:child_process');
-const artifact=process.argv[2]?.endsWith('.wasm')?process.argv[2]:path.join(root,'generated/wasm/profiles/f01-d012-m01-modern.wasm');
+const artifact=process.argv[2]?.endsWith('.wasm')?process.argv[2]:vectors.profiles.find(p=>p.formats.length===2&&p.modes.length===3&&p.memories.length===2).wasm;
 (async()=>{
- const runtime=fs.readFileSync(path.join(root,'src/decoder/wasm-runtime.js'),'utf8').replace(/PAYLOAD_(?:INCLUDE_FORMAT|CHECK_DATA|ALLOW_FAST|ALLOW_SECURE)/g,'true');
+ const runtime=fs.readFileSync(path.join(root,'src/decoder/wasm-runtime.js'),'utf8').replace(/PAYLOAD_(?:INCLUDE_FORMAT|CHECK_DATA|ALLOW_FAST|ALLOW_SECURE|ALLOW_PAIR)/g,'true').replace(/PAYLOAD_(?:ALLOW_ANS|ALLOW_WINDOWS|LEGACY)/g,'false');
  const {runWasm}=await import('data:text/javascript;base64,'+Buffer.from(runtime).toString('base64'));
  const module=new WebAssembly.Module(fs.readFileSync(artifact)),api=new WebAssembly.Instance(module).exports;
  const source=fs.readFileSync(path.join(root,'tests/reference/full.js'),'utf8');
- const js=new Function(source+';return binary')();
+ const reference=new Function(source+';return binary')();
+ const js=(text,options)=>{if(text.length<2)throw Error('Invalid payload length');const tag=text.charCodeAt(0);if(tag<32&&tag!==9)throw Error('Unsupported payload codec');return reference(tag===9?text.slice(1):text,options)};
  const wasm=(text,options={})=>runWasm(api,text,options.verifyFormat??true,{none:0,fast:1,secure:2}[options.verifyData??'secure'],options.memoryHeavy??false);
  const call=(fn,text,options)=>{try{const b=fn(text,options);return{bytes:Buffer.from(b),offset:b.byteOffset,length:b.buffer.byteLength};}catch(e){return{error:e.message};}};
  let comparisons=0,roundTrips=0;

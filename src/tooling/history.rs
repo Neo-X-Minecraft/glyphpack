@@ -1,7 +1,7 @@
 //! Prepare archived-decoder experiments with the current native encoder.
 //! Original binaries stay under generated/ and are never release/source assets.
 use crate::{
-    builder::esbuild_path,
+    builder::{build_wasm, esbuild_path, BuildOptions},
     encoder::{self, EncodeOptions, Integrity},
     hash, transport,
 };
@@ -77,18 +77,21 @@ fn write_packets(
             continue;
         }
         let file = format!("{id}-{}.utf16", mode.name());
-        io(fs::write(
-            work.join(&file),
-            encoder::dense16(
-                data,
-                &EncodeOptions {
-                    integrity: mode,
-                    mask,
-                    legacy,
-                    ..Default::default()
-                },
-            )?,
-        ))?;
+        let mut packet = encoder::dense16(
+            data,
+            &EncodeOptions {
+                integrity: mode,
+                mask,
+                legacy,
+                ..Default::default()
+            },
+        )?;
+        // Archived JS kernels speak format 3. The modern pair decoder accepts
+        // that unmarked form too, keeping this comparison on identical text.
+        if !legacy {
+            packet.drain(..2);
+        }
+        io(fs::write(work.join(&file), packet))?;
         out.insert(mode.name().into(), json!(file));
     }
     Ok(Value::Object(out))
@@ -246,9 +249,7 @@ pub fn prepare(
         }
         sizes.push(json!({"name":format!("blake3-{name}"),"raw":out.stdout.len(),"gzip9":transport::gzip9(&out.stdout)?.len()}));
     }
-    let wasm = io(fs::read(
-        root.join("generated/wasm/profiles/f01-d012-m01-modern.wasm"),
-    ))?;
+    let wasm = io(fs::read(build_wasm(&BuildOptions::full())?))?;
     let mut xz = io(Command::new("xz")
         .args(["-9e", "--stdout"])
         .stdin(Stdio::piped())
@@ -388,7 +389,9 @@ pub fn pattern_sizes(root: &Path, quick: bool) -> Result<(), String> {
                         ..Default::default()
                     },
                 )?;
-                let first = u16::from_le_bytes(encoded[..2].try_into().unwrap());
+                // Current source-size auditing includes the codec indicator;
+                // its pair header begins after that first UTF-16 code unit.
+                let first = u16::from_le_bytes(encoded[2..4].try_into().unwrap());
                 let header = encoder::alphabet().binary_search(&first).unwrap();
                 rows.push(json!({"pattern":pattern,"bytes":raw.len(),"integrity":integrity.name(),"policy":policy,"encodedBytesUtf16le":encoded.len(),"mask":header & 255,"overheadPercent":100.0*(encoded.len() as f64/raw.len() as f64-1.0),"originalRandomBytes":pattern=="random"&&archived_random.is_some()}));
             }

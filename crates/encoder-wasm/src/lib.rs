@@ -8,6 +8,9 @@ mod encoder;
 #[allow(dead_code)]
 #[path = "../../../src/hash.rs"]
 mod hash;
+#[allow(dead_code)]
+#[path = "../../../src/packing.rs"]
+mod packing;
 
 #[derive(Default)]
 struct Buffers {

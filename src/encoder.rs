@@ -1,12 +1,15 @@
-//! Format-3 encoding and exact adaptive XOR selection. No HTML or compression.
+//! Tagged pair/ANS/Windows encoding and adaptive XOR selection. No HTML or compression.
 use crate::hash::{blake3, xxhash32};
+pub use crate::packing::Packing;
 use std::sync::OnceLock;
+#[path = "encoder/ans.rs"]
+mod ans;
 
 #[cfg(not(target_family = "wasm"))]
 #[path = "encoder/parallel.rs"]
 mod parallel;
 
-pub const FORMAT_VERSION: u8 = 3;
+pub const FORMAT_VERSION: u8 = 4;
 pub const RADIX: u64 = 63385;
 pub const THRESHOLD: u64 = RADIX * RADIX - 2147483649;
 static ALPHABET: OnceLock<Vec<u16>> = OnceLock::new();
@@ -65,6 +68,7 @@ pub enum Effort {
 }
 #[derive(Clone, Debug)]
 pub struct EncodeOptions {
+    pub packing: Packing,
     pub integrity: Integrity,
     pub mask: Option<u8>,
     pub effort: Effort,
@@ -73,6 +77,7 @@ pub struct EncodeOptions {
 impl Default for EncodeOptions {
     fn default() -> Self {
         Self {
+            packing: Packing::Pair,
             integrity: Integrity::Secure,
             mask: None,
             effort: Effort::Full,
@@ -402,6 +407,12 @@ impl Output for Text<'_> {
 }
 
 fn encode<O: Output>(data: &[u8], options: &EncodeOptions, out: &mut O) -> Result<(), String> {
+    if options.legacy && options.packing != Packing::Pair {
+        return Err("Legacy packets support only pair packing".into());
+    }
+    if options.packing != Packing::Pair {
+        return ans::encode(data, options, out);
+    }
     if options.legacy
         && (options.integrity != Integrity::None || options.mask.is_some_and(|m| m != 0))
     {
@@ -441,7 +452,10 @@ fn encode<O: Output>(data: &[u8], options: &EncodeOptions, out: &mut O) -> Resul
     let n = length as u64;
     let a = alphabet();
     debug_assert_eq!(a.len() as u64, RADIX);
-    out.reset(pairs * 2 + 3);
+    out.reset(pairs * 2 + 4);
+    if !options.legacy {
+        out.unit(options.packing.tag());
+    }
     if options.legacy {
         out.pair(a[(n % RADIX) as usize], a[(n / RADIX) as usize]);
     } else if n < 32 * RADIX {
@@ -491,9 +505,8 @@ fn encode<O: Output>(data: &[u8], options: &EncodeOptions, out: &mut O) -> Resul
     Ok(())
 }
 
-/// Format-3 UTF-16 code units, without a document BOM. Hash original bytes,
-/// append the optional trailer, XOR actual bytes, and zero-pad only the final
-/// packed pair. The header length always includes the trailer.
+/// Logical UTF-16 code units, including the format-4 codec indicator, without
+/// a document BOM. The stored length always includes the optional digest.
 pub fn encode_units(data: &[u8], options: &EncodeOptions) -> Result<Vec<u16>, String> {
     let mut out = Vec::new();
     encode_units_into(data, options, &mut out)?;
@@ -511,10 +524,40 @@ pub fn dense16(data: &[u8], options: &EncodeOptions) -> Result<Vec<u8>, String> 
     dense16_into(data, options, &mut out)?;
     Ok(out)
 }
+/// Payload source bytes in the codec's native storage: UTF-16LE for pair/ANS,
+/// Windows-1252 for the Windows codec. No document BOM is added.
+pub fn encode_bytes(data: &[u8], options: &EncodeOptions) -> Result<Vec<u8>, String> {
+    let mut out = Vec::new();
+    encode_bytes_into(data, options, &mut out)?;
+    Ok(out)
+}
+pub fn encode_bytes_into(
+    data: &[u8],
+    options: &EncodeOptions,
+    out: &mut Vec<u8>,
+) -> Result<(), String> {
+    if options.packing == Packing::Windows {
+        encode(data, options, &mut Windows(out))
+    } else {
+        dense16_into(data, options, out)
+    }
+}
+struct Windows<'a>(&'a mut Vec<u8>);
+impl Output for Windows<'_> {
+    fn reset(&mut self, n: usize) {
+        self.0.clear();
+        self.0.reserve(n)
+    }
+    fn unit(&mut self, c: u16) {
+        self.0
+            .push(crate::packing::windows_source_byte(c).expect("Windows alphabet unit"))
+    }
+}
 
 /// Replace UTF-16 output while retaining its allocation. Validation errors
-/// leave the previous contents intact. After warming the alphabet, serial
-/// encoding needs no heap allocation when this capacity is already sufficient.
+/// leave the previous contents intact. The pair backend needs no further heap
+/// allocation after warming the alphabet when output capacity is sufficient;
+/// ANS backends also allocate their reverse-order digit stack.
 pub fn encode_units_into(
     data: &[u8],
     options: &EncodeOptions,

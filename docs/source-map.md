@@ -3,6 +3,8 @@
 | Area | Authoritative source |
 | --- | --- |
 | Alphabet, mask scoring and encoding | `src/encoder.rs` |
+| Payload indicators and Windows character mapping | `src/packing.rs` |
+| Four-state ANS/Windows encoders | `src/encoder/ans.rs` |
 | Optional scoped native mask search | `src/encoder/parallel.rs` |
 | Native browser string conversion | `site/encoder-host.mjs` |
 | Native and Wasm checksum/digest | `src/hash.rs` |
@@ -15,8 +17,10 @@
 | Selected option parsing | `src/decoder/options.js`, `memory-options.js` |
 | Wasm header, arenas, tables and integrity dispatch | `crates/decoder-wasm/src/lib.rs` |
 | Const-specialized bulk/tail pair loops | `crates/decoder-wasm/src/unpack.rs` |
+| UTF-16 ANS and Windows decode loops | `crates/decoder-wasm/src/ans.rs`, `windows.rs` |
 | CLI | `src/main.rs` |
 | Build profiles, test vectors, hosting and reports | `src/tooling/` |
+| All codec subsets, native fixtures and offline browser QA | `src/tooling/codecs.rs`, `tests/codecs.cjs` |
 | Archived input preparation and expansion audit | `src/tooling/history.rs` |
 | Historical CSV aggregation and charts | `src/tooling/history_report.rs` |
 | Browser candidate, profile and hash measurements | `benchmarks/history.cjs` |

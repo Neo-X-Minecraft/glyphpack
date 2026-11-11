@@ -90,3 +90,16 @@ pub fn utf16_document(html: &str) -> Vec<u8> {
         .flat_map(u16::to_le_bytes)
         .collect()
 }
+/// Single-byte HTML source for Windows packing. Characters outside the charset
+/// must be written as HTML entities or JS/CSS escapes by the template author.
+/// NUL represents the logical U+FFFD digit after HTML script tokenization.
+pub fn windows1252_document(html: &str) -> Result<Vec<u8>, String> {
+    html.encode_utf16().map(|c|crate::packing::windows_source_byte(c).ok_or_else(||format!("Document character U+{c:04X} is not representable in Windows-1252; use entities or Unicode escapes"))).collect()
+}
+/// Decode a Windows payload source into the logical string consumed by binary.
+pub fn windows1252_payload_text(bytes: &[u8]) -> String {
+    bytes
+        .iter()
+        .map(|&b| char::from_u32(u32::from(crate::packing::windows_code_point(b))).unwrap())
+        .collect()
+}

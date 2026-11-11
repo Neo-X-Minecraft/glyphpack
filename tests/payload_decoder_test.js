@@ -25,7 +25,7 @@ function rejected(text,message='Invalid payload character'){let threw=false;try{
 const valid=encode(Buffer.from([0,0,0,128])),allowed=new Set(alphabet);
 for(let c=0;c<65536;c++)if(!allowed.has(c)){
   const bad=String.fromCharCode(c);
-  rejected(bad+valid.slice(1));rejected(valid.slice(0,2)+bad+valid.slice(3));
+  rejected(bad+valid.slice(1),[9,10,12].includes(c)?'Unsupported payload codec':'Invalid payload character');rejected(valid.slice(0,2)+bad+valid.slice(3));
 }
 for(const text of ['',valid.slice(0,1),valid.slice(0,-1)])rejected(text,'Invalid payload length');
 for(const index of [0,1,2,3])rejected(valid.slice(0,index)+'<'+valid.slice(index+1));

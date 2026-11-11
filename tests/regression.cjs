@@ -41,7 +41,10 @@ for(const p of v.profiles){
  }
  if(p.modes.includes('none'))for(const mode of ['none','fast','secure'])assert(Buffer.from(binary(v.zero[mode],{verifyData:'none'})).equals(Buffer.alloc(256)));
 }
-const full=await make(fullSource),baseline=new Function(v.baseline+';return binary')();
+const full=await make(fullSource),reference=new Function(v.baseline+';return binary')();
+// Independent format-3 oracle plus the new codec-field dispatch. This profile
+// includes only pair; actual ANS/Windows algorithms are covered by codecs.cjs.
+const baseline=(text,options)=>{if(text.length<2)throw Error('Invalid payload length');const tag=text.charCodeAt(0);if(tag<32&&tag!==9)throw Error('Unsupported payload codec');return reference(tag===9?text.slice(1):text,options)};
 const call=(fn,text,options)=>{try{const b=fn(text,options);return {bytes:Buffer.from(b),offset:b.byteOffset,length:b.buffer.byteLength};}catch(e){return {error:e.message};}};
 let seed=331;const random=n=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed%n;};
 for(let n=0;n<30000;n++){

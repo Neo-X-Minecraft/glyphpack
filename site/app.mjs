@@ -497,7 +497,8 @@ $("run-checks").onclick = () =>
   action("Running verification examples…", async () => {
     const packet = state.samples.find((s) => s.id === "json").packets.secure;
     // Mutate an ordinary valid body symbol, keeping the header and alphabet valid.
-    let code = packet.charCodeAt(2) + 1;
+    // Format 4 adds one codec unit before the two-unit small-packet header.
+    let code = packet.charCodeAt(3) + 1;
     while (
       code === 60 ||
       (code >= 127 && code <= 159) ||
@@ -507,7 +508,7 @@ $("run-checks").onclick = () =>
     )
       code++;
     const damaged =
-        packet.slice(0, 2) + String.fromCharCode(code) + packet.slice(3),
+        packet.slice(0, 3) + String.fromCharCode(code) + packet.slice(4),
       cases = [
         [
           "Changed bytes",

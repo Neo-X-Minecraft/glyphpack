@@ -1,0 +1,38 @@
+{
+  "pass": true,
+  "directAbiCases": 27,
+  "results": [
+    {
+      "browser": "156.0.8078.79",
+      "positive": 80136,
+      "unsupported": 108,
+      "rejected": 1500,
+      "large": 36,
+      "offline": 6
+    },
+    {
+      "browser": "109.0.5414.119",
+      "positive": 80136,
+      "unsupported": 108,
+      "rejected": 1500,
+      "large": 36,
+      "offline": 6
+    }
+  ],
+  "sourceSha256": [
+    "62edf06dc35786c943e9d169814ffc73c8646f4e9ce7b4b9156861cc86052281",
+    "4a555d90358c652bf9ebf7d1c9223e847086205a5299e3ce20d442b1fcd947e7",
+    "6a136391a4934da499a3d4581bca5e90620b9682c54a39a98fc9af0812528a57",
+    "91f54bc64b5f1322356d053001371bffd34f26c989671fd7ada50b1ac1dbd890",
+    "e0bd67babb028ff3d5d55952c2969ac919bb2e695cdb71f07ba212c3a3057e06",
+    "036cf99b8081156c1767234810627a7f7f393ca9aa5b34841c9f86c7ff937abc",
+    "f4f72e1fdef71a67939bd44cf5eb5c0e5750a1d92d7b12e45a0cb104efd84d87",
+    "7c745e3d07597846a5e95c12c795a1086e80b6c73aaebabb57c81a2840c65c70",
+    "559acb6a008dadfd712db0b88514aa903d83f9817e4de2ff7621b14a8669150c",
+    "3db8db873cbd93096136075aebbb935c788e0d628d60a801a0e248b9d649005f",
+    "cddc912f6be4356279dd0e320cdd866815ffe6be48a291cd4027687a1c83590b",
+    "a4df36215d54fa6bc13766f575fca23017b51d1ce3f721eebbbd65586d63f199",
+    "a152a0ea8867422af5aeb8178988756fe421fac0e8e5becd0cc27abe7250816e",
+    "a0e243e66f6144cb2d498ce3df381339d71cb8a28ee74f188c84c3c5a1b386f0"
+  ]
+}

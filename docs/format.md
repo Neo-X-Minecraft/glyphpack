@@ -1,4 +1,25 @@
-# Format 3 and document embedding
+# Format 4 and document embedding
+
+## Codec field
+
+The first code unit is a separate codec indicator, outside the older pair
+alphabet. It is included in `encode_units`, `encode_text`, and binary outputs.
+
+| Code unit | Codec | Source representation |
+| --- | --- | --- |
+| U+0009 (TAB) | `pair` | UTF-16LE; two source bytes |
+| U+000A (LF) | `ans` | UTF-16LE; two source bytes |
+| U+000C (FF) | `windows` | Windows-1252; one source byte |
+
+These survive inert script raw-text parsing in Chrome 109 and current Chromium.
+Read `textContent` without trimming. Each builder selects any nonempty subset;
+an omitted codec always throws `Unsupported payload codec`, independently of
+optional format/integrity checks. Dispatch occurs once per payload, before the
+decode loop. Modern pair-capable builds also accept unmarked format-3 payloads
+whose first unit belongs to the original alphabet. New encoders always emit the
+field; old decoders cannot read these tagged packets.
+
+## Pair/ANS alphabet
 
 The encoder and decoder share an ordered alphabet of **63,385 BMP code points**.
 Each symbol occupies one UTF-16 code unit. Iterate code points 32 through 65,533
@@ -17,7 +38,7 @@ than relying on a separately maintained literal.
 The pipeline is:
 
 ```text
-original bytes -> optional digest trailer -> bytewise XOR -> packed symbol pairs
+original bytes -> optional digest trailer -> bytewise XOR -> selected codec
 ```
 
 The trailer is absent for `none`, four little-endian bytes for XXH32 (`fast`),
@@ -37,7 +58,8 @@ Kind 3 is reserved.
 | Otherwise | `[32768 + settings, r, q]` |
 
 `N` must be smaller than `R * R`. The stored length includes the trailer.
-The body immediately follows the two- or three-symbol header.
+The body immediately follows the two- or three-symbol header. The preceding
+codec field is not part of these indices or the stored byte count.
 
 ## Pair packing
 
@@ -69,8 +91,9 @@ a valid digest says nothing about the spelling of that encoded string.
 
 ## UTF-16LE HTML
 
-The encoder's `dense16()`/default `encode` output is payload code units, with no
-BOM. `encode_text()`/`encode --text` returns a UTF-8 host string representing the
+The encoder's `dense16()` output is always UTF-16LE, with no BOM. `encode_bytes()`
+and default CLI output use UTF-16LE for pair/ANS and Windows-1252 for Windows.
+`encode_text()`/`encode --text` returns a UTF-8 host string representing the
 same symbols. `utf16_document()` writes the whole document as UTF-16LE and prefixes
 `FF FE`. The browser consumes that BOM before HTML tokenization.
 
@@ -86,12 +109,60 @@ The generic injector validates attribute names, escapes attribute values, and
 rejects payload text containing `<`. Marker replacement scans the original
 template once, prefers longer overlapping markers, and never rescans insertions.
 
+## UTF-16 ANS
+
+ANS uses the same alphabet, mask, digest and length header as pair, with its own
+indicator. It encodes little-endian 16-bit words through four interleaved uniform
+rANS states. An odd stored length has a zero high byte in its final word; that
+synthetic byte is not masked or hashed.
+
+Let `R = 63385`, `B = 16`, `L = 2^31`. Initialize four states to `L`, and visit
+words in reverse order, selecting lane `wordIndex % 4`. While a state is at least
+`(L >> B) * R`, push `state % R` and divide the state by `R`. Then replace it
+with `(state << B) | word`. Write each final state as three little-endian radix-R
+digits, followed by the reversed digit stack. States fit in 47 bits and use Wasm
+integer arithmetic; no JavaScript BigInt or extra browser capability is needed.
+
+The decoder visits words forwards: take the low 16 bits, then normalize using
+`(state >> 16) * R + nextDigit`. If still below `L`, multiply by `R` and read
+another digit. All four terminal states must equal `L`, and all digits must be
+consumed. These structural and bounds checks remain mandatory when optional
+format verification is off.
+
+## Windows-1252 ANS
+
+The alphabet consists of source bytes 0–255 excluding CR (13) and `<` (60), in
+source-byte order: `R = 254`. Bytes 128–159 use the Windows-1252 Unicode mapping
+in `src/packing.rs`. HTML replaces NUL with U+FFFD in script data, so the encoder
+emits logical U+FFFD for the zero source digit. The decoder also accepts logical
+NUL for direct TextDecoder callers. Neither text spelling is an authentication
+claim.
+
+After the indicator, the header is two little-endian radix-254 digits for
+`settings = mask | (kind << 8)` and four for stored length. Four states follow,
+each in four little-endian radix-254 digits, then the reversed digit stack.
+The ANS procedure above uses bytes instead of words, `B = 8` and `L = 2^23`;
+four states fit in u32. It enforces the same terminal-state and consumption rules.
+
+Use `<meta charset="windows-1252">` near the start of the HTML and a matching
+HTTP charset if served. The CLI's `inject --encoding windows1252` replaces
+`__CHARSET__` and serializes the complete template to this encoding. Characters
+outside it must be expressed as HTML entities or JS/CSS escapes. The injector
+rejects unrepresentable template characters instead of silently losing them.
+`--text` emits UTF-8 logical text, not a Windows-1252 document.
+
+One file has one physical encoding. Mixed builds can decode all three logical
+strings, including Windows payloads serialized in a UTF-16 container, but the
+single-byte source-size benefit applies only to Windows-1252 containers.
+
 ## Explicit legacy mode
 
 The legacy header is `[N % R, floor(N / R)]`, with no mask or trailer. Select
 `encode --legacy --checksum none` and `build --legacy --data none` explicitly.
-There is no automatic format detection or runtime legacy branch. `FORMAT_VERSION`
-is a source/cache identifier; it is not an additional wire field.
+Legacy builds support only unmarked legacy pair data, and reject tagged modern
+packets. This is separate from modern builds' format-3 compatibility.
+`FORMAT_VERSION = 4` is a source/cache identifier; the wire field is the codec
+indicator listed above, not an additional numeric version byte.
 
 Production ESMs embed their decoder as native `gzip -9 -n` + base64. Native
 `DecompressionStream` inflates it during asynchronous module evaluation. After

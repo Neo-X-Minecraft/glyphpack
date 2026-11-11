@@ -162,7 +162,11 @@ const hash = (b) => crypto.createHash("sha256").update(b).digest("hex");
                 {
                   const a = encode(0, bytes, mode, exact),
                     b = encode(1, bytes, mode, exact);
-                  if (a !== b) throw Error("Encoded text differs");
+                  // The new codec field is part of timing/size, but the
+                  // frozen pre-format-4 encoder has no such leading unit.
+                  const body = (text) =>
+                    text.charCodeAt(0) === 9 ? text.slice(1) : text;
+                  if (body(a) !== body(b)) throw Error("Encoded text differs");
                   const out = decode(b, {
                     verifyData: ["none", "fast", "secure"][mode],
                   });

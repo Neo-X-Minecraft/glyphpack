@@ -1,7 +1,7 @@
 //! Reproducible distributions and the complete 63-profile feature matrix.
 use crate::{
     builder::{build_decoder, build_wasm, BuildOptions},
-    encoder::{self, EncodeOptions, Integrity},
+    encoder::{self, EncodeOptions, Integrity, Packing},
     injector,
 };
 use serde_json::{json, Value};
@@ -34,6 +34,20 @@ pub fn build_all(root: &Path) -> Result<Value, String> {
     fs::create_dir_all(&out).map_err(|e| e.to_string())?;
     let profiles = [
         ("default", BuildOptions::default()),
+        (
+            "ans",
+            BuildOptions {
+                packings: vec![Packing::Ans],
+                ..BuildOptions::default()
+            },
+        ),
+        (
+            "windows",
+            BuildOptions {
+                packings: vec![Packing::Windows],
+                ..BuildOptions::default()
+            },
+        ),
         (
             "core",
             BuildOptions {
@@ -84,6 +98,8 @@ pub fn build_all(root: &Path) -> Result<Value, String> {
                     "bytes":source.len(),
                     "blake3":super::fixtures::hex(&crate::hash::blake3(source.as_bytes())),
                     "backend":"wasm", "browserTarget":"chrome109",
+                    "formatVersion":encoder::FORMAT_VERSION,
+                    "packings":options.packings.iter().map(|p|p.name()).collect::<Vec<_>>(),
                     "wasmBytes":wasm.len(), "gzip9Bytes":gzip_bytes,
                     "base64Bytes":gzip_bytes.div_ceil(3)*4
                 }),
@@ -111,5 +127,5 @@ pub fn build_all(root: &Path) -> Result<Value, String> {
         serde_json::to_string_pretty(&manifest).unwrap() + "\n",
     )
     .map_err(|e| e.to_string())?;
-    Ok(json!({"profiles":6,"moduleFiles":manifest.len(),"output":out}))
+    Ok(json!({"profiles":8,"moduleFiles":manifest.len(),"output":out}))
 }

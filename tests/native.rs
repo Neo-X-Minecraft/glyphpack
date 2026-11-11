@@ -77,13 +77,17 @@ fn original_wire_format() {
             ..EncodeOptions::default()
         };
         let encoded = encoder::dense16(&data, &options).unwrap();
+        assert_eq!(&encoded[..2], &glyphpack::packing::PAIR_TAG.to_le_bytes());
+        // The explicit format-4 codec field is new; the established pair
+        // header and body still match the original immutable format-3 fixtures.
+        let encoded = &encoded[2..];
         assert_eq!(
             encoded.len(),
             row["bytes"].as_u64().unwrap() as usize,
             "{row}"
         );
         assert_eq!(
-            hex(&hash::blake3(&encoded)),
+            hex(&hash::blake3(encoded)),
             row["digest"].as_str().unwrap(),
             "{row}"
         );

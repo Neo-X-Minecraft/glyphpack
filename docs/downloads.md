@@ -16,8 +16,9 @@ loading rules.
 
 ## Browser modules
 
-- `default.min.mjs`: fixed BLAKE3 integrity and format checks; recommended.
-- `full.min.mjs`: all 12 combinations of integrity, format and lookup policy.
+- `default.min.mjs`: pair codec, fixed BLAKE3 integrity and format checks.
+- `ans.min.mjs`, `windows.min.mjs`: secure single-codec alternatives.
+- `full.min.mjs`: all three codecs and all 12 verification/lookup combinations.
 - `core.min.mjs`: mandatory allocation bounds, without optional verification.
 - The web ZIP includes every readable/minified profile, examples and docs.
 - `glyphpack-full.wasm` is the raw full decoder for custom host integration.
@@ -30,8 +31,8 @@ const bytes = binary(payload);
 
 Import initializes embedded gzip/base64 Wasm once. `binary()` is synchronous
 afterward. No companion Wasm fetch is needed. Target: Chrome 109+.
-Default options: format on, BLAKE3 on, heavy lookup off. The wire format and
-public decoder API are unchanged from v0.1.0.
+Default options: format on, BLAKE3 on, heavy lookup off. New encodings carry a
+codec indicator; modern pair-capable decoders also accept unmarked format-3 data.
 
 The npm tarball can be installed directly with `npm install ./glyphpack-0.2.2.tgz`;
 it contains the same modules and specialized TypeScript declarations.

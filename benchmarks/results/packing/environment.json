@@ -1,0 +1,4337 @@
+{
+  "arch": "arm64",
+  "platform": "linux",
+  "cpu": "unknown",
+  "node": "v24.21.0",
+  "moduleSha256": "a152a0ea8867422af5aeb8178988756fe421fac0e8e5becd0cc27abe7250816e",
+  "moduleBytes": 15570,
+  "rounds": 5,
+  "order": "rotating",
+  "scope": "warm full binary() including input copy, chosen verification, owned output copy; excludes parsing/import; memory arenas and tables reused",
+  "encoding": "sampled automatic mask; no general compression",
+  "samples": [
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.0032999999970197676,
+        0.027900000005960466,
+        0.0193999999910593,
+        0.0375,
+        0.0030999999940395356
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.0031000000089406966,
+        0.05140000000596046,
+        0.026100000008940697,
+        0.0034000000059604646,
+        0.0031000000089406966
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.003200000002980232,
+        0.02119999998807907,
+        0.003399999991059303,
+        0.003200000002980232,
+        0.003
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.0032999999970197676,
+        0.031400000005960466,
+        0.0032999999970197676,
+        0.003199999988079071,
+        0.003
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.010799999997019768,
+        0.006400000005960464,
+        0.003300000011920929,
+        0.002899999991059303,
+        0.008199999988079071
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.0030999999940395356,
+        0.0030999999940395356,
+        0.003699999988079071,
+        0.0039000000059604646,
+        0.0029000000059604646
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.002700000002980232,
+        0.0026000000089406966,
+        0.0026000000089406966,
+        0.0025999999940395356,
+        0.002700000002980232
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.0026000000089406966,
+        0.002700000002980232,
+        0.0025999999940395356,
+        0.002700000002980232,
+        0.0025999999940395356
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.005699999988079071,
+        0.004299999997019768,
+        0.004299999997019768,
+        0.004200000002980232,
+        0.004200000002980232
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.010400000005960464,
+        0.007899999991059304,
+        0.007300000011920929,
+        0.0075,
+        0.007700000002980233
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.0045,
+        0.004600000008940697,
+        0.004399999991059303,
+        0.004400000005960464,
+        0.004299999997019768
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.0047000000029802326,
+        0.0047000000029802326,
+        0.004799999997019768,
+        0.004599999994039535,
+        0.004599999994039535
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.004,
+        0.0035999999940395356,
+        0.0035,
+        0.0035,
+        0.0034000000059604646
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.011299999997019767,
+        0.008299999997019768,
+        0.008200000002980233,
+        0.005599999994039535,
+        0.007900000005960464
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.0047000000029802326,
+        0.003,
+        0.0031000000089406966,
+        0.005600000008940697,
+        0.002899999991059303
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.0032999999970197676,
+        0.0032999999970197676,
+        0.003199999988079071,
+        0.002899999991059303,
+        0.0034000000059604646
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.004599999994039535,
+        0.003700000002980232,
+        0.003200000002980232,
+        0.003300000011920929,
+        0.0037999999970197676
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.002700000002980232,
+        0.0035999999940395356,
+        0.004400000005960464,
+        0.004199999988079071,
+        0.0030999999940395356
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.0029000000059604646,
+        0.0027999999970197676,
+        0.002899999991059303,
+        0.002800000011920929,
+        0.0029000000059604646
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.0035,
+        0.003,
+        0.0029000000059604646,
+        0.002899999991059303,
+        0.0029000000059604646
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.006700000002980233,
+        0.0065,
+        0.0065,
+        0.005400000005960464,
+        0.006
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.004399999991059303,
+        0.0045,
+        0.005200000002980232,
+        0.005200000002980232,
+        0.004399999991059303
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.005,
+        0.004900000005960465,
+        0.005200000002980232,
+        0.0045,
+        0.004799999997019768
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.007400000005960464,
+        0.006799999997019768,
+        0.005099999994039536,
+        0.004899999991059304,
+        0.005400000005960464
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.004599999994039535,
+        0.004900000005960465,
+        0.006599999994039535,
+        0.0065,
+        0.005599999994039535
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.004900000005960465,
+        0.004799999997019768,
+        0.005,
+        0.004799999997019768,
+        0.004800000011920929
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.005899999991059304,
+        0.005399999991059303,
+        0.004800000011920929,
+        0.004800000011920929,
+        0.004899999991059304
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.0065,
+        0.006300000011920929,
+        0.007,
+        0.005099999994039536,
+        0.006900000005960465
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.0047000000029802326,
+        0.004699999988079071,
+        0.005199999988079071,
+        0.006700000002980233,
+        0.005
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.005,
+        0.0047000000029802326,
+        0.004900000005960465,
+        0.005,
+        0.005099999994039536
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.007200000002980232,
+        0.007299999997019768,
+        0.005200000002980232,
+        0.0055,
+        0.005600000008940697
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.004599999994039535,
+        0.061,
+        0.0065,
+        0.007399999991059303,
+        0.0065
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.006400000005960464,
+        0.015600000008940696,
+        0.006599999994039535,
+        0.007900000005960464,
+        0.006299999997019768
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.008799999997019768,
+        0.015799999997019767,
+        0.006400000005960464,
+        0.008,
+        0.006399999991059303
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.006900000005960465,
+        0.010899999991059303,
+        0.007,
+        0.007700000002980233,
+        0.009
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.006599999994039535,
+        0.006700000002980233,
+        0.007700000002980233,
+        0.008200000002980233,
+        0.009600000008940696
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.15749999992549418,
+        0.15,
+        0.15499999970197678,
+        0.15499999970197678,
+        0.1824999999254942
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.15750000029802322,
+        0.15749999992549418,
+        0.15500000007450582,
+        0.1600000001490116,
+        0.1625
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.15749999992549418,
+        0.15250000022351742,
+        0.15250000022351742,
+        0.15500000007450582,
+        0.15
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.15999999977648258,
+        0.1524999998509884,
+        0.1524999998509884,
+        0.1625,
+        0.15500000007450582
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.1449999999254942,
+        0.1449999999254942,
+        0.1449999999254942,
+        0.1524999998509884,
+        0.1425000000745058
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.1475000001490116,
+        0.1425000000745058,
+        0.1425000000745058,
+        0.15250000022351742,
+        0.1449999999254942
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.1524999998509884,
+        0.15,
+        0.1475000001490116,
+        0.15499999970197678,
+        0.15
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.1524999998509884,
+        0.1475000001490116,
+        0.1449999999254942,
+        0.15250000022351742,
+        0.1425000000745058
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.25,
+        0.2449999999254942,
+        0.2425000000745058,
+        0.2649999998509884,
+        0.23500000014901162
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.25250000022351743,
+        0.2425000000745058,
+        0.23999999985098838,
+        0.2600000001490116,
+        0.2375
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.2574999999254942,
+        0.25,
+        0.25,
+        0.2849999997764826,
+        0.2449999999254942
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.2574999999254942,
+        0.25,
+        0.2475000001490116,
+        0.27000000029802323,
+        0.2425000000745058
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.1699999999254942,
+        0.15749999992549418,
+        0.1649999998509884,
+        0.17749999985098838,
+        0.15749999992549418
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.17750000022351742,
+        0.175,
+        0.1899999998509884,
+        0.17750000022351742,
+        0.1625
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.1724999997764826,
+        0.1875,
+        0.1625,
+        0.1724999997764826,
+        0.15749999992549418
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.17000000029802323,
+        0.1625,
+        0.1675000000745058,
+        0.17000000029802323,
+        0.15749999992549418
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.15999999977648258,
+        0.15749999992549418,
+        0.1600000001490116,
+        0.1625,
+        0.1475000001490116
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.1625,
+        0.1600000001490116,
+        0.15749999992549418,
+        0.15499999970197678,
+        0.175
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.1650000002235174,
+        0.15999999977648258,
+        0.1600000001490116,
+        0.1600000001490116,
+        0.15500000007450582
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.16749999970197677,
+        0.1625,
+        0.1649999998509884,
+        0.1625,
+        0.15
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.2600000001490116,
+        0.2625,
+        0.2574999999254942,
+        0.25249999985098837,
+        0.25249999985098837
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.2625,
+        0.25250000022351743,
+        0.2550000000745058,
+        0.2550000000745058,
+        0.2475000001490116
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.2675000000745058,
+        0.2599999997764826,
+        0.2649999998509884,
+        0.5074999999254942,
+        0.2625
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.2849999997764826,
+        0.26500000022351744,
+        0.2625,
+        0.26500000022351744,
+        0.25249999985098837
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.23500000014901162,
+        0.225,
+        0.2950000002980232,
+        0.2274999998509884,
+        0.21999999992549418
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.23500000014901162,
+        0.30999999977648257,
+        0.5299999997019768,
+        0.23500000014901162,
+        0.2275000002235174
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.22999999970197677,
+        0.3925000000745058,
+        0.2300000000745058,
+        0.21999999992549418,
+        0.22249999977648258
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.23500000014901162,
+        0.5074999999254942,
+        0.2375,
+        0.2274999998509884,
+        0.2275000002235174
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.2274999998509884,
+        0.21999999992549418,
+        0.21750000007450582,
+        0.21750000007450582,
+        0.325
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.21500000022351742,
+        0.21999999992549418,
+        0.21999999992549418,
+        0.21750000007450582,
+        0.9074999999254942
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.21999999992549418,
+        0.225,
+        0.2225000001490116,
+        0.2274999998509884,
+        0.2599999997764826
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.21999999992549418,
+        0.2300000000745058,
+        0.225,
+        0.21750000007450582,
+        0.2575000002980232
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.31500000022351743,
+        0.3199999999254942,
+        0.3199999999254942,
+        0.3225000001490116,
+        0.375
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.3125,
+        0.31500000022351743,
+        0.3175000000745058,
+        0.3125,
+        0.34249999970197675
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.5274999998509884,
+        0.33249999992549417,
+        0.3274999998509884,
+        0.3274999998509884,
+        0.35
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        1.6725000001490116,
+        0.3300000000745058,
+        0.325,
+        0.3350000001490116,
+        0.3525000002235174
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        4.550000000745058,
+        2.574999999254942,
+        2.550000000745058,
+        2.474999997764826,
+        2.774999998509884
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        3.800000000745058,
+        2.649999998509884,
+        2.625,
+        2.875,
+        3
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        2.800000000745058,
+        2.525000002235174,
+        2.475000001490116,
+        2.8250000029802322,
+        2.975000001490116
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        2.5,
+        2.574999999254942,
+        2.5,
+        2.699999999254942,
+        2.949999999254942
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        2.25,
+        2.274999998509884,
+        2.449999999254942,
+        2.699999999254942,
+        2.774999998509884
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        2.324999999254942,
+        2.324999999254942,
+        2.199999999254942,
+        2.649999998509884,
+        2.725000001490116
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        2.324999999254942,
+        2.350000001490116,
+        2.274999998509884,
+        2.650000002235174,
+        2.774999998509884
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        2.350000001490116,
+        2.375,
+        2.300000000745058,
+        5.649999998509884,
+        2.800000000745058
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        3.925000000745058,
+        3.875,
+        3.850000001490116,
+        4.225000001490116,
+        4.100000001490116
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        3.949999999254942,
+        6.600000001490116,
+        3.849999997764826,
+        4.375,
+        3.899999998509884
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        3.925000000745058,
+        3.949999999254942,
+        4,
+        4.024999998509884,
+        4
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        4.049999997019768,
+        4.100000001490116,
+        3.974999997764826,
+        4,
+        7.225000001490116
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        2.75,
+        2.774999998509884,
+        2.675000000745058,
+        2.699999999254942,
+        3.074999999254942
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        2.800000000745058,
+        2.824999999254942,
+        2.824999999254942,
+        2.8250000029802322,
+        3.300000000745058
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        2.699999999254942,
+        2.675000000745058,
+        2.675000000745058,
+        2.75,
+        3.125
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        7.550000000745058,
+        2.724999997764826,
+        2.699999999254942,
+        2.774999998509884,
+        3.199999999254942
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        2.5499999970197678,
+        2.5,
+        2.475000001490116,
+        2.475000001490116,
+        2.899999998509884
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        2.474999997764826,
+        2.525000002235174,
+        2.475000001490116,
+        2.524999998509884,
+        2.9500000029802322
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        2.600000001490116,
+        2.574999999254942,
+        2.5499999970197678,
+        2.600000001490116,
+        3.024999998509884
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        2.574999999254942,
+        2.524999998509884,
+        2.550000000745058,
+        2.574999999254942,
+        2.975000001490116
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        4.175000000745058,
+        4.100000001490116,
+        4.175000000745058,
+        4.125,
+        4.174999997019768
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        4.175000000745058,
+        4.125,
+        4.125,
+        4.325000002980232,
+        4.075000002980232
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        4.274999998509884,
+        4.25,
+        4.274999998509884,
+        4.324999999254942,
+        4.299999997019768
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        4.300000000745058,
+        4.300000000745058,
+        4.25,
+        4.224999997764826,
+        4.300000000745058
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        3.574999999254942,
+        3.649999998509884,
+        3.650000002235174,
+        3.7000000029802322,
+        3.699999999254942
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        3.775000002235174,
+        3.850000001490116,
+        3.774999998509884,
+        3.824999999254942,
+        3.8250000029802322
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        3.649999998509884,
+        3.649999998509884,
+        3.675000000745058,
+        3.699999999254942,
+        3.724999997764826
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        3.774999998509884,
+        3.75,
+        3.699999999254942,
+        3.725000001490116,
+        3.800000000745058
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        3.475000001490116,
+        3.5,
+        3.5,
+        3.449999999254942,
+        3.449999999254942
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        3.5,
+        3.5,
+        3.449999999254942,
+        3.699999999254942,
+        3.525000002235174
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        3.574999999254942,
+        3.550000000745058,
+        3.5,
+        3.574999999254942,
+        3.5499999970197678
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        3.525000002235174,
+        3.550000000745058,
+        3.5,
+        3.550000000745058,
+        3.5750000029802322
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        5.125,
+        5.099999997764826,
+        5.075000002980232,
+        5.100000001490116,
+        5.199999999254942
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        5.074999999254942,
+        5.100000001490116,
+        5.024999998509884,
+        5.099999997764826,
+        5.899999998509884
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        5.175000000745058,
+        5.175000000745058,
+        5.050000000745058,
+        5.25,
+        6.025000002235174
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        5.274999998509884,
+        5.149999998509884,
+        5.125,
+        5.25,
+        6
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        22.099999994039536,
+        22.5,
+        22.299999997019768,
+        22.700000002980232,
+        27
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        26.700000002980232,
+        25.799999997019768,
+        25.700000002980232,
+        35.900000005960464,
+        26.200000002980232
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        25.200000002980232,
+        25.299999997019768,
+        24.799999997019768,
+        33.29999999701977,
+        29.5
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        26.200000002980232,
+        25.5,
+        25.200000002980232,
+        25.599999994039536,
+        26
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        23.200000002980232,
+        23.100000008940697,
+        22.099999994039536,
+        23.100000008940697,
+        23.299999997019768
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        22.899999991059303,
+        22.399999991059303,
+        21.799999997019768,
+        23.19999998807907,
+        23.5
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        24.299999997019768,
+        23,
+        23.100000008940697,
+        24,
+        24
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        23.700000002980232,
+        23.100000008940697,
+        23.899999991059303,
+        24.200000002980232,
+        24.200000002980232
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        39.400000005960464,
+        38.29999999701977,
+        39.1000000089407,
+        39.1000000089407,
+        38.8999999910593
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        39.099999994039536,
+        38.5,
+        41.5,
+        39.099999994039536,
+        38.400000005960464
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        39.5,
+        43,
+        40.099999994039536,
+        40.900000005960464,
+        39.20000000298023
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        40,
+        41,
+        40.400000005960464,
+        40.3999999910593,
+        41.5
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        26.5,
+        27.599999994039536,
+        27.200000002980232,
+        26.900000005960464,
+        26.399999991059303
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        30.399999991059303,
+        27.700000002980232,
+        28,
+        28.099999994039536,
+        26.899999991059303
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        27.200000002980232,
+        26.600000008940697,
+        27.899999991059303,
+        27.100000008940697,
+        31
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        27.099999994039536,
+        26.5,
+        27.5,
+        27,
+        26.5
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        24.899999991059303,
+        24.399999991059303,
+        24.799999997019768,
+        25,
+        22.399999991059303
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        24.200000002980232,
+        23.900000005960464,
+        36.5,
+        24.69999998807907,
+        25
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        24.5,
+        35.1000000089407,
+        26,
+        24.900000005960464,
+        26.100000008940697
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        24.600000008940697,
+        26.19999998807907,
+        25.5,
+        24.900000005960464,
+        25.599999994039536
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        39.69999998807907,
+        41,
+        40.80000001192093,
+        40.3999999910593,
+        40.900000005960464
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        51,
+        40.1000000089407,
+        40.900000005960464,
+        40.400000005960464,
+        49
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        42.6000000089407,
+        42.5,
+        42.29999999701977,
+        41.3999999910593,
+        49.099999994039536
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        42,
+        41.29999999701977,
+        42.29999999701977,
+        44.30000001192093,
+        47.1000000089407
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        36,
+        35.29999999701977,
+        48.20000000298023,
+        37.599999994039536,
+        39.5
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        36.599999994039536,
+        35.8999999910593,
+        37.6000000089407,
+        37.5,
+        37.599999994039536
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        35.70000000298023,
+        35,
+        36.8999999910593,
+        35.400000005960464,
+        36.20000000298023
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        35.900000005960464,
+        35.599999994039536,
+        36.79999999701977,
+        35.599999994039536,
+        36
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        33.3999999910593,
+        33.29999999701977,
+        34.1000000089407,
+        33,
+        33.79999999701977
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        33.70000000298023,
+        33.29999999701977,
+        34.70000000298023,
+        33,
+        34.1000000089407
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        33.5,
+        34.20000000298023,
+        35,
+        33.5,
+        37.5
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        34,
+        34.6000000089407,
+        34.3999999910593,
+        44.20000000298023,
+        35.8999999910593
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        49.20000000298023,
+        49.19999998807907,
+        50,
+        57.5,
+        55.5
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        49.099999994039536,
+        49.1000000089407,
+        50.20000000298023,
+        56.900000005960464,
+        55.900000005960464
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        50.79999999701977,
+        50.599999994039536,
+        51,
+        57.8999999910593,
+        56.599999994039536
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        50.1000000089407,
+        50.70000000298023,
+        49.900000005960464,
+        58.20000000298023,
+        57
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.008700000002980232,
+        0.0030999999940395356,
+        0.0030999999940395356,
+        0.003199999988079071,
+        0.0030999999940395356
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.0032999999970197676,
+        0.0032999999970197676,
+        0.0031000000089406966,
+        0.0031000000089406966,
+        0.0031000000089406966
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.0034000000059604646,
+        0.0031000000089406966,
+        0.003,
+        0.003200000002980232,
+        0.003200000002980232
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.004899999991059304,
+        0.005199999988079071,
+        0.005400000005960464,
+        0.005399999991059303,
+        0.005399999991059303
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.0026000000089406966,
+        0.0025,
+        0.002399999991059303,
+        0.0025,
+        0.0026000000089406966
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.002700000002980232,
+        0.002700000002980232,
+        0.002700000002980232,
+        0.002700000002980232,
+        0.0025999999940395356
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.007299999997019768,
+        0.0031000000089406966,
+        0.002700000002980232,
+        0.0034000000059604646,
+        0.0035999999940395356
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.0025,
+        0.0045,
+        0.006899999991059304,
+        0.006,
+        0.006200000002980232
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.0045,
+        0.004,
+        0.004100000008940697,
+        0.004399999991059303,
+        0.004299999997019768
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.007099999994039536,
+        0.0045,
+        0.004299999997019768,
+        0.0045,
+        0.0045
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.0045,
+        0.006899999991059304,
+        0.007799999997019768,
+        0.0075,
+        0.007100000008940697
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.004200000002980232,
+        0.004400000005960464,
+        0.004400000005960464,
+        0.004299999997019768,
+        0.004200000002980232
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.004299999997019768,
+        0.0030999999940395356,
+        0.0030999999940395356,
+        0.0031000000089406966,
+        0.003199999988079071
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.008799999997019768,
+        0.0047000000029802326,
+        0.005200000002980232,
+        0.006399999991059303,
+        0.008200000002980233
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.0034000000059604646,
+        0.003,
+        0.005900000005960465,
+        0.004600000008940697,
+        0.0045
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.004,
+        0.003,
+        0.002699999988079071,
+        0.0027999999970197676,
+        0.0029000000059604646
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.0027999999970197676,
+        0.004299999997019768,
+        0.004,
+        0.0035999999940395356,
+        0.0032999999970197676
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.002700000002980232,
+        0.002700000002980232,
+        0.002700000002980232,
+        0.002700000002980232,
+        0.002700000002980232
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.004,
+        0.002700000002980232,
+        0.002700000002980232,
+        0.0031000000089406966,
+        0.003
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.002700000002980232,
+        0.0035999999940395356,
+        0.0037999999970197676,
+        0.0032999999970197676,
+        0.0036000000089406966
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.0045,
+        0.004399999991059303,
+        0.004299999997019768,
+        0.004299999997019768,
+        0.004399999991059303
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.0055,
+        0.004299999997019768,
+        0.0045,
+        0.005700000002980233,
+        0.005799999997019768
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.0045,
+        0.0065,
+        0.005400000005960464,
+        0.0045,
+        0.004400000005960464
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.005700000002980233,
+        0.005100000008940697,
+        0.004400000005960464,
+        0.0045,
+        0.004599999994039535
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.004399999991059303,
+        0.0055,
+        0.0045,
+        0.005599999994039535,
+        0.005700000002980233
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.0045,
+        0.005399999991059303,
+        0.005699999988079071,
+        0.004299999997019768,
+        0.0047000000029802326
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.006299999997019768,
+        0.0045,
+        0.004600000008940697,
+        0.004600000008940697,
+        0.004900000005960465
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.0045,
+        0.0047000000029802326,
+        0.004799999997019768,
+        0.005899999991059304,
+        0.005799999997019768
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.004600000008940697,
+        0.005299999997019768,
+        0.006200000002980232,
+        0.0045,
+        0.004599999994039535
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.0055,
+        0.0045,
+        0.004599999994039535,
+        0.005100000008940697,
+        0.005200000002980232
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.0045,
+        0.005800000011920929,
+        0.005200000002980232,
+        0.005200000002980232,
+        0.005400000005960464
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.004799999997019768,
+        0.005300000011920929,
+        0.005700000002980233,
+        0.0045,
+        0.004599999994039535
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.007200000002980232,
+        0.006799999997019768,
+        0.006599999994039535,
+        0.007699999988079071,
+        0.0075
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.006200000002980232,
+        0.008099999994039535,
+        0.008299999997019768,
+        0.006200000002980232,
+        0.006200000002980232
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.007,
+        0.006400000005960464,
+        0.006200000002980232,
+        0.0065,
+        0.0065
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1024,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.007799999997019768,
+        0.0065,
+        0.006200000002980232,
+        0.007900000005960464,
+        0.0075
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.175,
+        0.1524999998509884,
+        0.1524999998509884,
+        0.1699999999254942,
+        0.15500000007450582
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.18499999977648257,
+        0.15749999992549418,
+        0.15750000029802322,
+        0.1649999998509884,
+        0.15999999977648258
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.175,
+        0.15500000007450582,
+        0.1524999998509884,
+        0.15250000022351742,
+        0.15250000022351742
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.175,
+        0.1524999998509884,
+        0.15500000007450582,
+        0.1524999998509884,
+        0.15499999970197678
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.15250000022351742,
+        0.1375,
+        0.1375,
+        0.1449999999254942,
+        0.1400000002235174
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.1524999998509884,
+        0.2,
+        0.1925000000745058,
+        0.1400000002235174,
+        0.13499999977648258
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.1949999999254942,
+        0.19000000022351743,
+        0.22999999970197677,
+        0.25249999985098837,
+        0.22000000029802322
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.1400000002235174,
+        0.1425000000745058,
+        0.14500000029802323,
+        0.1425000000745058,
+        0.13999999985098838
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.25,
+        0.23999999985098838,
+        0.24749999977648257,
+        0.2449999999254942,
+        0.2449999999254942
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.2449999999254942,
+        0.2425000000745058,
+        0.2475000001490116,
+        0.2475000001490116,
+        0.2449999999254942
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.25,
+        0.25,
+        0.25249999985098837,
+        0.25,
+        0.2550000000745058
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.2475000001490116,
+        0.275,
+        0.2550000000745058,
+        0.25,
+        0.25
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.1899999998509884,
+        0.2149999998509884,
+        0.3600000001490116,
+        0.2574999999254942,
+        0.23500000014901162
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.1675000000745058,
+        0.175,
+        0.1899999998509884,
+        0.1625,
+        0.15749999992549418
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.1724999997764826,
+        0.17250000014901162,
+        0.175,
+        0.1649999998509884,
+        0.1649999998509884
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.1650000002235174,
+        0.175,
+        0.1649999998509884,
+        0.1650000002235174,
+        0.1650000002235174
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.1600000001490116,
+        0.15749999992549418,
+        0.15,
+        0.15749999992549418,
+        0.15999999977648258
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.15999999977648258,
+        0.15749999992549418,
+        0.15250000022351742,
+        0.1600000001490116,
+        0.15500000007450582
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.2,
+        0.2824999999254942,
+        0.2774999998509884,
+        0.1625,
+        0.1600000001490116
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.19000000022351743,
+        0.17000000029802323,
+        0.1875,
+        0.2599999997764826,
+        0.2599999997764826
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.2550000000745058,
+        0.2875,
+        0.2574999999254942,
+        0.2574999999254942,
+        0.2575000002980232
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.2625,
+        0.2875,
+        0.2675000000745058,
+        0.2625,
+        0.2625
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.2649999998509884,
+        0.2875,
+        0.2675000000745058,
+        0.2774999998509884,
+        0.2649999998509884
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.2675000000745058,
+        0.26999999992549417,
+        0.2675000000745058,
+        0.2675000000745058,
+        0.26999999992549417
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.21999999992549418,
+        0.29749999977648256,
+        0.275,
+        0.225,
+        0.225
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.23999999985098838,
+        0.22000000029802322,
+        0.2574999999254942,
+        0.2850000001490116,
+        0.33249999992549417
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.2275000002235174,
+        0.2274999998509884,
+        0.2349999997764826,
+        0.22249999977648258,
+        0.2225000001490116
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.22249999977648258,
+        0.2274999998509884,
+        0.23500000014901162,
+        0.2275000002235174,
+        0.225
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.22000000029802322,
+        0.22000000029802322,
+        0.21999999992549418,
+        0.2149999998509884,
+        0.21999999992549418
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.2149999998509884,
+        0.2125,
+        0.21750000007450582,
+        0.2149999998509884,
+        0.21750000007450582
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.21750000007450582,
+        0.2149999998509884,
+        0.21750000007450582,
+        0.22000000029802322,
+        0.2149999998509884
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.2649999998509884,
+        0.26999999992549417,
+        0.2149999998509884,
+        0.3074999999254942,
+        0.25250000022351743
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        0.3175000000745058,
+        0.3199999999254942,
+        0.4899999998509884,
+        0.31499999985098837,
+        0.3349999997764826
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        0.3175000000745058,
+        0.3175000000745058,
+        0.3200000002980232,
+        0.31500000022351743,
+        0.3225000001490116
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        0.325,
+        0.3300000000745058,
+        0.3274999998509884,
+        0.3274999998509884,
+        0.325
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 65536,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        0.3300000000745058,
+        0.325,
+        0.3300000000745058,
+        0.325,
+        0.3274999998509884
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        2.449999999254942,
+        2.449999999254942,
+        2.449999999254942,
+        2.524999998509884,
+        2.5
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        3.074999999254942,
+        2.725000001490116,
+        2.850000001490116,
+        2.550000000745058,
+        2.650000002235174
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        2.5,
+        2.524999998509884,
+        2.449999999254942,
+        2.475000001490116,
+        2.474999997764826
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        2.574999999254942,
+        2.550000000745058,
+        2.524999998509884,
+        2.574999999254942,
+        2.525000002235174
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        2.275000002235174,
+        2.199999999254942,
+        2.275000002235174,
+        2.300000000745058,
+        2.274999998509884
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        3.149999998509884,
+        3.100000001490116,
+        3.024999998509884,
+        3.524999998509884,
+        3.625
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        2.300000000745058,
+        2.274999998509884,
+        2.375,
+        2.324999999254942,
+        2.274999998509884
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        2.399999998509884,
+        2.375,
+        2.449999999254942,
+        2.350000001490116,
+        2.350000001490116
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        3.925000000745058,
+        3.900000002235174,
+        4.224999997764826,
+        3.949999999254942,
+        3.974999997764826
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        4.900000002235174,
+        5.399999998509884,
+        5.25,
+        5.300000000745058,
+        5.199999999254942
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        4.099999997764826,
+        4.125,
+        6.949999999254942,
+        4,
+        4.150000002235174
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        4.050000000745058,
+        4.100000001490116,
+        4.400000002235174,
+        4.074999999254942,
+        4
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        2.650000002235174,
+        2.649999998509884,
+        2.800000000745058,
+        2.775000002235174,
+        2.675000000745058
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        3.574999999254942,
+        6.699999999254942,
+        3.724999997764826,
+        3.574999999254942,
+        3.774999998509884
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        2.774999998509884,
+        3.5,
+        2.75,
+        2.699999999254942,
+        2.800000000745058
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        2.800000000745058,
+        2.900000002235174,
+        2.775000002235174,
+        2.774999998509884,
+        2.800000000745058
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        2.5,
+        2.599999997764826,
+        2.5499999970197678,
+        2.475000001490116,
+        2.524999998509884
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        3.324999999254942,
+        3.449999999254942,
+        3.475000001490116,
+        3.899999998509884,
+        3.824999999254942
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        2.600000001490116,
+        2.550000000745058,
+        2.524999998509884,
+        2.524999998509884,
+        2.625
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        2.550000000745058,
+        2.599999997764826,
+        2.5750000029802322,
+        2.550000000745058,
+        2.550000000745058
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        4.224999997764826,
+        4.100000001490116,
+        4.224999997764826,
+        4.175000000745058,
+        4.175000000745058
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        7.275000002235174,
+        5.800000000745058,
+        5.125,
+        4.149999998509884,
+        6.574999999254942
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        4.524999998509884,
+        4.474999997764826,
+        4.275000002235174,
+        4.300000000745058,
+        4.824999999254942
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        4.274999998509884,
+        4.25,
+        4.25,
+        4.199999999254942,
+        4.275000002235174
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        3.7000000029802322,
+        3.5499999970197678,
+        3.599999997764826,
+        3.850000001490116,
+        3.625
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        4.699999999254942,
+        4.600000001490116,
+        4.675000000745058,
+        3.600000001490116,
+        5.174999997019768
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        3.649999998509884,
+        3.675000000745058,
+        3.649999998509884,
+        3.725000001490116,
+        3.625
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        3.725000001490116,
+        3.75,
+        3.7000000029802322,
+        3.774999998509884,
+        3.675000000745058
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        3.449999999254942,
+        3.449999999254942,
+        3.474999997764826,
+        3.875,
+        3.425000000745058
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        4.600000001490116,
+        4.899999998509884,
+        4.324999999254942,
+        3.449999999254942,
+        4.449999999254942
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        3.4249999970197678,
+        3.5,
+        3.425000000745058,
+        3.449999999254942,
+        3.574999999254942
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        3.5,
+        3.5,
+        3.5,
+        3.400000002235174,
+        3.475000001490116
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        5.074999999254942,
+        5.100000001490116,
+        5.100000001490116,
+        6.324999999254942,
+        5.100000001490116
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        6.425000000745058,
+        6.125,
+        6.125,
+        5.050000000745058,
+        6.074999999254942
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        5.175000000745058,
+        5.199999999254942,
+        5.199999999254942,
+        5.199999999254942,
+        5.175000000745058
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 1048576,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        5.149999998509884,
+        5.150000002235174,
+        5.350000001490116,
+        5.125,
+        5.149999998509884
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        22.599999994039536,
+        22.19999998807907,
+        23.599999994039536,
+        22,
+        21.900000005960464
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        27,
+        27.80000001192093,
+        27.099999994039536,
+        28.099999994039536,
+        27.69999998807907
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        24.900000005960464,
+        23.099999994039536,
+        23.400000005960464,
+        23.30000001192093,
+        24.5
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        25.5,
+        24.599999994039536,
+        28,
+        24.5,
+        25.5
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        22.099999994039536,
+        21.100000008940697,
+        19.799999997019768,
+        20.399999991059303,
+        20.200000002980232
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        24,
+        22.200000002980232,
+        28.100000008940697,
+        22.200000002980232,
+        21.700000002980232
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        27.200000002980232,
+        21,
+        20.899999991059303,
+        31.600000008940697,
+        22.799999997019768
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        23.799999997019768,
+        23.19999998807907,
+        23.400000005960464,
+        22.299999997019768,
+        23.700000002980232
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        36.70000000298023,
+        36.6000000089407,
+        40.29999999701977,
+        36.900000005960464,
+        36.900000005960464
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        37.6000000089407,
+        38.3999999910593,
+        39.400000005960464,
+        38.5,
+        38.3999999910593
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        37.3999999910593,
+        37.900000005960464,
+        57.599999994039536,
+        37.70000000298023,
+        38.20000000298023
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "none",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        39.29999999701977,
+        39,
+        38.80000001192093,
+        38.8999999910593,
+        39.5
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        24,
+        24.200000002980232,
+        24.299999997019768,
+        24.100000008940697,
+        24.5
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        26.100000008940697,
+        26.200000002980232,
+        27.599999994039536,
+        25.700000002980232,
+        27.400000005960464
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        25.299999997019768,
+        25.099999994039536,
+        29.299999997019768,
+        25.099999994039536,
+        25
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        27.099999994039536,
+        28.400000005960464,
+        26.600000008940697,
+        26.599999994039536,
+        27.899999991059303
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        22.5,
+        24.099999994039536,
+        22.299999997019768,
+        22.5,
+        22.599999994039536
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        23.80000001192093,
+        24.299999997019768,
+        24,
+        24.399999991059303,
+        28.900000005960464
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        23.299999997019768,
+        23,
+        23.299999997019768,
+        22.900000005960464,
+        24.099999994039536
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        24.399999991059303,
+        24.700000002980232,
+        25.600000008940697,
+        24.30000001192093,
+        24.700000002980232
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        38.900000005960464,
+        38.5,
+        38.5,
+        38.5,
+        38.900000005960464
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        40.70000000298023,
+        40,
+        40,
+        40.8999999910593,
+        43
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        39.8999999910593,
+        39.70000000298023,
+        40,
+        39.400000005960464,
+        40
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "fast",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        40.70000000298023,
+        41.20000000298023,
+        41.5,
+        42.099999994039536,
+        41.29999999701977
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        32.5,
+        33,
+        33.099999994039536,
+        54.900000005960464,
+        33.099999994039536
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        34.900000005960464,
+        35.20000000298023,
+        36.29999999701977,
+        35.3999999910593,
+        35.29999999701977
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        33.8999999910593,
+        34.099999994039536,
+        48.5,
+        33.900000005960464,
+        34.20000000298023
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "pair",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        36.5,
+        36.29999999701977,
+        36.400000005960464,
+        35.79999999701977,
+        36.400000005960464
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        31.400000005960464,
+        31.200000002980232,
+        31.599999994039536,
+        31.299999997019768,
+        31.799999997019768
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        32.79999999701977,
+        32.900000005960464,
+        33.19999998807907,
+        34,
+        34.400000005960464
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        32.29999999701977,
+        31.700000002980232,
+        32.1000000089407,
+        31.600000008940697,
+        32.5
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "ans",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        33.70000000298023,
+        33.099999994039536,
+        33.599999994039536,
+        33.5,
+        33.8999999910593
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": false,
+      "ms": [
+        47.20000000298023,
+        47.70000000298023,
+        47.79999999701977,
+        47.599999994039536,
+        49.70000000298023
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": false,
+      "memoryHeavy": true,
+      "ms": [
+        49,
+        49.20000000298023,
+        49.30000001192093,
+        49.29999999701977,
+        50.70000000298023
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": false,
+      "ms": [
+        48.70000000298023,
+        48.3999999910593,
+        48.5,
+        48.6000000089407,
+        48.79999999701977
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "bytes": 10485760,
+      "packing": "windows",
+      "integrity": "secure",
+      "verifyFormat": true,
+      "memoryHeavy": true,
+      "ms": [
+        49.79999999701977,
+        50.1000000089407,
+        49.79999999701977,
+        50.20000000298023,
+        50.5
+      ]
+    }
+  ],
+  "fixtureGenerator": "examples/codec_bench.rs; LCG seed 815",
+  "sourceSizeScope": "packet only; includes indicator, header, states and digest; excludes HTML and decoder",
+  "recordedDate": "2026-11-11"
+}

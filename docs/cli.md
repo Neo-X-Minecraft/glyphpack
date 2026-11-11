@@ -11,6 +11,10 @@ source files:
 # UTF-16LE payload, automatic mask selection, BLAKE3 by default.
 ./glyphpack encode input.bin -o payload.gp16
 
+# Choose UTF-16 ANS or Windows-1252 source. Default remains pair.
+./glyphpack encode input.bin --packing ans -o payload.gp16
+./glyphpack encode input.bin --packing windows -o payload.gp1252
+
 # Faster sampled mask search; never larger than the identity-mask body.
 ./glyphpack encode input.bin --effort fast -o payload.gp16
 
@@ -22,12 +26,19 @@ source files:
 
 # Replace __PAYLOAD__ in a UTF-8 template; write a UTF-16LE HTML document.
 ./glyphpack inject template.html payload.gp16 standalone.html
+
+# Single-byte document; use <meta charset="__CHARSET__"> in the template.
+./glyphpack inject template.html payload.gp1252 standalone.html --encoding windows1252
 ```
 
 The template supplies the browser module and calls `binary()` on the inserted
 payload element's `textContent`. Do not trim or escape that text. A digest checks
 bytes; an unkeyed digest does not establish authorship. See the repository's
 format documentation and browser examples.
+
+Build any nonempty codec subset with `build --packing pair ans windows` (space
+or comma separated). The default is pair only; `--full` includes all three.
+Detection uses the payload's leading code unit, independently of verification.
 
 Commands that compile decoders, build the demo, or run repository tests and
 benchmarks need the matching source checkout. Run them from that checkout or

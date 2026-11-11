@@ -33,7 +33,8 @@ Import waits for decompression and Wasm instantiation. After import resolves,
 reused. Returned bytes own a fresh buffer and remain valid across later calls.
 Module initialization uses no network requests or neighboring files.
 
-The full module supports all twelve combinations:
+The full module supports all three payload codecs and all twelve verification/
+memory combinations for each codec. The payload chooses its codec automatically:
 
 ```js
 binary(encodedText, {
@@ -50,6 +51,31 @@ binary(encodedText, {
 | `verifyData: 'fast'` | Require and verify XXH32 |
 | `verifyData: 'none'` | Skip integrity verification |
 | `memoryHeavy` | Use a lazy, reusable 256 KiB high-digit lookup |
+
+The memory-heavy lookup applies to pair packing; ANS codecs do not use it.
+
+## Choose a packing
+
+| Packing | Storage | Recommended use |
+| --- | --- | --- |
+| `pair` (default) | UTF-16LE | Small payloads; lowest per-payload framing overhead |
+| `ans` | UTF-16LE | Larger payloads; denser packing with four ANS states |
+| `windows` | Windows-1252 | Highest source density when you control document encoding |
+
+Windows-1252 is a document encoding, supported on Chrome 109+ across operating
+systems. It is not a Windows requirement. It restricts the document shell to
+representable characters or explicit escapes. Keep that charset in the file's
+meta declaration and any HTTP header. Encoding the same text as UTF-8 loses the
+size advantage. [Tradeoffs and tests](docs/packing.md).
+
+A new one-code-unit field identifies each payload. Mixed decoder builds accept
+any selected combination; omitted codecs throw `Unsupported payload codec`,
+including when both optional checks are disabled. Unmarked format-3 pair
+payloads remain readable in modern builds supporting `pair`.
+
+A single HTML file has one charset. A mixed build can decode all three logical
+strings, but storing Windows payloads alongside pair/ANS payloads in UTF-16LE
+does not retain the Windows byte-density advantage. Never trim payload text.
 
 Defaults are format checking on, BLAKE3 on, and heavy memory off. Mandatory
 integer-length, available-input and trailer bounds stay enabled in every build.
@@ -77,6 +103,10 @@ The executable is `target/release/glyphpack` (`.exe` on Windows).
 # BLAKE3 integrity and full automatic mask search; payload UTF-16LE without BOM.
 glyphpack encode input.bin -o payload.utf16
 
+# Denser UTF-16LE, or single-byte Windows-1252 source.
+glyphpack encode input.bin --packing ans -o payload.utf16
+glyphpack encode input.bin --packing windows -o payload.gp1252
+
 # Sampled mask ranking followed by exact whole-input shortlist scoring.
 glyphpack encode input.bin --effort fast -o payload.utf16
 
@@ -89,7 +119,9 @@ glyphpack demo demo.html
 
 GlyphPack is a binary-to-text transport, not a compressor. Compress input first
 when appropriate. Automatic XOR selection never enlarges the identity-mask body.
-Full search checks every mask unless it reaches the theoretical minimum.
+For pair packing, full search checks every mask unless it reaches the theoretical minimum.
+ANS uses the same mask selector as a heuristic; it does not search every ANS
+stream or promise its absolute smallest representation.
 The Rust encoder writes the requested representation directly. It borrows input
 and its small digest separately, samples windows without copying them, and
 avoids intermediate UTF-16 buffers.
@@ -128,7 +160,11 @@ glyphpack build --data none --no-format-checks -o tiny.mjs
 # Only these runtime-selectable settings.
 glyphpack build --format on off --data fast none -o choices.mjs
 
-# All 12 runtime combinations.
+# Any nonempty combination of payload codecs, with secure/default verification.
+glyphpack build --packing pair ans -o mixed.mjs
+glyphpack build --packing windows -o windows.mjs
+
+# All three codecs and all 12 runtime combinations.
 glyphpack build --full -o full.mjs
 
 # Select one or both memory strategies independently.
@@ -141,7 +177,8 @@ Unselected Rust code and JS option/error handling are removed. `--readable`
 produces readable glue; `--module` is accepted for compatibility but all builds
 are ES modules. Use an inline `<script type="module">` when embedding one in HTML.
 
-`dist/default.*` is the fixed secure profile. `core.*` and `none.*` are identical
+`dist/default.*` is the pair-only fixed secure profile. `ans.*` and `windows.*`
+are secure profiles for those individual codecs. `core.*` and `none.*` are identical
 minimal profiles. `fast-none.*`, `high-memory.*`, and `full.*` show other selections.
 Sizes, digests and embedded Wasm/gzip sizes are recorded in `dist/profiles.json`.
 Missing Wasm or `DecompressionStream` rejects module import with a clear error.
@@ -154,6 +191,9 @@ The encoder and injector are independent Rust APIs:
 
 ```sh
 glyphpack inject template.html payload.utf16 output.html
+
+# Template: <meta charset="__CHARSET__"> followed by __PAYLOAD__ and your code.
+glyphpack inject template.html payload.gp1252 output.html --encoding windows1252
 ```
 
 The UTF-8 template's `__PAYLOAD__` marker receives an inert script data block;
@@ -166,6 +206,7 @@ See [format and embedding details](docs/format.md).
 ```sh
 npm test                         # Rust vectors + 63 specialized Wasm profiles
 npm run test:file                # offline file://, UTF-8 and UTF-16LE
+cargo run --release --locked -- test-codecs # all codec subsets + offline charsets
 npm run test:browser              # Browser matrix, peers and offline HTML
 npm run bench                    # Decode-only comparison in Chromium
 npm run bench:encode             # Native encoder CSV

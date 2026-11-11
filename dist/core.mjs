@@ -1,18 +1,24 @@
 // wasm-runtime.js
 var littleEndian = new Uint8Array(new Uint16Array([1]).buffer)[0] === 1;
 function runWasm(api2, text, verifyFormat, dataKind, memoryHeavy) {
+  if (text.length < 2) throw Error("Invalid payload length");
+  let first = text.charCodeAt(0);
+  if (!(first === 9 || first >= 32))
+    throw Error("Unsupported payload codec");
   let length = text.length, pointer = api2.input_ptr(length);
-  if (pointer === 0 && length) throw RangeError("Wasm decoder memory allocation failed");
+  if (pointer === 0 && length)
+    throw RangeError("Wasm decoder memory allocation failed");
   if (littleEndian) {
     let input = new Uint16Array(api2.memory.buffer, pointer, length);
     for (let i = 0; i < length; i++) input[i] = text.charCodeAt(i);
   } else {
     let input = new DataView(api2.memory.buffer, pointer, length * 2);
-    for (let i = 0; i < length; i++) input.setUint16(i * 2, text.charCodeAt(i), !0);
+    for (let i = 0; i < length; i++)
+      input.setUint16(i * 2, text.charCodeAt(i), !0);
   }
   let status = api2.decode(+verifyFormat, dataKind, +memoryHeavy);
   if (status)
-    throw status === 2 ? Error("Invalid payload length") : status === 8 ? RangeError("Wasm decoder memory allocation failed") : Error("Wasm decoder failure");
+    throw status === 9 ? Error("Unsupported payload codec") : status === 2 ? Error("Invalid payload length") : status === 8 ? RangeError("Wasm decoder memory allocation failed") : Error("Wasm decoder failure");
   let stored = api2.stored_len(), end = api2.payload_len(), bytes = new Uint8Array(stored);
   return bytes.set(new Uint8Array(api2.memory.buffer, api2.output_ptr(), stored)), end === stored ? bytes : bytes.subarray(0, end);
 }
@@ -33,7 +39,7 @@ async function loadWasm(payload) {
 }
 
 // decoder.js
-var api = await loadWasm("H4sIAAAAAAACA7VWP28cRRR/82937+b2bKgiuWB2KxqUAikFQeLmpNhYluUCiTaJiIXYdeKcfbESycldSIRSpKCgCCgFoglNpIhPwEego+cLJDQ0UTh+7+16fQmKRIOs876ZN/Pe7/0funx4VRGResdcIjW7ZGazGT4K/0zilAbLGUU23UiSq7tX9w9uaUqu7H6xf2WXqPfVtes3phevTw9I9fdvTE8W2l+/fGtv//KVi3u718j0D6f7B7vNwvZfvOv+WtF+pu9EXTg9it/O7fuayt6FnEIvqvWc4rzZ6p9VFNX0rPppbkt6Ol4szL2xul2sBHA0OB8ypxjqWaB4d6537AgS9Hquw5CP2JMj4++fmzvH4x+em9vFMJqB8mFl3H8AgQt1T5hheMySh1H7QoVhtDFECitPSh2zo2gmJUHuGtSo9bXSPP0MWIdjkk/oBVU/HatvPs9Jj8LwSZnF78SAbTuK94UqPHTGrHDxQWMaxZtbuYK8tIo3J6WPs5BFVX95BK1Z1DtrUVUlyEBrpa0KChT8plyYz4+bm/BGFVePyuQTKtMtmJ6EtB5RnMF+z3qDP6eJFQZiApiCBeEjFTY+wirj7cdMBFODDjou1CTe/fp+tlcM9AjWqJgdhN5WzqhWN/HpY0tNq0JDSoqfw8/wUT0yOB56mzCaioS9AhsYl14KI1Toamkd4fy9KiIydZH4kMCqxSKdwOAkuGlID4pUz4DDXYAgii9++eNlAvOhgcQMO9A+uI5T80W40NVHwkSg03iG6RQXjC9cMMFXIQ2Dw3NEAlIzSIFsgqsKI5umQR5t9Tr45L+AdwBP02AFfCAODTBRgwl6gO8ELyN08U9esOPAFbNoCbnBXvov5ArQQm8nN+wKsJKq9blrkWdvIO+/DTl5SSZBbhibILdA7iAIajvfgtv61jW+NafIkQWSDbJvGbmDzw18DmcAt+1wJ4LbMmLGNXgD5/AtOMsOJDvQTIM7KHKANAAJ8zuQTkAagEwbMMkySCdpK/s5g0wB0jFIyyAHIW9BZlxzlrNBxdWKK8AB2yryPhAahOHNbDvXA+e9J/mD1bjAojtnQFdQ4mCpCxQPSfEkKBVTcBZrxIzaOkmWHZG8vU6Q8fo0YLqtkz4HjKukjdf2qb2SLKXmUmEKSvud7ZLr7A7dhjZ9LeSuveuhqY8QQg2SC6ZbLna4rM/+0mI2NrIdO5O6dy33I/Emepn1Ja6xE7Qw0FaZhy4On3l0IC5EPtJIMJDQHlw9aoSYRsg2mlDLOdNyrIhI+JuIPyGJ0LM8R8IhtNkOLnGEYXoWbF3auIphgeEDWbW094A7cCZLh9NrqVpE2nApUYdUszF1qUR2in64zEcrb6mko1xH2Y4yHaWrU9kNZaRyS73BGrAygE2c+8cT7MJ9nDmR+zk+ViBvylF0twm8INGxPDrEFMumoPlNSiNXX7fFsC3mf7OFlm1Bm/O/a5XM4o9z+wERMpVHU3w2H/AUCoUxPG9MydnCEwWenr8wkzh/ZvAkwOrj5rOgOhabQv720tTxvW2hf/4V+7rZX7xqr6ipwCn1eakpFV8tzCaKVlrX3wuzkSvYDkBRAbBvRhn3j09llHP14QHwsBvmzbukUFzj7SBXzSBX7SBXGOSaB3lpj6CZgyEDHIkTNB/UJwNcMwAZ4A4DPNmSXpucDvA5Az4Z4JqJhycDHD3F8LNJ5jpM8T1q3xlMPe6oRw3lcyVPKu8snnP2H8+N+1LzCQAA");
+var api = await loadWasm("H4sIAAAAAAACA7VWv28cVRCe92t3797d4YgmkgvebkWDUiClSJDws4SDZVkuQBQ0iYUtxK4d++zLKZFM7oJSpEhBQRFQCkQDjSWLvyD/ABJ/A/9AQh2F45vZvfUlYIkGWeedndmd933fm3mztH28r4hIXTK3SE1umclkgovCP5M4pRFyRpFNbyTJ/u7+wdE9TcnO7hcHO7tEna9uH94Z3TwcHZHqHtwZzW+0P9y+t3ewvXNzb/c2me7x6OBot76x3bO33bNL2k/U/ahzrVfit1P7rqYijXq9T7HDPnintbdzRcFXDSxppZUPnajLvBPSqKo89fFR/ZT5yK6wHc+mvaua+JIbH3+c2veIOBZybZA16IKiKnmJQHH6wgzj9Mys9Ql3H9SXGVUxXxfz95emiu9siv3LM/h17Z+9al5Ro2CRrrDX1U9TC8ermVnv6x5w6vjXzNzoKy8oorpG5JlvqGkG4aVGV/hFxlTlln0avvfZlw/0BAkfTPWWXeGX1vo6DPgRO39k9fvn5v7J6g/Pzdf5IBpedQA83fFpE1Hs1z5XYRBtDJEQzcbRDLGgXltmAmvLRXL6CfAMVkkuIQ2qwgqnn/UJIg1+LrrxOxF5EzI+FCv3WCtmIGPi3Y2+wiUt491h4eMkdMHly3HkjPrzZVaHQjfQcmHKHJoFCKRY++nJhhizmSnj0rhwH1KRbYCrC1m1QnECwp4XDJ539BHrywbABAPDR8pdfIK7LrufshGSCjZYztQwPvjmYbaX97iYgGXpU7BTMTsK6QbLD1uNytwgS4afxs/yo3rFrAQV0nWwpTxhOcCBcZmFHQNjXS7cRwi+V0ZsRZUnPiRgNZulQxBOgh6F7CjP9ITLD7UIzi9+/eNlAvpYgYSG7WmUTBup+EVIqKuxBLGzWbzMdooXjIfykKUMWegdXyUSkJpBCmQES1QTO02NPNrydfDJfwGvAZ5GwQn4QEjEmKjGhHWAb463rvg/+YaFQ1Ro0QJyA1/6D+QK0EK61ed9wMaFpGw0dw3y7A3k3YuQk5diEuSWsQlyB+QaibBsqy03aq2trrW158hRBVIN4neMXENzC80hBnC7FnciuAWxA67eGzgHF+AsWpAsoB0FfZT3AdICJJK1ILWAtACZ1WCSRZBaylb8fQaZAaRmkI5B9kK/AZlxzzmuBhWXSi59xrqEug+EY8Gys7uJE8t570n+wBrl47jD52JgraBEYOkLNA9J8yRoFZtzFRvsGTV9kiwKkVzcJ0Br5lp0gmn6hLWQLunUUuDUkSIpjIBBr3KrsAeLcoGD21wClsM0W5u1b2HvO3NZuf5YnbyDZjSgztlZsg7rZYQ2HN0tO5G+d030mqiJs8z5Aq+xCEYCOE85ZnioOI8TiBuRH6kzGGRoHlwa10lMnYSnShO53ESspEj4moieyEQ4rDxvKxJi49/iTdGyy6DfDa4qXFxCCAMT+So52wOWQAnWc0tV0rnYbcPtRC1aVk9VheL8McVIWozjOG+spLVca9nWMq2ly/PctWWlewsMQWZg8edweKD+T4bwQkKunkj1gW0F8ro8ihNuCCVkhxyPD6HimAoOwGFh5dXXuVjmYv83LrTIBUed/02pZDL/+lD/8vWhvHxi0McyRrkBCh0ft4O0/rrJldSbDFGMTs2jszBjLIuiNRiZiNWTFaWng+LRqeejU74wZHRajE63IQeIOx+dWCKo+ejUbDyej050c8KfXTJRUXK+Q81oZ+tpaz2pLd9XPLCtdxafg/ZvwibUKjMKAAA=");
 function binary(text) {
   return runWasm(api, text, !1, 0, !1);
 }
