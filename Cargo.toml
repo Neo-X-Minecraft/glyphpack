@@ -81,3 +81,7 @@ required-features = ["tools"]
 [[example]]
 name = "packing"
 required-features = ["tools"]
+
+[[example]]
+name = "compact"
+required-features = ["tools"]

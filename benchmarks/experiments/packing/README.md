@@ -78,3 +78,7 @@ The final HTML comparison uses the current full production runtime as the
 baseline; alternate kernels specialize the transport and always verify format.
 It measures the actual builds described, not the theoretical smallest possible
 runtime for each format. Payload-source sizes isolate packing from runtime size.
+
+The follow-up [matched compact-packing experiment](../compact/results/RESULTS.md)
+holds the alphabet, production ABI and HTML container constant, and tests a
+prototype builder axis with dedicated or combined unpackers.

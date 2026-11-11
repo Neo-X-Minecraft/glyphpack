@@ -10,7 +10,7 @@ const fs = require("node:fs"),
   assert = require("node:assert/strict"),
   { chromium } = require("playwright");
 const root = path.resolve(__dirname, "../../.."),
-  dir = path.join(root, "generated/packing");
+  dir = path.resolve(root, process.env.PACK_ROOT || "generated/packing");
 const manifest = JSON.parse(fs.readFileSync(path.join(dir, "manifest.json")));
 const sha = (b) => crypto.createHash("sha256").update(b).digest("hex");
 const median = (a) => {
@@ -18,9 +18,24 @@ const median = (a) => {
   return (a[(a.length - 1) >> 1] + a[a.length >> 1]) / 2;
 };
 const names = process.env.PACK_VARIANTS?.split(",");
-const variants = manifest.variants.filter(
+const pickedVariants = manifest.variants.filter(
   (v) => !names || names.includes(v.name),
 );
+// Optional experiments can compare all selected runtime axes while reusing
+// the exact same generated kernel. Existing benchmark defaults are unchanged.
+const variants =
+  process.env.PACK_POLICY_MATRIX === "1"
+    ? pickedVariants.flatMap((v) =>
+        (v.formats || [true]).flatMap((f) =>
+          (v.memories || [false]).map((h) => ({
+            ...v,
+            name: `${v.name}-f${+f}-h${+h}`,
+            runtimeFormat: f,
+            runtimeHeavy: h,
+          })),
+        ),
+      )
+    : pickedVariants;
 const datasets = (
   process.env.PACK_DATASETS || "random-64KiB,random-1MiB"
 ).split(",");
@@ -107,8 +122,11 @@ const version =
               .readFileSync(path.join(root, row.expected))
               .subarray(0, row.bytes),
             expectedSha = sha(expected);
-          for (let j = 0; j < modules.length; j++) {
-            const def = modules[(j + run + ci) % modules.length],
+          const activeModules = modules.filter(
+            (m) => !m.kinds || m.kinds.includes(row.kind),
+          );
+          for (let j = 0; j < activeModules.length; j++) {
+            const def = activeModules[(j + run + ci) % activeModules.length],
               page = await browser.newPage();
             try {
               await page.goto(origin);
@@ -117,14 +135,22 @@ const version =
                 "/packet/" +
                 files.indexOf(row.packets[def.packet].text);
               const result = await page.evaluate(
-                async ({ url, packetUrl, kind, size, expectedSha }) => {
+                async ({
+                  url,
+                  packetUrl,
+                  kind,
+                  size,
+                  expectedSha,
+                  format,
+                  heavy,
+                }) => {
                   const engine = await import(url);
                   const raw = await (await fetch(packetUrl)).arrayBuffer();
                   const text = new TextDecoder("utf-16le", {
                     fatal: true,
                     ignoreBOM: true,
                   }).decode(raw);
-                  const check = engine.binary(text, kind);
+                  const check = engine.binary(text, kind, format, heavy);
                   if (
                     check.length !== size ||
                     check.byteOffset !== 0 ||
@@ -144,7 +170,7 @@ const version =
                   function call() {
                     const t = performance.now();
                     for (let k = 0; k < batch; k++) {
-                      const b = engine.binary(text, kind);
+                      const b = engine.binary(text, kind, format, heavy);
                       sink ^= b[(k * 997) % b.length] || 0;
                     }
                     return (performance.now() - t) / batch;
@@ -167,6 +193,8 @@ const version =
                   kind: row.kind,
                   size: row.bytes,
                   expectedSha,
+                  format: def.runtimeFormat ?? true,
+                  heavy: def.runtimeHeavy ?? false,
                 },
               );
               report.rows.push({
@@ -187,7 +215,7 @@ const version =
               run: run + 1,
               dataset: row.dataset,
               kind: row.kind,
-              variants: modules.length,
+              variants: activeModules.length,
             }),
           );
         }

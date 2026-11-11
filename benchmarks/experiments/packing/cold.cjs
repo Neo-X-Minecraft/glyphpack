@@ -8,7 +8,7 @@ const fs = require("node:fs"),
   { pathToFileURL } = require("node:url"),
   { chromium } = require("playwright");
 const root = path.resolve(__dirname, "../../.."),
-  dir = path.join(root, "generated/packing"),
+  dir = path.resolve(root, process.env.PACK_ROOT || "generated/packing"),
   docs = JSON.parse(fs.readFileSync(path.join(dir, "documents.json")));
 const sha = (b) => crypto.createHash("sha256").update(b).digest("hex");
 const rounds = Number(process.env.PACK_ROUNDS || 3);
