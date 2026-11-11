@@ -8,7 +8,7 @@ const fs = require("node:fs"),
   assert = require("node:assert/strict"),
   { chromium } = require("playwright");
 const root = path.resolve(__dirname, "../../.."),
-  dir = path.join(root, "generated/packing");
+  dir = path.resolve(root, process.env.PACK_ROOT || "generated/packing");
 const docs = JSON.parse(
   fs.readFileSync(path.join(dir, "documents.json")),
 ).filter((d) => d.dataset === "random-1KiB");

@@ -99,3 +99,7 @@ uses loopback outside timing and keeps one module/packet per page. Actual cold
 files run offline under `file://`. Raw JSON, SHA-256 checks, process ranges and
 all sample batches accompany the compact CSV. Generated packets and executables
 stay under ignored `generated/compact/`; no private media is used.
+
+The [physical transport follow-up](../transports/results/RESULTS.md) adds matched
+Windows-1252 raw-script tests, retained memory, HTTP charset and Unicode probes,
+and derives a recommendation for a full ANS migration versus packaging presets.

@@ -4,7 +4,7 @@
 mod compact_encode;
 #[path = "../benchmarks/experiments/template-literals/codec.rs"]
 #[allow(dead_code)]
-mod literal;
+pub(crate) mod literal;
 #[path = "../benchmarks/experiments/compact/report.rs"]
 mod report;
 use glyphpack::{
@@ -21,14 +21,14 @@ use std::{
 };
 const DIR: &str = "generated/compact";
 const SRC: &str = "benchmarks/experiments/compact";
-fn run(c: &mut Command) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+pub(crate) fn run(c: &mut Command) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let o = c.output()?;
     if !o.status.success() {
         return Err(String::from_utf8_lossy(&o.stderr).into_owned().into());
     }
     Ok(o.stdout)
 }
-fn bundle(entry: &Path, out: &Path) -> Result<(), Box<dyn std::error::Error>> {
+pub(crate) fn bundle(entry: &Path, out: &Path) -> Result<(), Box<dyn std::error::Error>> {
     run(Command::new(builder::esbuild_path(None))
         .arg(entry)
         .args([
@@ -164,7 +164,7 @@ fn policy(name: &str) -> BuildOptions {
         _ => BuildOptions::default(),
     }
 }
-fn module(
+pub(crate) fn module(
     entry: &Path,
     name: &str,
     flags: &[&str],

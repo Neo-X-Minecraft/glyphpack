@@ -143,8 +143,22 @@ const version =
                   expectedSha,
                   format,
                   heavy,
+                  captureMemory,
                 }) => {
+                  let observedMemory;
+                  const instantiate = WebAssembly.instantiate;
+                  if (captureMemory)
+                    WebAssembly.instantiate = async (...args) => {
+                      const result = await Reflect.apply(
+                        instantiate,
+                        WebAssembly,
+                        args,
+                      );
+                      observedMemory = result.instance?.exports.memory;
+                      return result;
+                    };
                   const engine = await import(url);
+                  if (captureMemory) WebAssembly.instantiate = instantiate;
                   const raw = await (await fetch(packetUrl)).arrayBuffer();
                   const text = new TextDecoder("utf-16le", {
                     fatal: true,
@@ -184,7 +198,10 @@ const version =
                     samples,
                     sink,
                     sha256: hex,
-                    wasmRetainedBytes: engine.memory(),
+                    wasmRetainedBytes:
+                      engine.memory() ??
+                      observedMemory?.buffer.byteLength ??
+                      null,
                   };
                 },
                 {
@@ -195,6 +212,7 @@ const version =
                   expectedSha,
                   format: def.runtimeFormat ?? true,
                   heavy: def.runtimeHeavy ?? false,
+                  captureMemory: process.env.PACK_MEMORY === "1",
                 },
               );
               report.rows.push({
