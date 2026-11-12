@@ -101,3 +101,7 @@ required-features = ["tools"]
 [[example]]
 name = "optimize_decoder"
 required-features = ["tools"]
+
+[[example]]
+name = "utf8_prefix"
+required-features = ["tools"]

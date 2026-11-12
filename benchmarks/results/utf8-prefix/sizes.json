@@ -1,0 +1,22 @@
+{
+  "moduleBytes": 2154,
+  "classicBytes": 2175,
+  "autoPacketBytes": 1195864,
+  "autoHtmlBytes": 1198136,
+  "base122HtmlBytes": [
+    {
+      "implementation": "block122",
+      "bytes": 1199324
+    },
+    {
+      "implementation": "inline122",
+      "bytes": 1198978
+    },
+    {
+      "implementation": "reference122",
+      "bytes": 1198781
+    }
+  ],
+  "tableBytes": 8192,
+  "returnedBuffer": "fresh and exactly sized"
+}

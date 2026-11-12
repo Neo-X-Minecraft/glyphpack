@@ -20,6 +20,10 @@ and 15,980 B (complete full). `build --compact-hash` produces smaller BLAKE3 cod
 with identical verification, at a throughput tradeoff on some inputs.
 [Current size and initialization measurements](docs/decoder-optimization.md).
 
+A separate [fast UTF-8 transport experiment](docs/utf8-prefix.md) offers a small
+plain-JS decoder and native Rust encoder for conventional UTF-8 HTML. It leaves
+the standard builds and verification defaults unchanged.
+
 Try JSON, multilingual text, SVG, arbitrary bytes, gzip logs, and empty files.
 The page encodes local files with Rust/Wasm, explains verification failures,
 compares actual transport sizes, and exports offline HTML viewers. Nothing is
