@@ -1,9 +1,11 @@
 // wasm-runtime.js
 var littleEndian = new Uint8Array(new Uint16Array([1]).buffer)[0] === 1;
-function warmWasm(api2, codecs) {
-  let status = api2.warmup(codecs);
+function warmWasm(api2, codecs, heavy) {
+  let status = api2.warmup(codecs, heavy);
   if (status)
-    throw status === 8 ? RangeError("Wasm decoder memory allocation failed") : Error("Unsupported payload codec");
+    throw status === 8 ? RangeError("Wasm decoder memory allocation failed") : Error(
+      status === 10 ? "Unsupported memory optimization option" : "Unsupported payload codec"
+    );
 }
 function runWasm(api2, text, verifyFormat, dataKind, memoryHeavy) {
   if (text.length < 2) throw Error("Invalid payload length");
@@ -55,9 +57,25 @@ function selectData(value = "fast") {
 }
 
 // decoder.js
-var api = await loadWasm("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");
-function warmup() {
-  warmWasm(api, 1);
+var api = await loadWasm("H4sIAAAAAAACA7VYy48cRxmvV7+mu2fGkwMR5lHd5GAkbB8i+RCQ2FppbVYry5EIisQlWexVkp7d2DM7nrUl27MLOfjgoByMFBBCwIVcViY5IoG4ICEujoRAQgIO/ANJxCGHkCy/76uenh4/IBzwerervuqq+n2vX33VYnN3Rwoh5OeCF4Wcvahnsxkekv6oWf1X6DiSCm9pE2gpTBhj3O3vmzR6Ngp3tnYuj68rEV7aunj50pYQySuvXrk6eeHKZCxk5/LVybyj0iub17cvb156YXvrVaE7u5PL4y3fMeHe5njn6hURdN74cvT3UvVm6taXhOsPy/5TwqnCqBX/4+4cmBNKlNqp9Vy4xI+4f+2zNDwtIRt2jVBSydSGTlVFaLWTw0Kn7jWeu2ZWqOV+epCdUSJ1Pz4wJwVLbaE0VrOqNE5WhULTuP339cjt/1KfzQV6X/OPIzF0xTo33/1ID90Xz3P7rd9Crrz86ON6ipzYCMuV0VflTw4MBB8f6fVcZcCn3CdH+lwuU0bh5DNCpFYACTS2rCJeoqcX0RRWUU5O01qFoq6ad8v4cPXoSH+vGKhb3lqW1MIuUD/C42BfXchlBktIrK/WcmNj9E063+9srp1Gc0DrEvKnad3VH76nb91Y/dF7+mam0qXlSFXl9m+rDSDETFq7WUvxNu2VyieehZR2eIIXtYMb5WD1V386Es/lyg78FtIvMYDVOtPDenN5My0GzpBPFj94I546PSpjQOoqJcl62EAUipSCO9FfY1OTzMYOxuZwIj20NUMnR2u1RM4lk0M7eG5h8MGq+OaipzD4raYLCBLzbWylE+fgbhfM5YNfANUbHHDn8f4+t4qUoMws4X1p6gQWV98+TsERYI3geNFRK3WUlqm7toGlOzZ1UeWujcq0KgIb2JRsHiD9bmAYGwUOPq9cf1rmXxdljwIxt73hinAzKEv7YUEbINThjiS1fZueUQaPBCLbP0HyEUV/7M0CiSlSgm47NAnIaQYS5S5aMYnepIZVQ7TrGFMzGxY5W6Hoka3xG8I9R3LkDr77WrxddNlhuuwgAeIx6RC7/jqDpfCoigRTArWikXO2QwEvCm3pbVkhuGzSinubIK9bfYcY2a4coofSHMF3hH/RqBDwaDCx2bjI1IxMRdkg3Pvv/OOjcCMH2EIQTsd6B83IkCbCOcFwyoNwe+aepHaECTqFG5RNK5vZ7u4ZIRikIpAMWdmgKjIWao/cmWoZfPhpwCuAFxMbjosI1gUpMCZBmCwl3Rxr4BEq9wEJvOFCsqWXR3PkAZBbaFLZqMZtAMx2LuQZGQIDNeqgRh0/gLrzONSUdQvUgkxeow6AxhDe2ppwxwL5A6gNo4aOFLKaowfItYtSLPoA7rCFOyTkISOPauTZA8i7nwZ5QFadWD0uNJAr4k3kVmNl1kFBh8zbNWjbO8BvLdeEOpvbO6Q40Q3uuCLAOFnQ7kOHjVwDXh/BbwUxMgnj8yAsnaZpltABZqCc56/AGgbM2YG0ET5tkDAgI+a3Dsn+p2xhOq8NwKHL2ZKT69Y44lj/86xk5jEAUakpYaiFSXmjMEe896p3dwZ365YJ/VzyZw6TYBvsAH0NpTzslJORNKsLegHFXDAzzv+gHn+GjQi2DNNSk5qaxTgEaETTmR2mnIylns/WmF2/1p/6BbRfAG/kYj72ZD1meAlKWfiE7Im1BIg2JU7vEdcrnuf8oQIHU++z3tGxDYd9RHFaaD6qi7yODaLDZFUUgyVK7C1Tos9ccrL3NzcXLOndnSFQFLOk8iwpyW/QnBLC2Kzl51LQAZ8tO79MSCig4SIKSrEIAWg0sd0x6JoIM2wFgSdMWKaIkKN0spL68DKLbLjwNOnepahIkMcRJbCgc6uyXdurCVPVhOnRa0YfAOsSU5bhGguX6LLskjCwEZ2GIfZp6dFwZ9dzZ/IwdyaejzBvCWwrlxPPRA13khJhS4moVkLV7NmplQgaJeKH8WbL7FlGXomQmKuLfR6lRPCgEgCWNIp0iWjbSgRtKqXDtDun0sQr0vVKhMtKhEtKRI0SSxxaBl6J7qOUWEIfzNFTRCRVeYx269HhWmoKrDKp9yUqhFraUAWDNCSVADxYNcgSjUVbqkVt/zRveR8lXjUNmYYMKobY7RhFh2o4NiOO5dTBZkscG6X2GCW7eohYM+3D05MqJiwnF/JIPZRcEQkDFELJY3waQTWfYAmVTJReUcOxrHrAHMms0fV5ls95VpNSXl+vqz9vfBZ2eXZez7bhwoJkkQT+Rhit2JjzGtxH9BnbHFmNSbKijbAVIsOTsFoIiBjplVK1WTdqsy6jXLBuvmDdqGZdEvECLdaNatbNawdQ+nMN0mJdFNpUNMR8p4KDbHxog8Ob/uIgnh+BiQ3e6OZUS+vnYYwEpbfTk+nxXNT1GO+oPEErEHQKq5WGi2dZV/9U0lLRLSipY9zIEA3xBpwZI9mcOZcTM6bVCSGY06WvVObXUgDuU3C+ff8v78iCb3aoJWtKdffv/Pz7ISjkrduv/0wVMUWh+/DuvXvXqNz1VO70eWwJRhlSiwqBuGll3FJWYv+yAwR+8raNK5fvubf/+bcPrm9j2Q6gt0aD9ijnwpAqBORd6yXTfgnmRda3RsP2aIji3lZFBw/kEtkHRCHotM32UKYM9iqEboS/uNvsVRw/IuVyRVX+1mYpWMz4guHWsJDQXJJuGg+DPkcF7f/rv/7hBze2MdEd23P3/vzH36htKoeJM+hqyemAcOD9sRTdkv3yZ+vQYny4ltPV0JCFpb/RS0tXfe8nXj9t9FN8KStjCjoi3qGj+xV7vRAeadWaKxGiS1251H3MLv+1yfWzpCSW5xiJcr2pVbu1SxCf+dSK3dpC6Papi4pBs7XZHjndQ0O+h1KI4kYHjz0Fe/Xqd+5LGc7m10y5/DmEHoU3pxPf4BwheiuVu93cZf3HlkJSnEu6pUo8/B1V4nJL3wdeKs2UihIUusfLgPwF79KL2l9cqfFJfW1VuLaaDa63DV9bz+YqpU2sJEB0e9XUuF1fY7EpsukOeoJ7YZqI+n5NrTeb1l3f+p2UckZaUMGR9DAdz06PdaT0/09fhTBsKVCJKkrBIcQWaX8UEv6jkFh8FBKtj0Ki9VFIzD8KkUm5aiuV/ygkWh+F5CM+CqGm/FBJUCuyDwmkVrgKoPhGqGIVK2gv+s7FJ6oujGYPEr0ybC6ch8R6WDYCmPY4fFe3wqYVNC3TtHTTUtVibd8CBORnKeqwtURYOPmkuzGCdN14niOPceVEkNf5VSTWqI44K+kIYVUkqYKoGpWKpy7rQiFWqv+bLrqtS5q+LukzyL5Jr18cb062dk/7L53jk3ubuzund8cXT586Vf+nzsubuy+fGu+Kx728/cp3aPikkOILQojfSyGeFvRPiq/gL6JOfKbVz/H7eUH5kAYGbfNvDMcJULQVAAA=");
+function warmup(codecs, memoryHeavy) {
+  if (codecs === void 0 && (codecs = ["pair"]), !Array.isArray(codecs)) throw TypeError("Expected an array of payload codecs");
+  if (memoryHeavy !== void 0) {
+    if (!Array.isArray(memoryHeavy)) throw TypeError("Expected an array of memory flags");
+    if (memoryHeavy.length !== codecs.length) throw Error("Warm-up lists must have the same length");
+  }
+  let mask = 0, heavy = 0;
+  for (let i = 0; i < codecs.length; i++) {
+    let bit;
+    if (codecs[i] === "pair")
+      bit = 1;
+    else
+      throw Error("Unsupported payload codec");
+    let flag = memoryHeavy === void 0 ? !1 : memoryHeavy[i];
+    if (typeof flag != "boolean") throw TypeError("Expected boolean memory flags");
+    mask |= bit, flag && bit === 1 && (heavy |= 1);
+  }
+  warmWasm(api, mask, heavy);
 }
 function binary(text, options = {}) {
   let verifyFormat = selectFormat(options.verifyFormat), dataKind = selectData(options.verifyData);

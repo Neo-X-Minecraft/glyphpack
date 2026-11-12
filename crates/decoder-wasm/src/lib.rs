@@ -30,6 +30,7 @@ const CHECKSUM: u32 = 6;
 const DIGEST: u32 = 7;
 const ALLOCATION: u32 = 8;
 const CODEC: u32 = 9;
+const MEMORY: u32 = 10;
 
 // This module has no imports or shared memory. Each exported operation is
 // synchronous and cannot reenter JS; one instance therefore has one owner.
@@ -194,7 +195,7 @@ impl State {
         }
         0
     }
-    fn warmup(&mut self, codecs: u32) -> u32 {
+    fn warmup(&mut self, codecs: u32, heavy: u32) -> u32 {
         // A bit per compiled codec: pair=1, ans=2, windows=4. Reject the whole
         // request before allocating or initializing any selected cache.
         let available = u32::from(cfg!(feature = "pair"))
@@ -203,6 +204,14 @@ impl State {
         if codecs & !available != 0 {
             return CODEC;
         }
+        // Only pair has a heavy strategy. Validate both masks before touching
+        // any cache; false always means ordinary lookup preparation only.
+        if heavy & !1 != 0
+            || heavy & !codecs != 0
+            || (heavy != 0 && !cfg!(feature = "memory-heavy"))
+        {
+            return MEMORY;
+        }
         // Pair and UTF-16 ANS deliberately share their alphabet table.
         if codecs & 3 != 0 {
             self.initialize(false);
@@ -210,7 +219,7 @@ impl State {
         if codecs & 4 != 0 {
             self.initialize(true);
         }
-        if codecs & 1 != 0 && cfg!(feature = "memory-heavy") {
+        if heavy & 1 != 0 {
             return self.initialize_high();
         }
         0
@@ -490,8 +499,8 @@ pub extern "C" fn decode(format: u32, data: u32, memory: u32) -> u32 {
 /// Initialize selected codec caches without changing any input/output state.
 /// Repeated calls reuse the same tables. Payload-sized arenas remain lazy.
 #[no_mangle]
-pub extern "C" fn warmup(codecs: u32) -> u32 {
-    unsafe { (&mut *STATE.0.get()).warmup(codecs) }
+pub extern "C" fn warmup(codecs: u32, heavy: u32) -> u32 {
+    unsafe { (&mut *STATE.0.get()).warmup(codecs, heavy) }
 }
 #[no_mangle]
 pub extern "C" fn output_ptr() -> u32 {

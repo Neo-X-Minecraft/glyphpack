@@ -47,6 +47,14 @@ impl Default for BuildOptions {
     }
 }
 impl BuildOptions {
+    /// Recommended broader codec coverage with verification fixed on. Memory
+    /// overhead stays minimal unless explicitly enabled in a custom build.
+    pub fn recommended_full() -> Self {
+        Self {
+            packings: vec![Packing::Pair, Packing::Ans],
+            ..Self::default()
+        }
+    }
     pub fn full() -> Self {
         Self {
             packings: vec![Packing::Pair, Packing::Ans, Packing::Windows],
@@ -376,21 +384,20 @@ pub fn build_adapter(options: &BuildOptions, wasm: &[u8]) -> Result<String, Stri
     } else {
         "text,options={}"
     };
-    let warmup = if options.packings.len() == 1 {
-        format!(
-            "export function warmup(){{warmWasm(api,{});}}\n",
-            1u32 << options.packings[0] as u32
-        )
+    // Generate only available names. The canonical ordering gives a no-argument
+    // priority of pair > ANS > Windows; warm-up never enables heavy implicitly.
+    let cases = options
+        .packings
+        .iter()
+        .map(|p| format!("case {:?}:bit={};break;", p.name(), 1u32 << *p as u32))
+        .collect::<String>();
+    let heavy = if options.packings.contains(&Packing::Pair) {
+        "if(flag&&bit===1)heavy|=1;"
     } else {
-        // Build only selected names into the selector. Accumulate a bitmask
-        // before entering Wasm so an invalid list never partially warms caches.
-        let cases = options
-            .packings
-            .iter()
-            .map(|p| format!("case {:?}:mask|={};break;", p.name(), 1u32 << *p as u32))
-            .collect::<String>();
-        format!("export function warmup(codecs){{\nif(!Array.isArray(codecs))throw TypeError('Expected an array of payload codecs');\nlet mask=0;\nfor(const codec of codecs){{switch(codec){{{cases}default:throw Error('Unsupported payload codec');}}}}\nwarmWasm(api,mask);\n}}\n")
+        ""
     };
+    let default_codec = options.packings[0].name();
+    let warmup=format!("export function warmup(codecs,memoryHeavy){{\nif(codecs===undefined)codecs=[{default_codec:?}];\nif(!Array.isArray(codecs))throw TypeError('Expected an array of payload codecs');\nif(memoryHeavy!==undefined){{if(!Array.isArray(memoryHeavy))throw TypeError('Expected an array of memory flags');if(memoryHeavy.length!==codecs.length)throw Error('Warm-up lists must have the same length');}}\nlet mask=0,heavy=0;\nfor(let i=0;i<codecs.length;i++){{let bit;switch(codecs[i]){{{cases}default:throw Error('Unsupported payload codec');}}\nconst flag=memoryHeavy===undefined?false:memoryHeavy[i];\nif(typeof flag!=='boolean')throw TypeError('Expected boolean memory flags');\nmask|=bit;{heavy}}}\nwarmWasm(api,mask,heavy);\n}}\n");
     let entry=format!("{imports}\nconst api=await loadWasm({payload:?});\n{warmup}export function binary({parameters}){{\n{}\nreturn runWasm(api,text,{format},{data},{memory});\n}}\n",statements.join("\n"));
     let scratch = Scratch::new()?;
     for &(name, contents) in FILES {
@@ -500,18 +507,12 @@ pub fn type_declaration(options: &BuildOptions) -> Result<String, String> {
     } else {
         format!("{header}export interface DecodeOptions {{\n{}\n}}\nexport declare function binary(text: string, options?: DecodeOptions): Uint8Array;\n",fields.join("\n"))
     };
-    if options.packings.len() == 1 {
-        declaration.push_str("export declare function warmup(): void;\n");
-    } else {
-        let names = options
-            .packings
-            .iter()
-            .map(|p| format!("'{}'", p.name()))
-            .collect::<Vec<_>>()
-            .join(" | ");
-        declaration.push_str(&format!(
-            "export declare function warmup(codecs: readonly ({names})[]): void;\n"
-        ));
-    }
+    let names = options
+        .packings
+        .iter()
+        .map(|p| format!("'{}'", p.name()))
+        .collect::<Vec<_>>()
+        .join(" | ");
+    declaration.push_str(&format!("export declare function warmup(codecs?: readonly ({names})[], memoryHeavy?: readonly boolean[]): void;\n"));
     Ok(declaration)
 }

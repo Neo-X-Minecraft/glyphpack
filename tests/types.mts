@@ -4,6 +4,14 @@ import { binary as core } from "glyphpack/core";
 import { binary as ans, warmup as warmAns } from "glyphpack/ans";
 import { binary as windows, warmup as warmWindows } from "glyphpack/windows";
 import { binary as fast } from "glyphpack/fast-none";
+import {
+  binary as recommended,
+  warmup as warmRecommended,
+} from "glyphpack/recommended";
+import {
+  binary as recommendedFull,
+  warmup as warmRecommendedFull,
+} from "glyphpack/recommended-full";
 const options: DecodeOptions = {
   verifyFormat: true,
   verifyData: "secure",
@@ -16,10 +24,23 @@ warmWindows();
 warmup(["pair", "ans"]);
 warmup(["windows", "pair", "ans"] as const);
 warmup([]);
-// @ts-expect-error Single-codec warm-up has no parameters.
 warmFixed(["pair"]);
-// @ts-expect-error Mixed builds require an explicit array.
 warmup();
+warmup(["ans", "pair"], [true, false]);
+warmup(undefined, [false]);
+warmRecommended();
+warmRecommended(["pair"], [false]);
+warmRecommendedFull(["ans", "pair"], [true, false]);
+recommended("");
+recommendedFull("");
+// @ts-expect-error Pair-only builds cannot warm omitted codecs.
+warmFixed(["ans"]);
+// @ts-expect-error Recommended full omits Windows.
+warmRecommendedFull(["windows"]);
+// @ts-expect-error Recommended verification is fixed on.
+recommendedFull("", { verifyData: "none" });
+// @ts-expect-error Memory flags must be booleans.
+warmup(["pair"], [1]);
 // @ts-expect-error Warm-up accepts codec names, not verification policies.
 warmup(["secure"]);
 // @ts-expect-error A single name still goes inside an array.

@@ -5,12 +5,16 @@
 const littleEndian = new Uint8Array(new Uint16Array([1]).buffer)[0] === 1;
 // Imports have already instantiated Wasm. Explicit warm-up only prepares its
 // selected reusable lookup caches; decoding also initializes them as needed.
-export function warmWasm(api, codecs) {
-  const status = api.warmup(codecs);
+export function warmWasm(api, codecs, heavy) {
+  const status = api.warmup(codecs, heavy);
   if (status)
     throw status === 8
       ? RangeError("Wasm decoder memory allocation failed")
-      : Error("Unsupported payload codec");
+      : Error(
+          status === 10
+            ? "Unsupported memory optimization option"
+            : "Unsupported payload codec",
+        );
 }
 export function runWasm(api, text, verifyFormat, dataKind, memoryHeavy) {
   // Dispatch before reserving/copying a large input. The kernel independently

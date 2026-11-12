@@ -1,9 +1,11 @@
 // wasm-runtime.js
 var littleEndian = new Uint8Array(new Uint16Array([1]).buffer)[0] === 1;
-function warmWasm(api2, codecs) {
-  let status = api2.warmup(codecs);
+function warmWasm(api2, codecs, heavy) {
+  let status = api2.warmup(codecs, heavy);
   if (status)
-    throw status === 8 ? RangeError("Wasm decoder memory allocation failed") : Error("Unsupported payload codec");
+    throw status === 8 ? RangeError("Wasm decoder memory allocation failed") : Error(
+      status === 10 ? "Unsupported memory optimization option" : "Unsupported payload codec"
+    );
 }
 function runWasm(api2, text, verifyFormat, dataKind, memoryHeavy) {
   if (text.length < 2) throw Error("Invalid payload length");
@@ -44,9 +46,25 @@ async function loadWasm(payload) {
 }
 
 // decoder.js
-var api = await loadWasm("H4sIAAAAAAACA7VWPY8cRRCt/pqZ3d5ZnyUCSxfQMxEJcoDkwCBxbckHp5NlJBABiX3CJ8TMne92b73YkvGukQMHDggIDHKASCCxZJEj+Q8g8Rv4AzaxZZZXNbPj9ZdEADrtTU11T/V7r6u6mnaO9hURqePmIqnZRTXDPzOb4WHSRMuQM4ps+lGa7O/uH4yvaUou7X5+cGmXqPfl5cMrkwuHkzGp/sGVyfJF+8Oda3sHO5cu7O1eJtM/mhyMd5sXm3y1M96/ckiu/+iN5OFx7WfqRtSF1hvx27l9S1OZRr2VU+yxD9554+2dVPDVQ0taaeVDL+qq6IU0qrpIfbzdzDJn7Qbb8cF8cEoTPwrj449z+zYRj4VCG0QNuqSoKl4iUJw/NqM4f2A2c8Lbe81jQXUstsT844mp45vnxP7lIfy68S+etp+oSbAIV9p31U9zC8fThdnK9QA4dfx7YT7IlRcUUZ0m8sw3NDSD8FKTk/whY6oLyz4N3zvsK4Z6hoA35/q83eCPNnMdhjzFLqec+f6RuXH9zA+PzNfFMBpedQg8/en9dkSxX/tChWG0MUTCaDaNZoQF9eY6E9hcL5P7HwPP8AzJI6RB1Vjh/qc5QaThz2U/ficin4OMt8QqPNaKGciYeHU7V3ikVbw6Kn2chT64fDGNHFF/ts7qUOgHWi9NVUCzAIEUaz+/vi3GYmGquDYt3ftUZtvg6kJWb1CcgbDnBYPnHb3N+rIBMMHA8JEKF+/irc/ue2yEpIYNlgs1ije/uZXtFQNOJmBZ+wTsVMzGId1m+WGrSVUYRMnw0/hZnqo3zEZQId0CWyoSlgMcGJdZ2TEw1tXKe4Tge1XEVtRF4kMCVotFOgLhJOhJyMZFpmecfshFcH78659PEtDHCiQ07EAjZbqRmj+EhLqeyiB2Nosn2E7xgfFQHrJUIQuDo1NEAlIzSIGMwQrZxE7TII+2eh588m/Aa4CnSXACPhACMSZqMGEd4FvibTL+L35h4TAqtGgFuYEvfQm5ArSQns95H7BxIalazV2LPHsBef91yMlLMglyy9gEuQNyjUBYttOWC7XRVjfa2mfIkQWSDeJ3jFxDcwvNIQZwuw53IrgFsQOuwQs4h6/BWXYgWUA7CXpc5ABpARLBOpBaQFqAzBowySpILWkr/pxBZgCpGaRjkIOQtyAzrjnH2aDiWsWpz1jXkPeBcCxYdvbP4cRy3nuSP7BG+jiu8KUYWCsoEVjqAsVDUjwJSsUWnMUGe0ZtnSSrQiSvrxOgNUstesG0dcJaSJX0Gilw6kiSlEbAoFa5VNiDRTnBwW0pActh2q3Nuq+w972lrJx/rE7RQzEaUOfoLFmP9TJCG47+eTuTunft6GlRE2eZ8yU+YxGMDOA85THDTcV5nEBciDyliWAQoZ24Nm2CmCYId5V25EQ7YiVEws9E9EQkwmHleVsREBt/jDdFyy6Dfj+4unRxDUNomIhXy9kesARSsOlbqpbKxW4bLifq0LJ6qi4Vx48pWtLqOI7z1ko6y3WW7SzTWbp6FruxrFRviSbIDCz+HA4P5P/1EbyQkLMnUnNgW4G8JVNxwo2ghOyQ4/YhVBxTwQE4Kq18+jwXy1zs/8aFVrngqPO/K5XMlrcP9Yrbh/JyxaAPpY1yAZQ63ukaaXO7KZTkmzRRtE7NrbM0UyyLpDVomRhrOitSTwfFrVMvW6fcMKR1WrROty0HiHvWOrFEUMvWqdm4s2ydqOaEr13SUZFyvkdta2frXmfdbazflJLLiOIO0zsmzM7m1NJ/nvzy0oXhwDmHuaq5c6n/7M6luRL1y3cu9ao7FzYsV3zfsN5Z3GvtPxO6VeH8CgAA");
-function warmup() {
-  warmWasm(api, 1);
+var api = await loadWasm("H4sIAAAAAAACA7VWPY8cRRCt/pqZnd5ZHxISli6gZyIS5ADJgUHi2pIPTifLSCACEvuET4iZO9/ter3YkvGukQMHDggIDHKASCCxZPELnBAi8Rv4AzYRgWWWVzWz6/WXRGB02uuaqu7qV6+rupp2Lu4rIlJv2HOkpufMdDrFoPifZtGkidKYYJxRZNOP0mR/d/9gdEVTcn7384Pzu0S9Ly8cXhqfPRyPSOUHl8aLD+0Pd67sHeycP7u3e4FMfnF8MNptP2zy1c5o/9Ihufzv15P7r2k/VdeiLrXeiN/O7FuaqjTqrYJij3XQzlpt75iCrhlY0korH3pR12UvpFE1ZerjzXaWOWU3WI73Zv3jmngojY8/zuzbRGwLpTbwGnRFUdW8RaA4e2iGcXbPbBaEr/faYU5NLLdE/OORaeKbp0X+5T70utXPH3dL1DhYuKvsu+qnmYXi8dxsFboPnDr+MzcfFMoLiqhOEHmON7RhBolLjY/xQsbUlJZ1Grp3WFcO9BQOr8/0GbvBizYLHQY8xS6mnPz+gbl29eQPD8zX5SAa3nUAPPnkbmdRrNe+VGEQbQyRYM0m0Qyxod5c5wA216vk7sfAMzhJMoQ0qAY73P20IJA0+LnK43dC8mnQeEOk0mOvmCEYEy9vFwpDWsfLw8rHacgRyxeTyB71Z+vMDoU80Hpl6hKcBRCkmPvZ1W0R5nNTx7VJ5d6nKttGrC5kzQbFKQL2vGHwfKI3mV8WACYYCD5S6eJtfOWsvsNCSBrIiHKuhvH6NzeyvbLPyQQsa58gOhWzUUi3mX7IalyXBl4y/DR+lqfqDbMRVEi3EC2VCdOBGBiXWTkxRKzrle8IwvfqiKNoysSHBFHN5+kQASdBj0M2KjM95fRDLiLmh7/++ShB+NiBJAzb10iZpaXhhaBQNxMx4mSzeJTlFAuMB/OgpQ5Z6F88TiQgNYMUyDDWyCZWmhZ5tPXT4JP/Al4DPI2DE/CB4IgxUYsJ+wDfAm+b8X/xBxMHq4RFK8gNdOlzyBWghfRMweeAgwtJ3XHuOuTZM8jzlyEnL8kkyC1jE+QOyDUcYdslt1yoLbe65dY+QY4skGwQvWPkGpxbcA4ygNstcSeCWxA74Oo/g3PwEpzVEiQTaMdBj8oCIC1AwtkSpBaQFiCzFkyyClJL2oq+YJAZQGoG6RhkPxQdyIxrznE2qLhWc+oz1jXkfSBcC5aV+WncWM57T/KHqJE+jit8QQb2CkoIlrpA8ZAUT4JSsSVnscGZUVcnySoRycvrBGjNgoteMF2dMBdSJb2WCtw6kiSVETCoVS4V1mBTTnDEtqCA6TDd0WbLVTj73oJWzj9mp+yhGA1CZ+9MWY/5MhI2FPkZO5W6d531hLCJu8z5CsuYBCMG3KdsM9xUnMcNxIXIU1oPBh66iWuT1olpnXBX6SxHO4sVFwmPifAJT4TLyvOxwiEO/ggfipZTRvh5cE3l4hpMaJjw18jdHrAFUrDtW6qRysVpGy4nWqJl9lRTKfYfU7SkVTuu805KlpJbSnYpmaWk6ye+W8lK9VZoghyBxZ/D5YH8vzqEFhRy9kRqL2wrkLdkKm64IZiQE3LcPiQUx6HgAhxWVpY+HYvlWOz/FgutxoKrzv+uVDJdvD7UC14fyssTgz6UNsoFUOl4a9lI29dNqSTfpImidWpunZWZYFskrUHLhK3trEg9HRS3Tr1onfLCkNZp0Trdtlwg7knrxBZBLVqnZuHWonWimhN+dklHRcr5HnWtnaU7S+l2K/2mlOLHiOIO0zuC5RjzIxLhqYI6Gp4mYfH4gjlw7mGuat9e6pW9vTRXpH7+7aVe9PbCwRWK3x3WO4v3rf0XE1/yKgoLAAA=");
+function warmup(codecs, memoryHeavy) {
+  if (codecs === void 0 && (codecs = ["pair"]), !Array.isArray(codecs)) throw TypeError("Expected an array of payload codecs");
+  if (memoryHeavy !== void 0) {
+    if (!Array.isArray(memoryHeavy)) throw TypeError("Expected an array of memory flags");
+    if (memoryHeavy.length !== codecs.length) throw Error("Warm-up lists must have the same length");
+  }
+  let mask = 0, heavy = 0;
+  for (let i = 0; i < codecs.length; i++) {
+    let bit;
+    if (codecs[i] === "pair")
+      bit = 1;
+    else
+      throw Error("Unsupported payload codec");
+    let flag = memoryHeavy === void 0 ? !1 : memoryHeavy[i];
+    if (typeof flag != "boolean") throw TypeError("Expected boolean memory flags");
+    mask |= bit, flag && bit === 1 && (heavy |= 1);
+  }
+  warmWasm(api, mask, heavy);
 }
 function binary(text) {
   return runWasm(api, text, !1, 0, !1);

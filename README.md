@@ -33,22 +33,23 @@ Import waits for decompression and Wasm instantiation. After import resolves,
 reused. Returned bytes own a fresh buffer and remain valid across later calls.
 Module initialization uses no network requests or neighboring files.
 
-Every module also exports synchronous `warmup`. Single-codec builds have no
-parameters; mixed builds take an array containing only their compiled codecs:
+Every module exports synchronous `warmup(codecs?, memoryHeavy?)`. Both parameters
+are optional arrays, including in single-codec builds:
 
 ```js
-// A pair-only (or ANS-only / Windows-only) module:
-import {warmup} from './dist/default.min.mjs';
-warmup();
-
-// In a mixed build:
-// import {warmup} from './dist/full.min.mjs';
-// warmup(['pair', 'ans']);
-// warmup(['windows']);
+import {warmup} from './dist/full.min.mjs';
+warmup(); // First available codec: pair > ANS > Windows; memory always off.
+warmup(['ans', 'pair'], [true, false]); // Flags correspond by position.
+warmup(['pair'], [true]); // Requires a build containing the heavy strategy.
+warmup(['windows']); // Omitted flags are all false.
 ```
 
-Warm-up prepares reusable lookup tables, including the 256 KiB heavy pair table
-when that strategy was built in and pair was requested. It is idempotent; duplicate
+Warm-up prepares reusable lookup tables. Only pair uses the optional 256 KiB
+heavy table; flags for ANS and Windows are accepted and ignored. A true pair flag
+requires a build containing that strategy. Default warm-up always uses false,
+even in a build whose decoder uses heavy lookup exclusively. Warming does not
+change decode options or clear an already prepared cache.
+It is idempotent; duplicate
 names are harmless and an empty array does nothing. Unsupported names throw before
 any selected cache is initialized. Pair and ANS share their alphabet table.
 `binary()` automatically initializes whatever its selected path needs, so explicit
@@ -77,6 +78,19 @@ binary(encodedText, {
 The memory-heavy lookup applies to pair packing; ANS codecs do not use it.
 
 ## Choose a packing
+
+Two recommended distributions keep format verification and BLAKE3 fixed on and
+omit the heavy lookup. `recommended.min.mjs` contains only pair (identical to
+`default.min.mjs`); `recommended-full.min.mjs` contains pair and ANS. The complete
+`full.min.mjs` retains all three codecs and all verification/memory choices.
+The npm paths are `glyphpack/recommended` and `glyphpack/recommended-full`.
+
+```sh
+glyphpack build -o recommended.mjs
+glyphpack build --packing pair ans -o recommended-full.mjs
+# Include optional pair memory optimization in a custom recommended build:
+glyphpack build --packing pair ans --memory-heavy off on -o recommended-adaptive.mjs
+```
 
 | Packing | Storage | Recommended use |
 | --- | --- | --- |

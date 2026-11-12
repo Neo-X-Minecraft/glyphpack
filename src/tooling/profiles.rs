@@ -34,6 +34,8 @@ pub fn build_all(root: &Path) -> Result<Value, String> {
     fs::create_dir_all(&out).map_err(|e| e.to_string())?;
     let profiles = [
         ("default", BuildOptions::default()),
+        ("recommended", BuildOptions::default()),
+        ("recommended-full", BuildOptions::recommended_full()),
         (
             "ans",
             BuildOptions {
@@ -100,6 +102,7 @@ pub fn build_all(root: &Path) -> Result<Value, String> {
                     "backend":"wasm", "browserTarget":"chrome109",
                     "formatVersion":encoder::FORMAT_VERSION,
                     "packings":options.packings.iter().map(|p|p.name()).collect::<Vec<_>>(),
+                    "verifyFormat":options.formats,"verifyData":options.data.iter().map(|m|m.name()).collect::<Vec<_>>(),"memoryHeavy":options.memory,
                     "wasmBytes":wasm.len(), "gzip9Bytes":gzip_bytes,
                     "base64Bytes":gzip_bytes.div_ceil(3)*4
                 }),
@@ -127,5 +130,5 @@ pub fn build_all(root: &Path) -> Result<Value, String> {
         serde_json::to_string_pretty(&manifest).unwrap() + "\n",
     )
     .map_err(|e| e.to_string())?;
-    Ok(json!({"profiles":8,"moduleFiles":manifest.len(),"output":out}))
+    Ok(json!({"profiles":10,"moduleFiles":manifest.len(),"output":out}))
 }

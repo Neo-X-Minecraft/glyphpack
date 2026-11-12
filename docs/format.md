@@ -170,21 +170,31 @@ import completes, the public decode function remains synchronous.
 
 ## Warm-up API and ABI
 
-All modules export `warmup(): void` when one codec is compiled, or
-`warmup(codecs: readonly ('pair' | 'ans' | 'windows')[]): void` for a mixed build,
-with the union narrowed to the selected codecs. Mixed builds require an explicit
-array. Empty arrays do nothing; duplicates are idempotent. Unavailable or unknown
+All modules export `warmup(codecs?, memoryHeavy?): void`. The first parameter
+is a readonly array of codec names, narrowed to those compiled in the build;
+the second is an optional readonly boolean array of matching length. With no
+arguments, select exactly the first available codec in pair > ANS > Windows
+order, always with memory optimization false. Omitted flags default to false
+for every supplied codec, regardless of the build's decoding memory policy.
+Empty arrays do nothing; duplicates are idempotent. Unavailable or unknown
 names throw `Unsupported payload codec` before any cache is initialized. An
 argument that is not an array throws `TypeError('Expected an array of payload codecs')`.
 
-The raw Wasm `warmup(mask: u32) -> status` export uses bits pair=1, ANS=2,
-Windows=4. It validates every bit before changing state. Status 9 rejects unknown
-or unavailable bits; status 8 reports allocation failure. Success is 0. Zero is
-a no-op. A requested pair codec prepares its optional heavy table if compiled;
-pair/ANS share the main lookup. This does not change input/output pointers or
+Memory flags must be booleans, and the lists must have equal lengths. A true
+pair flag requests its optional high-digit table; if that strategy was omitted,
+throw `Unsupported memory optimization option`. ANS and Windows have no such
+strategy and ignore their flags. All list validation precedes warming.
+
+The raw Wasm `warmup(mask: u32, heavy: u32) -> status` export uses bits pair=1,
+ANS=2, Windows=4 in the first mask. The heavy mask accepts only the pair bit,
+which must also be selected and built with heavy support. Validate both masks
+before changing state. Status 9 rejects unavailable codec bits; status 10 rejects
+invalid/unavailable memory bits; status 8 reports allocation failure. Success is
+0. Both masks zero is a no-op. Pair/ANS share the main lookup.
+This does not change input/output pointers or
 lengths. Repeated warming never allocates the same cache twice.
 
 Normal decoding still initializes only its needed tables lazily. Its default
-memory strategy remains off; explicit pair warm-up in a heavy-capable build
-intentionally prepares the extra 256 KiB cache without changing decode options.
+memory strategy remains off; explicit pair warm-up with a true flag in a
+heavy-capable build prepares its 256 KiB cache without changing decode options.
 Warm-up does not allocate payload-sized arenas or force V8 to optimize kernels.

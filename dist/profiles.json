@@ -1,214 +1,460 @@
 {
   "ans.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7796,
-    "blake3": "6c3760b140116c35c0da4664b3a5ef5167690220ab56d27f8776aa6605666fae",
+    "base64Bytes": 7808,
+    "blake3": "d05930a22740f677b85935b90cfd07214b1c7883c79bf8cc6ebcb5dfac1d9317",
     "browserTarget": "chrome109",
-    "bytes": 9541,
+    "bytes": 10084,
     "formatVersion": 4,
-    "gzip9Bytes": 5845,
+    "gzip9Bytes": 5855,
+    "memoryHeavy": [
+      false
+    ],
     "packings": [
       "ans"
     ],
-    "wasmBytes": 16534
+    "verifyData": [
+      "secure"
+    ],
+    "verifyFormat": [
+      true
+    ],
+    "wasmBytes": 16548
   },
   "ans.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7796,
-    "blake3": "b3ce41c9c45be99a48a6e4f14d4a29ef0a4e9aa3e26adeb8c74f080b0e76d5f8",
+    "base64Bytes": 7808,
+    "blake3": "3381723a6482e5389e852a857239d51e673f38a394c9da56d098f5b7fba7a951",
     "browserTarget": "chrome109",
-    "bytes": 10387,
+    "bytes": 11201,
     "formatVersion": 4,
-    "gzip9Bytes": 5845,
+    "gzip9Bytes": 5855,
+    "memoryHeavy": [
+      false
+    ],
     "packings": [
       "ans"
     ],
-    "wasmBytes": 16534
+    "verifyData": [
+      "secure"
+    ],
+    "verifyFormat": [
+      true
+    ],
+    "wasmBytes": 16548
   },
   "core.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 1848,
-    "blake3": "9038f2fd021095022e7d50498ef31a7a3203b816b1cfbd185d22543e73a36c93",
+    "base64Bytes": 1864,
+    "blake3": "e27eaff26d2d79dc3002de68e9e7312a2e9aa48dea8e5638c29b40c95d1307f1",
     "browserTarget": "chrome109",
-    "bytes": 3433,
+    "bytes": 4006,
     "formatVersion": 4,
-    "gzip9Bytes": 1386,
+    "gzip9Bytes": 1397,
+    "memoryHeavy": [
+      false
+    ],
     "packings": [
       "pair"
     ],
-    "wasmBytes": 2812
+    "verifyData": [
+      "none"
+    ],
+    "verifyFormat": [
+      false
+    ],
+    "wasmBytes": 2826
   },
   "core.mjs": {
     "backend": "wasm",
-    "base64Bytes": 1848,
-    "blake3": "f42101b1bae603210f27aebf318a21d9d7a568d2abafa9425a11d7dfbb7dea86",
+    "base64Bytes": 1864,
+    "blake3": "4f7df6c0377545341c48a2f90dcfc50d549a76d51f658ec78d5ca7559cb89a09",
     "browserTarget": "chrome109",
-    "bytes": 4245,
+    "bytes": 5119,
     "formatVersion": 4,
-    "gzip9Bytes": 1386,
+    "gzip9Bytes": 1397,
+    "memoryHeavy": [
+      false
+    ],
     "packings": [
       "pair"
     ],
-    "wasmBytes": 2812
+    "verifyData": [
+      "none"
+    ],
+    "verifyFormat": [
+      false
+    ],
+    "wasmBytes": 2826
   },
   "default.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7916,
-    "blake3": "372b58195598a450aebda25eecc7798fcaed1762bd02de6a5cf03f138333a3e3",
+    "base64Bytes": 7928,
+    "blake3": "ddf29da16d809a3373ffeef8d36a5d90fddb1c522879c46066ee013fae2590ae",
     "browserTarget": "chrome109",
-    "bytes": 9678,
+    "bytes": 10247,
     "formatVersion": 4,
-    "gzip9Bytes": 5935,
+    "gzip9Bytes": 5945,
+    "memoryHeavy": [
+      false
+    ],
     "packings": [
       "pair"
     ],
-    "wasmBytes": 16144
+    "verifyData": [
+      "secure"
+    ],
+    "verifyFormat": [
+      true
+    ],
+    "wasmBytes": 16158
   },
   "default.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7916,
-    "blake3": "35f88521ae46d9dbf17497762701f417cb958b52b3cafe9ca46b678166c21d67",
+    "base64Bytes": 7928,
+    "blake3": "5603c1cb3451d75facaed1c59db7dcc3118c8f84d8f83223cbaa372e97e02638",
     "browserTarget": "chrome109",
-    "bytes": 10545,
+    "bytes": 11415,
     "formatVersion": 4,
-    "gzip9Bytes": 5935,
+    "gzip9Bytes": 5945,
+    "memoryHeavy": [
+      false
+    ],
     "packings": [
       "pair"
     ],
-    "wasmBytes": 16144
+    "verifyData": [
+      "secure"
+    ],
+    "verifyFormat": [
+      true
+    ],
+    "wasmBytes": 16158
   },
   "fast-none.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 3436,
-    "blake3": "2842ac94ea4ec3e36afee3a8195f16bc5b0892442a53d198668b6c8f8da44329",
+    "base64Bytes": 3448,
+    "blake3": "cffc7393820745ec42dd0976b6c3aa953b88ced4b6b8b37f9d595d32f9b14500",
     "browserTarget": "chrome109",
-    "bytes": 5469,
+    "bytes": 6038,
     "formatVersion": 4,
-    "gzip9Bytes": 2575,
+    "gzip9Bytes": 2585,
+    "memoryHeavy": [
+      false
+    ],
     "packings": [
       "pair"
     ],
-    "wasmBytes": 5542
+    "verifyData": [
+      "none",
+      "fast"
+    ],
+    "verifyFormat": [
+      false,
+      true
+    ],
+    "wasmBytes": 5556
   },
   "fast-none.mjs": {
     "backend": "wasm",
-    "base64Bytes": 3436,
-    "blake3": "287e0025e876ccefea2e69d35e30e7402f30368c331c841513fe4edf12ee7f9d",
+    "base64Bytes": 3448,
+    "blake3": "bae95e1fee025e42b0c93a58b540fc6723bf3e2566d033a05fdbbb74c1c106b1",
     "browserTarget": "chrome109",
-    "bytes": 6535,
+    "bytes": 7405,
     "formatVersion": 4,
-    "gzip9Bytes": 2575,
+    "gzip9Bytes": 2585,
+    "memoryHeavy": [
+      false
+    ],
     "packings": [
       "pair"
     ],
-    "wasmBytes": 5542
+    "verifyData": [
+      "none",
+      "fast"
+    ],
+    "verifyFormat": [
+      false,
+      true
+    ],
+    "wasmBytes": 5556
   },
   "full.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 13732,
-    "blake3": "71936c4dc6bdc7b06167abd33138816487930988366989722f4ec75ce2807fcb",
+    "base64Bytes": 13740,
+    "blake3": "c7e61fa9d3d27629111af4cabb2dd8adb09534bccb5c20e89ae8b6493e3b4ccb",
     "browserTarget": "chrome109",
-    "bytes": 16191,
+    "bytes": 16589,
     "formatVersion": 4,
-    "gzip9Bytes": 10299,
+    "gzip9Bytes": 10303,
+    "memoryHeavy": [
+      false,
+      true
+    ],
     "packings": [
       "pair",
       "ans",
       "windows"
     ],
-    "wasmBytes": 31358
+    "verifyData": [
+      "none",
+      "fast",
+      "secure"
+    ],
+    "verifyFormat": [
+      false,
+      true
+    ],
+    "wasmBytes": 31389
   },
   "full.mjs": {
     "backend": "wasm",
-    "base64Bytes": 13732,
-    "blake3": "5ff234d37e207d29497bf970b92fee263de579c28675d40087748bf902248e19",
+    "base64Bytes": 13740,
+    "blake3": "649b0f503522396ce56606a1385350a7b554e162c6dd0a5fb71fc3f721f38a13",
     "browserTarget": "chrome109",
-    "bytes": 17577,
+    "bytes": 18200,
     "formatVersion": 4,
-    "gzip9Bytes": 10299,
+    "gzip9Bytes": 10303,
+    "memoryHeavy": [
+      false,
+      true
+    ],
     "packings": [
       "pair",
       "ans",
       "windows"
     ],
-    "wasmBytes": 31358
+    "verifyData": [
+      "none",
+      "fast",
+      "secure"
+    ],
+    "verifyFormat": [
+      false,
+      true
+    ],
+    "wasmBytes": 31389
   },
   "high-memory.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 8260,
-    "blake3": "e0ea8d4dea8c24038c769891f54364c0bbbc522c167cb2d185ae53b7069dbe2b",
+    "base64Bytes": 8304,
+    "blake3": "a7631e016f7b813fd1fbc5dcef217a258b6bd728e616dedce37da685e8252e77",
     "browserTarget": "chrome109",
-    "bytes": 10022,
+    "bytes": 10623,
     "formatVersion": 4,
-    "gzip9Bytes": 6194,
+    "gzip9Bytes": 6227,
+    "memoryHeavy": [
+      true
+    ],
     "packings": [
       "pair"
     ],
-    "wasmBytes": 17099
+    "verifyData": [
+      "secure"
+    ],
+    "verifyFormat": [
+      true
+    ],
+    "wasmBytes": 17130
   },
   "high-memory.mjs": {
     "backend": "wasm",
-    "base64Bytes": 8260,
-    "blake3": "91f017e07108e6869605e0ae54fe8441958eb76db095b56d24be81a4cf8a0912",
+    "base64Bytes": 8304,
+    "blake3": "5e1a70f465e2fc8458b07e5efb3f528d26a6219c170a90439abed8d6220ad52b",
     "browserTarget": "chrome109",
-    "bytes": 10889,
+    "bytes": 11791,
     "formatVersion": 4,
-    "gzip9Bytes": 6194,
+    "gzip9Bytes": 6227,
+    "memoryHeavy": [
+      true
+    ],
     "packings": [
       "pair"
     ],
-    "wasmBytes": 17099
+    "verifyData": [
+      "secure"
+    ],
+    "verifyFormat": [
+      true
+    ],
+    "wasmBytes": 17130
   },
   "none.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 1848,
-    "blake3": "9038f2fd021095022e7d50498ef31a7a3203b816b1cfbd185d22543e73a36c93",
+    "base64Bytes": 1864,
+    "blake3": "e27eaff26d2d79dc3002de68e9e7312a2e9aa48dea8e5638c29b40c95d1307f1",
     "browserTarget": "chrome109",
-    "bytes": 3433,
+    "bytes": 4006,
     "formatVersion": 4,
-    "gzip9Bytes": 1386,
+    "gzip9Bytes": 1397,
+    "memoryHeavy": [
+      false
+    ],
     "packings": [
       "pair"
     ],
-    "wasmBytes": 2812
+    "verifyData": [
+      "none"
+    ],
+    "verifyFormat": [
+      false
+    ],
+    "wasmBytes": 2826
   },
   "none.mjs": {
     "backend": "wasm",
-    "base64Bytes": 1848,
-    "blake3": "f42101b1bae603210f27aebf318a21d9d7a568d2abafa9425a11d7dfbb7dea86",
+    "base64Bytes": 1864,
+    "blake3": "4f7df6c0377545341c48a2f90dcfc50d549a76d51f658ec78d5ca7559cb89a09",
     "browserTarget": "chrome109",
-    "bytes": 4245,
+    "bytes": 5119,
     "formatVersion": 4,
-    "gzip9Bytes": 1386,
+    "gzip9Bytes": 1397,
+    "memoryHeavy": [
+      false
+    ],
     "packings": [
       "pair"
     ],
-    "wasmBytes": 2812
+    "verifyData": [
+      "none"
+    ],
+    "verifyFormat": [
+      false
+    ],
+    "wasmBytes": 2826
+  },
+  "recommended-full.min.mjs": {
+    "backend": "wasm",
+    "base64Bytes": 8784,
+    "blake3": "e65d782d1075b6af20b1b29327413359ca3c09314cf67163fe7eafb9e6d6c579",
+    "browserTarget": "chrome109",
+    "bytes": 11147,
+    "formatVersion": 4,
+    "gzip9Bytes": 6587,
+    "memoryHeavy": [
+      false
+    ],
+    "packings": [
+      "pair",
+      "ans"
+    ],
+    "verifyData": [
+      "secure"
+    ],
+    "verifyFormat": [
+      true
+    ],
+    "wasmBytes": 18479
+  },
+  "recommended-full.mjs": {
+    "backend": "wasm",
+    "base64Bytes": 8784,
+    "blake3": "34d074cbe91ce3aa60729cd50bcc910e244f1cb2d805b69e9a609417b8acb80e",
+    "browserTarget": "chrome109",
+    "bytes": 12382,
+    "formatVersion": 4,
+    "gzip9Bytes": 6587,
+    "memoryHeavy": [
+      false
+    ],
+    "packings": [
+      "pair",
+      "ans"
+    ],
+    "verifyData": [
+      "secure"
+    ],
+    "verifyFormat": [
+      true
+    ],
+    "wasmBytes": 18479
+  },
+  "recommended.min.mjs": {
+    "backend": "wasm",
+    "base64Bytes": 7928,
+    "blake3": "ddf29da16d809a3373ffeef8d36a5d90fddb1c522879c46066ee013fae2590ae",
+    "browserTarget": "chrome109",
+    "bytes": 10247,
+    "formatVersion": 4,
+    "gzip9Bytes": 5945,
+    "memoryHeavy": [
+      false
+    ],
+    "packings": [
+      "pair"
+    ],
+    "verifyData": [
+      "secure"
+    ],
+    "verifyFormat": [
+      true
+    ],
+    "wasmBytes": 16158
+  },
+  "recommended.mjs": {
+    "backend": "wasm",
+    "base64Bytes": 7928,
+    "blake3": "5603c1cb3451d75facaed1c59db7dcc3118c8f84d8f83223cbaa372e97e02638",
+    "browserTarget": "chrome109",
+    "bytes": 11415,
+    "formatVersion": 4,
+    "gzip9Bytes": 5945,
+    "memoryHeavy": [
+      false
+    ],
+    "packings": [
+      "pair"
+    ],
+    "verifyData": [
+      "secure"
+    ],
+    "verifyFormat": [
+      true
+    ],
+    "wasmBytes": 16158
   },
   "windows.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7768,
-    "blake3": "ae9e7df2081955e7d428af70f986e483a0456213cc46ee7cda4ec1311b0fa631",
+    "base64Bytes": 7776,
+    "blake3": "b670133ae9f0fbd3edad95bbcdcece3b672ce02eb662d81a2976b95dffec5b46",
     "browserTarget": "chrome109",
-    "bytes": 9513,
+    "bytes": 10060,
     "formatVersion": 4,
-    "gzip9Bytes": 5824,
+    "gzip9Bytes": 5831,
+    "memoryHeavy": [
+      false
+    ],
     "packings": [
       "windows"
     ],
-    "wasmBytes": 16289
+    "verifyData": [
+      "secure"
+    ],
+    "verifyFormat": [
+      true
+    ],
+    "wasmBytes": 16307
   },
   "windows.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7768,
-    "blake3": "4520633fe1228dedf1d7781c9356e839f3e307eea237ff6171e93e8abab99be7",
+    "base64Bytes": 7776,
+    "blake3": "9a797f2e6c60704c7c77dfcedf20a66b35d4918918872c8828a478c2a050356f",
     "browserTarget": "chrome109",
-    "bytes": 10359,
+    "bytes": 11177,
     "formatVersion": 4,
-    "gzip9Bytes": 5824,
+    "gzip9Bytes": 5831,
+    "memoryHeavy": [
+      false
+    ],
     "packings": [
       "windows"
     ],
-    "wasmBytes": 16289
+    "verifyData": [
+      "secure"
+    ],
+    "verifyFormat": [
+      true
+    ],
+    "wasmBytes": 16307
   }
 }

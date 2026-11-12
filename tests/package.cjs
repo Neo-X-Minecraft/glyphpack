@@ -64,12 +64,21 @@ for(const verifyData of ['none','fast','secure'])for(const verifyFormat of [fals
 const {binary:fast,warmup:warmFast}=await import('glyphpack/fast-none');warmFast();for(const verifyData of ['none','fast'])for(const verifyFormat of [false,true]){check(fast(fixture.packets[verifyData],{verifyData,verifyFormat}));cases++;}
 for(const packing of ['pair','ans','windows']){
  const name=packing==='pair'?'glyphpack':'glyphpack/'+packing, mod=await import(name), selected=mod.binary;
- assert.equal(mod.warmup.length,0);assert.equal(mod.warmup(),undefined);mod.warmup();
+ assert.equal(mod.warmup.length,2);assert.equal(mod.warmup(),undefined);mod.warmup([packing],[false]);
  check(selected(fixture.tagged[packing].secure));cases++;
  for(const other of ['pair','ans','windows'])if(other!==packing){assert.throws(()=>selected(fixture.tagged[other].secure),/Unsupported payload codec/);cases++;}
  for(const verifyData of ['none','fast','secure'])for(const verifyFormat of [false,true])for(const memoryHeavy of [false,true]){check(binary(fixture.tagged[packing][verifyData],{verifyData,verifyFormat,memoryHeavy}));cases++;}
 }
-console.log(JSON.stringify({pass:true,node:process.version,cases,exports:8}));`;
+for(const name of ['glyphpack/recommended','glyphpack/recommended-full']){
+ const m=await import(name);m.warmup();const codecs=name.endsWith('recommended-full')?['pair','ans']:['pair'];
+ m.warmup(codecs,codecs.map(()=>false));
+ for(const codec of codecs){check(m.binary(fixture.tagged[codec].secure));cases++;assert.throws(()=>m.binary(fixture.tagged[codec].none,{verifyData:'none',verifyFormat:false}),/Required payload integrity mode missing/);cases++;}
+ assert.throws(()=>m.binary(fixture.tagged.windows.secure),/Unsupported payload codec/);
+ assert.throws(()=>m.binary(fixture.tagged.pair.secure+'  ',{verifyFormat:false,verifyData:'none'}),/Invalid payload/);
+ assert.throws(()=>m.warmup(['pair'],[true]),/Unsupported memory optimization option/);
+}
+warmup(['ans','pair'],[true,false]);
+console.log(JSON.stringify({pass:true,node:process.version,cases,exports:10}));`;
     await fs.writeFile(path.join(temp, "consumer.mjs"), script);
     process.stdout.write(
       execFileSync(process.execPath, ["consumer.mjs"], {

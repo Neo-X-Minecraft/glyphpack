@@ -86,9 +86,9 @@ jobs:
           cp "$(rustc --print sysroot)/share/doc/rust/COPYRIGHT-library.html" "$stage/licenses/rust-library.html"
           git rev-parse HEAD > "$stage/COMMIT"
           (cd "$stage" && zip -X -9 -q -r "../packages/glyphpack-v$version-web.zip" .)
-          cp dist/default.min.mjs dist/full.min.mjs dist/core.min.mjs generated/packages/
+          cp dist/default.min.mjs dist/full.min.mjs dist/core.min.mjs dist/recommended.min.mjs dist/recommended-full.min.mjs generated/packages/
           cp dist/standalone.html generated/packages/
-          cp generated/wasm/profiles/f01-d012-m01-modern.wasm generated/packages/glyphpack-full.wasm
+          cp generated/wasm/profiles/ppaw-f01-d012-m01-modern.wasm generated/packages/glyphpack-full.wasm
           npm pack --ignore-scripts --pack-destination generated/packages
           cp LICENSE generated/packages/
           cp docs/downloads.md generated/packages/START-HERE.md
