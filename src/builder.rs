@@ -23,6 +23,8 @@ const FILES: &[(&str, &str)] = &[
 ];
 #[derive(Clone, Debug)]
 pub struct BuildOptions {
+    /// Select smaller BLAKE3 scalar rounds instead of the faster expanded form.
+    pub compact_hash: bool,
     pub packings: Vec<Packing>,
     pub formats: Vec<bool>,
     pub data: Vec<Integrity>,
@@ -35,6 +37,7 @@ pub struct BuildOptions {
 impl Default for BuildOptions {
     fn default() -> Self {
         Self {
+            compact_hash: false,
             packings: vec![Packing::Pair],
             formats: vec![true],
             data: vec![Integrity::Secure],
@@ -115,6 +118,9 @@ fn canonical(options: &BuildOptions) -> Result<BuildOptions, String> {
     if !options.packings.contains(&Packing::Pair) {
         options.memory = vec![false]
     }
+    if !options.data.contains(&Integrity::Secure) {
+        options.compact_hash = false;
+    }
     if !options.module {
         return Err("The Wasm decoder is an ES module; import it before calling binary()".into());
     }
@@ -130,6 +136,9 @@ fn features(options: &BuildOptions) -> Vec<&'static str> {
             Packing::Windows => "windows",
         })
         .collect::<Vec<_>>();
+    if options.compact_hash {
+        out.push("compact-hash");
+    }
     if options.formats.len() > 1 {
         out.push("format-runtime");
     } else if options.formats[0] {
@@ -156,7 +165,7 @@ pub fn profile_key(options: &BuildOptions) -> String {
             .collect::<String>()
     };
     format!(
-        "p{}-f{}-d{}-m{}-{}",
+        "p{}-f{}-d{}-m{}-{}{}",
         options
             .packings
             .iter()
@@ -173,7 +182,8 @@ pub fn profile_key(options: &BuildOptions) -> String {
             .map(|v| char::from(b'0' + v.kind() as u8))
             .collect::<String>(),
         flags(&options.memory),
-        if options.legacy { "legacy" } else { "modern" }
+        if options.legacy { "legacy" } else { "modern" },
+        if options.compact_hash { "-compact" } else { "" }
     )
 }
 fn version(executable: &Path) -> Result<Vec<u8>, String> {
@@ -199,6 +209,13 @@ pub fn build_wasm(options: &BuildOptions) -> Result<PathBuf, String> {
         .map(PathBuf::from)
         .unwrap_or_else(|| "cargo".into());
     let optimizer = tool(None, "WASM_OPT", "wasm-opt");
+    // Pair-only modules favor their small-message path. O3 avoids O4's IR
+    // flattening there; broader codec builds retain O4's scheduling/size balance.
+    let optimize_level = if options.packings == [Packing::Pair] {
+        "-O3"
+    } else {
+        "-O4"
+    };
     let mut flags = if let Ok(value) = env::var("CARGO_ENCODED_RUSTFLAGS") {
         value.split('\x1f').map(str::to_string).collect::<Vec<_>>()
     } else {
@@ -221,7 +238,8 @@ pub fn build_wasm(options: &BuildOptions) -> Result<PathBuf, String> {
     flags.extend(["-C".into(), "link-arg=-zstack-size=65536".into()]);
     let flags = flags.join("\x1f");
     let mut source = features(&options).join(",").into_bytes();
-    source.extend_from_slice(b"wasm32v1-none:chrome109:simd128-mutable:-O4:atomic-cache-v3");
+    source.extend_from_slice(b"wasm32v1-none:chrome109:simd128-mutable:atomic-cache-v4");
+    source.extend_from_slice(optimize_level.as_bytes());
     source.extend_from_slice(flags.as_bytes());
     for path in [
         "Cargo.toml",
@@ -283,10 +301,10 @@ pub fn build_wasm(options: &BuildOptions) -> Result<PathBuf, String> {
     let mut optimize = Command::new(&optimizer);
     optimize
         .arg(&artifact)
+        .arg(optimize_level)
         .args([
             "--mvp-features",
             "--enable-mutable-globals",
-            "-O4",
             "--converge",
             "--vacuum",
             "--strip-dwarf",
@@ -342,7 +360,7 @@ pub fn build_adapter(options: &BuildOptions, wasm: &[u8]) -> Result<String, Stri
     let options = canonical(options)?;
     let payload = transport::base64(&transport::gzip9(wasm)?);
     let mut imports = String::from(
-        "import {runWasm,warmWasm} from './wasm-runtime.js';\nimport {loadWasm} from './loader.js';\n",
+        "import {runWasm,warmWasm,failure} from './wasm-runtime.js';\nimport {loadWasm} from './loader.js';\n",
     );
     let mut selectors = Vec::new();
     let mut statements = Vec::new();
@@ -389,7 +407,7 @@ pub fn build_adapter(options: &BuildOptions, wasm: &[u8]) -> Result<String, Stri
     let cases = options
         .packings
         .iter()
-        .map(|p| format!("case {:?}:bit={};break;", p.name(), 1u32 << *p as u32))
+        .map(|p| format!("codec==={:?}?{}:", p.name(), 1u32 << *p as u32))
         .collect::<String>();
     let heavy = if options.packings.contains(&Packing::Pair) {
         "if(flag&&bit===1)heavy|=1;"
@@ -397,7 +415,7 @@ pub fn build_adapter(options: &BuildOptions, wasm: &[u8]) -> Result<String, Stri
         ""
     };
     let default_codec = options.packings[0].name();
-    let warmup=format!("export function warmup(codecs,memoryHeavy){{\nif(codecs===undefined)codecs=[{default_codec:?}];\nif(!Array.isArray(codecs))throw TypeError('Expected an array of payload codecs');\nif(memoryHeavy!==undefined){{if(!Array.isArray(memoryHeavy))throw TypeError('Expected an array of memory flags');if(memoryHeavy.length!==codecs.length)throw Error('Warm-up lists must have the same length');}}\nlet mask=0,heavy=0;\nfor(let i=0;i<codecs.length;i++){{let bit;switch(codecs[i]){{{cases}default:throw Error('Unsupported payload codec');}}\nconst flag=memoryHeavy===undefined?false:memoryHeavy[i];\nif(typeof flag!=='boolean')throw TypeError('Expected boolean memory flags');\nmask|=bit;{heavy}}}\nwarmWasm(api,mask,heavy);\n}}\n");
+    let warmup=format!("export function warmup(codecs,memoryHeavy){{\nif(codecs===undefined)codecs=[{default_codec:?}];\nif(!Array.isArray(codecs))throw TypeError('Expected an array of payload codecs');\nif(memoryHeavy!==undefined){{if(!Array.isArray(memoryHeavy))throw TypeError('Expected an array of memory flags');if(memoryHeavy.length!==codecs.length)throw Error('Warm-up lists must have the same length');}}\nlet mask=0,heavy=0;\nfor(let i=0;i<codecs.length;i++){{const codec=codecs[i],bit={cases}0;if(!bit)throw failure(9);\nconst flag=memoryHeavy===undefined?false:memoryHeavy[i];\nif(typeof flag!=='boolean')throw TypeError('Expected boolean memory flags');\nmask|=bit;{heavy}}}\nwarmWasm(api,mask,heavy);\n}}\n");
     let entry=format!("{imports}\nconst api=await loadWasm({payload:?});\n{warmup}export function binary({parameters}){{\n{}\nreturn runWasm(api,text,{format},{data},{memory});\n}}\n",statements.join("\n"));
     let scratch = Scratch::new()?;
     for &(name, contents) in FILES {

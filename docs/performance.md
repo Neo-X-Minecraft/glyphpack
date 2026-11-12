@@ -4,6 +4,10 @@ All retained datasets are public, deterministic fixtures. Results identify their
 browser, architecture, implementation hashes and timing boundaries. They are
 measurements on unpinned hosts, not cross-device guarantees.
 
+See the [current decoder optimization campaign](decoder-optimization.md) for
+the latest file sizes, default/compact comparison, lookup warm-up and raw timing
+data. The versioned campaigns below remain historical measurements.
+
 ## Decoder
 
 The v0.2.1 SIMD change processes four complete BLAKE3 chunks in parallel, retaining
@@ -20,7 +24,7 @@ GlyphPack versus 2.9 ms for native Base64 plus JS BLAKE3 on random 1 MiB. Each
 campaign has its own environment and samples; do not combine its absolute times
 with another campaign. Peer structural validation and hash implementations differ.
 
-The full minified module is 12,087 bytes; core/none are 2,988 bytes. Default
+In that campaign the full minified module was 12,087 bytes; core/none were 2,988 bytes. Default
 verification remains format on, BLAKE3 on, and the heavy lookup off.
 
 ## Encoder

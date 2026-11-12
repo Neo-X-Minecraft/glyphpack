@@ -52,4 +52,9 @@ Chrome 109 baseline. For an explicitly scalar kernel, build with
 `RUSTFLAGS="-C target-feature=-simd128"`; this changes the generated artifact,
 not the payload format or JavaScript options.
 
+Decoder source builds can use `--compact-hash` for smaller BLAKE3 scalar code.
+It preserves the digest and verification policy, with a throughput tradeoff on
+some inputs. Use it on an individual build, e.g. `build --full --compact-hash`;
+`build --all` keeps the standard profiles. See `docs/decoder-optimization.md`.
+
 Source and live workbench: https://github.com/Neo-X-Minecraft/glyphpack

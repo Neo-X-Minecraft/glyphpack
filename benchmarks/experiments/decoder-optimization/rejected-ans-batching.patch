@@ -1,0 +1,78 @@
+diff --git a/crates/decoder-wasm/src/ans.rs b/crates/decoder-wasm/src/ans.rs
+index a1f2d4b..cf45654 100644
+--- a/crates/decoder-wasm/src/ans.rs
++++ b/crates/decoder-wasm/src/ans.rs
+@@ -42,6 +42,39 @@ pub fn unpack<const FORMAT: bool>(
+     let xor = u16::from(mask) * 257;
+     let mut at = 0;
+     while at + 8 <= out.len() {
++        // Almost every lane consumes one digit. Speculate without committing
++        // state or reporting errors; the original sequential path preserves
++        // character/error ordering if any lane needs another digit or is invalid.
++        if pos + 4 <= text.len() {
++            let d = core::array::from_fn::<_, 4, _>(|i| table[text[pos + i] as usize]);
++            if d.iter().all(|&x| x != 0) {
++                let next = core::array::from_fn::<_, 4, _>(|i| {
++                    (states[i] >> 16)
++                        .wrapping_mul(R)
++                        .wrapping_add(u64::from(d[i]) - 1)
++                });
++                if next.iter().all(|&x| x >= L) {
++                    let first = (states[0] as u32 & 65535) | ((states[1] as u32) << 16);
++                    let second = (states[2] as u32 & 65535) | ((states[3] as u32) << 16);
++                    let mask = u32::from(mask) * 0x01010101;
++                    // SAFETY: the loop condition reserves both four-byte stores.
++                    unsafe {
++                        out.as_mut_ptr()
++                            .add(at)
++                            .cast::<u32>()
++                            .write_unaligned((first ^ mask).to_le());
++                        out.as_mut_ptr()
++                            .add(at + 4)
++                            .cast::<u32>()
++                            .write_unaligned((second ^ mask).to_le());
++                    }
++                    states = next;
++                    pos += 4;
++                    at += 8;
++                    continue;
++                }
++            }
++        }
+         for x in &mut states {
+             let word = (*x as u16) ^ xor;
+             // SAFETY: the outer eight-byte bound covers all four two-byte
+diff --git a/crates/decoder-wasm/src/windows.rs b/crates/decoder-wasm/src/windows.rs
+index 42be0db..f277ff3 100644
+--- a/crates/decoder-wasm/src/windows.rs
++++ b/crates/decoder-wasm/src/windows.rs
+@@ -47,6 +47,29 @@ pub fn unpack<const FORMAT: bool>(
+             | ((states[1] & 255) << 8)
+             | ((states[2] & 255) << 16)
+             | (states[3] << 24);
++        if pos + 4 <= text.len() {
++            let d = core::array::from_fn::<_, 4, _>(|i| table[text[pos + i] as usize]);
++            if d.iter().all(|&x| x != 0) {
++                let next = core::array::from_fn::<_, 4, _>(|i| {
++                    (states[i] >> 8)
++                        .wrapping_mul(R)
++                        .wrapping_add(u32::from(d[i]) - 1)
++                });
++                if next.iter().all(|&x| x >= L) {
++                    // SAFETY: the loop condition reserves the complete word.
++                    unsafe {
++                        out.as_mut_ptr()
++                            .add(at)
++                            .cast::<u32>()
++                            .write_unaligned((word ^ xor).to_le());
++                    }
++                    states = next;
++                    pos += 4;
++                    at += 4;
++                    continue;
++                }
++            }
++        }
+         for x in &mut states {
+             *x = match norm::<FORMAT>(*x, text, &mut pos, table) {
+                 Ok(v) => v,

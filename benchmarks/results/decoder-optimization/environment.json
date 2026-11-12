@@ -1,0 +1,161 @@
+{
+  "baseline": "6214588",
+  "secure": {
+    "recordedAt": "2026-11-12T13:38:27.351Z",
+    "arch": "arm64",
+    "platform": "linux",
+    "cpu": "unknown",
+    "runs": 3,
+    "rounds": 9,
+    "warmups": {
+      "smallInputCalls": 10000,
+      "otherInputCalls": 4
+    },
+    "integrity": "BLAKE3",
+    "format": true,
+    "memoryHeavy": false,
+    "scope": "warm binary(): resident string to owned output, including input copy/decoding/BLAKE3/output copy; fixed batches, rotated order",
+    "isolation": "COOP/COEP improve timing resolution; no shared memory/threads used",
+    "candidates": [
+      {
+        "gzipBytes": 5945,
+        "module": "generated/optimization/recommended-baseline.mjs",
+        "moduleBytes": 10247,
+        "profile": "recommended",
+        "variant": "baseline",
+        "wasm": "generated/optimization/recommended-baseline.wasm",
+        "wasmBytes": 16158,
+        "sha256": "0ea29c5c10300210d90f27b0741be7175386b52c0801377dcb8cb6ef41e00e87"
+      },
+      {
+        "gzipBytes": 6587,
+        "module": "generated/optimization/recommended-full-baseline.mjs",
+        "moduleBytes": 11147,
+        "profile": "recommended-full",
+        "variant": "baseline",
+        "wasm": "generated/optimization/recommended-full-baseline.wasm",
+        "wasmBytes": 18479,
+        "sha256": "7e53d2131c5e3ccc46057519ffa9957cf705ef1297132b918799efc89ae81302"
+      },
+      {
+        "gzipBytes": 10303,
+        "module": "generated/optimization/full-baseline.mjs",
+        "moduleBytes": 16589,
+        "profile": "full",
+        "variant": "baseline",
+        "wasm": "generated/optimization/full-baseline.wasm",
+        "wasmBytes": 31389,
+        "sha256": "4adf0ad74d6e4e965294f11115b967b9515f460d6ee8dcbb896bf83b4d854c6c"
+      },
+      {
+        "gzipBytes": 5636,
+        "module": "generated/optimization/recommended-default-baseline.mjs",
+        "moduleBytes": 9624,
+        "profile": "recommended",
+        "variant": "default-baseline",
+        "wasm": "generated/optimization/recommended-default-baseline.wasm",
+        "wasmBytes": 12857,
+        "sha256": "f3638d1841029f8e6f49c742a359ddebf8e73f715bf0aea804eb638f746885c4"
+      },
+      {
+        "gzipBytes": 6300,
+        "module": "generated/optimization/recommended-full-default-baseline.mjs",
+        "moduleBytes": 10528,
+        "profile": "recommended-full",
+        "variant": "default-baseline",
+        "wasm": "generated/optimization/recommended-full-default-baseline.wasm",
+        "wasmBytes": 15281,
+        "sha256": "f66196affe81d09dc8d42a17685ba1b4fe2c1fd0dae2ed9139e79d79552e8701"
+      },
+      {
+        "gzipBytes": 10062,
+        "module": "generated/optimization/full-default-baseline.mjs",
+        "moduleBytes": 15980,
+        "profile": "full",
+        "variant": "default-baseline",
+        "wasm": "generated/optimization/full-default-baseline.wasm",
+        "wasmBytes": 28196,
+        "sha256": "1d53738e00d9f39fd960ab5f3279aa5483ac41015aa922cd2b820d3ab5f0f29f"
+      },
+      {
+        "gzipBytes": 4784,
+        "module": "generated/optimization/recommended-compact-baseline.mjs",
+        "moduleBytes": 8488,
+        "profile": "recommended",
+        "variant": "compact-baseline",
+        "wasm": "generated/optimization/recommended-compact-baseline.wasm",
+        "wasmBytes": 10254,
+        "sha256": "fd1d4b434b5976efdf03c5b97586ddb8772a4989812e4811ba9525bf5c672067"
+      },
+      {
+        "gzipBytes": 5515,
+        "module": "generated/optimization/recommended-full-compact-baseline.mjs",
+        "moduleBytes": 9484,
+        "profile": "recommended-full",
+        "variant": "compact-baseline",
+        "wasm": "generated/optimization/recommended-full-compact-baseline.wasm",
+        "wasmBytes": 12612,
+        "sha256": "bc332f1e44e40dcf0e48d4f7ec84d6e64f23eb305bf8669a453157cdc91a88ce"
+      },
+      {
+        "gzipBytes": 9187,
+        "module": "generated/optimization/full-compact-baseline.mjs",
+        "moduleBytes": 14816,
+        "profile": "full",
+        "variant": "compact-baseline",
+        "wasm": "generated/optimization/full-compact-baseline.wasm",
+        "wasmBytes": 25525,
+        "sha256": "43e092879ede528bbb433db199bca323bd8b3acef73244eedd6057901ba74721"
+      }
+    ]
+  },
+  "policies": {
+    "recordedAt": "2026-11-12T13:44:18.367Z",
+    "arch": "arm64",
+    "platform": "linux",
+    "cpu": "unknown",
+    "runs": 1,
+    "rounds": 9,
+    "warmups": {
+      "smallInputCalls": 10000,
+      "otherInputCalls": 4
+    },
+    "integrity": "none/XXH32/BLAKE3",
+    "format": "both",
+    "memoryHeavy": "both",
+    "scope": "warm binary(): resident string to owned output, including input copy/decoding/BLAKE3/output copy; fixed batches, rotated order",
+    "isolation": "COOP/COEP improve timing resolution; no shared memory/threads used",
+    "candidates": [
+      {
+        "gzipBytes": 10062,
+        "module": "generated/optimization/full-default-baseline.mjs",
+        "moduleBytes": 15980,
+        "profile": "full",
+        "variant": "default-baseline",
+        "wasm": "generated/optimization/full-default-baseline.wasm",
+        "wasmBytes": 28196,
+        "sha256": "1d53738e00d9f39fd960ab5f3279aa5483ac41015aa922cd2b820d3ab5f0f29f"
+      },
+      {
+        "gzipBytes": 9187,
+        "module": "generated/optimization/full-compact-baseline.mjs",
+        "moduleBytes": 14816,
+        "profile": "full",
+        "variant": "compact-baseline",
+        "wasm": "generated/optimization/full-compact-baseline.wasm",
+        "wasmBytes": 25525,
+        "sha256": "43e092879ede528bbb433db199bca323bd8b3acef73244eedd6057901ba74721"
+      },
+      {
+        "profile": "full",
+        "variant": "baseline",
+        "module": "generated/optimization/full-baseline.mjs",
+        "wasm": "generated/optimization/full-baseline.wasm",
+        "moduleBytes": 16589,
+        "wasmBytes": 31389,
+        "gzipBytes": 10303,
+        "sha256": "4adf0ad74d6e4e965294f11115b967b9515f460d6ee8dcbb896bf83b4d854c6c"
+      }
+    ]
+  }
+}

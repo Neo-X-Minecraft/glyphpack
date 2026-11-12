@@ -35,6 +35,11 @@ pub fn prepare(root: &Path) -> Result<std::path::PathBuf, String> {
             builds.push(json!({"packings":packings.iter().map(|p|p.name()).collect::<Vec<_>>(),"core":core,"source":source,"wasm":wasm}));
         }
     }
+    let compact_options = BuildOptions {
+        compact_hash: true,
+        ..BuildOptions::full()
+    };
+    builds.push(json!({"packings":["pair","ans","windows"],"core":false,"compact":true,"source":builder::build_decoder(&compact_options)?,"wasm":builder::build_wasm(&compact_options)?}));
     let mut rows = Vec::new();
     let mut seed = 815u32;
     for n in (0..40).chain([
@@ -134,10 +139,37 @@ pub fn prepare(root: &Path) -> Result<std::path::PathBuf, String> {
             large.push(json!({"packing":p.name(),"size":n,"file":file,"blake3":expected}));
         }
     }
+    // Exercise published BLAKE3 boundaries through every selected compact-hash
+    // codec as well as the expanded pair-only kernel tested by wasm.cjs.
+    let answers: serde_json::Value = serde_json::from_slice(
+        &fs::read(root.join("tests/fixtures/blake3-vectors.json")).map_err(|e| e.to_string())?,
+    )
+    .map_err(|e| e.to_string())?;
+    let mut official = Vec::new();
+    for case in answers["cases"].as_array().unwrap() {
+        let n = case["input_len"].as_u64().unwrap() as usize;
+        let data: Vec<u8> = (0..n).map(|i| (i % 251) as u8).collect();
+        let mut packets = serde_json::Map::new();
+        for p in [Packing::Ans, Packing::Windows] {
+            packets.insert(
+                p.name().into(),
+                json!(encoder::encode_text(
+                    &data,
+                    &EncodeOptions {
+                        packing: p,
+                        mask: Some(0),
+                        ..Default::default()
+                    }
+                )?),
+            );
+        }
+        official.push(json!({"size":n,"packets":packets}));
+    }
     let out = folder.join("vectors.json");
     fs::write(
         &out,
-        serde_json::to_vec(&json!({"builds":builds,"rows":rows,"large":large})).unwrap(),
+        serde_json::to_vec(&json!({"builds":builds,"rows":rows,"large":large,"official":official}))
+            .unwrap(),
     )
     .map_err(|e| e.to_string())?;
     Ok(out)

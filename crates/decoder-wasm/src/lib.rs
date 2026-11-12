@@ -94,6 +94,17 @@ fn read_digit<const FORMAT: bool>(
     }
     Ok(u64::from(d).wrapping_sub(1))
 }
+// Keep one vectorizable loop instead of letting LLVM expand seven specialized
+// copies for the alphabet's ranges. The hot decoder never calls this function.
+#[cfg(any(feature = "pair", feature = "ans"))]
+#[inline(never)]
+fn fill_digits(table: &mut [u16], mut next: u16) -> u16 {
+    for digit in table {
+        *digit = next;
+        next += 1;
+    }
+    next
+}
 impl State {
     const fn new() -> Self {
         Self {
@@ -142,20 +153,9 @@ impl State {
                 return;
             }
             let table = unsafe { &mut *TABLE.0.get() };
-            let mut index = 0u16;
-            // Keep the specified Unicode code-point bounds visible for format audits.
-            #[allow(clippy::needless_range_loop)]
-            for c in 32..65534 {
-                if c == 60
-                    || (127..=159).contains(&c)
-                    || (55296..=57343).contains(&c)
-                    || (64976..=65007).contains(&c)
-                    || [65279, 8232, 8233].contains(&c)
-                {
-                    continue;
-                }
-                index += 1;
-                table[c] = index;
+            let mut next = 1u16;
+            for (start, end) in packing::UNICODE_RANGES {
+                next = fill_digits(&mut table[start..end], next);
             }
             self.initialized = true;
         }
@@ -460,6 +460,9 @@ impl State {
         }
         #[cfg(feature = "secure")]
         if verify_data == 2 {
+            #[cfg(feature = "compact-hash")]
+            let digest = hash::blake3_compact(&output[..self.payload_length]);
+            #[cfg(not(feature = "compact-hash"))]
             let digest = hash::blake3(&output[..self.payload_length]);
             let mut different = 0u8;
             for (i, &byte) in digest.iter().enumerate() {

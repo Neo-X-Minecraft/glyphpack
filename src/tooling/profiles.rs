@@ -101,6 +101,7 @@ pub fn build_all(root: &Path) -> Result<Value, String> {
                     "blake3":super::fixtures::hex(&crate::hash::blake3(source.as_bytes())),
                     "backend":"wasm", "browserTarget":"chrome109",
                     "formatVersion":encoder::FORMAT_VERSION,
+                    "compactHash":options.compact_hash,
                     "packings":options.packings.iter().map(|p|p.name()).collect::<Vec<_>>(),
                     "verifyFormat":options.formats,"verifyData":options.data.iter().map(|m|m.name()).collect::<Vec<_>>(),"memoryHeavy":options.memory,
                     "wasmBytes":wasm.len(), "gzip9Bytes":gzip_bytes,

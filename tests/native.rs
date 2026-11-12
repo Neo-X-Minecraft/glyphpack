@@ -169,6 +169,17 @@ fn invalid_build_choices_and_minimal_code() {
         ..BuildOptions::default()
     })
     .unwrap();
+    assert_eq!(
+        source,
+        build_decoder(&BuildOptions {
+            formats: vec![false],
+            data: vec![Integrity::None],
+            compact_hash: true,
+            ..Default::default()
+        })
+        .unwrap(),
+        "Hashless builds must not retain compact-hash handling"
+    );
     for unwanted in [
         "imul",
         "Payload digest",

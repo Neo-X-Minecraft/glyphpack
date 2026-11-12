@@ -129,6 +129,7 @@ fn main_impl() -> Result<()> {
             let mut packing_selected = false;
             while at < args.len() {
                 match args[at].as_str() {
+                    "--compact-hash" => options.compact_hash = true,
                     "--packing" => {
                         options.packings = switches(args, &mut at)?
                             .iter()
@@ -172,6 +173,12 @@ fn main_impl() -> Result<()> {
             }
             if all && types.is_some() {
                 return Err("--all writes declarations beside each profile; omit --types".into());
+            }
+            if all && options.compact_hash {
+                return Err(
+                    "--all writes standard profiles; use --compact-hash with an individual build"
+                        .into(),
+                );
             }
             if all {
                 println!("{}", tooling::profiles::build_all(&root()?)?);
@@ -343,7 +350,7 @@ fn main_impl() -> Result<()> {
             _ => Err("Usage: glyphpack summary [--input CSV --output directory]".into()),
         },
         "help" | "--help" | "-h" => {
-            println!("GlyphPack\n\n  encode [input|-] [--packing pair|ans|windows] [--checksum secure|fast|none] [--mask N] [--text] [-o path]\n  build [--full|--all] [--packing pair ans windows] [--format on off] [--data none fast secure]\n        [--memory-heavy off on] [--module] [--readable] [--types path] [-o path]\n  inject template.html payload output.html [--encoding utf16le|windows1252]\n  demo [output.html]\n  fixtures\n  test-js\n  test-codecs\n  bench prepare|run|smoke|history [--quick]\n  history-report\n  site [--output directory]\n  summary");
+            println!("GlyphPack\n\n  encode [input|-] [--packing pair|ans|windows] [--checksum secure|fast|none] [--mask N] [--text] [-o path]\n  build [--full|--all] [--packing pair ans windows] [--format on off] [--data none fast secure]\n        [--memory-heavy off on] [--compact-hash] [--module] [--readable] [--types path] [-o path]\n  inject template.html payload output.html [--encoding utf16le|windows1252]\n  demo [output.html]\n  fixtures\n  test-js\n  test-codecs\n  bench prepare|run|smoke|history [--quick]\n  history-report\n  site [--output directory]\n  summary");
             Ok(())
         }
         s => Err(format!("Unknown command: {s}")),

@@ -3,26 +3,46 @@
  * Feature constants remove messages for verification absent from the build.
  */
 const littleEndian = new Uint8Array(new Uint16Array([1]).buffer)[0] === 1;
+// Keep one copy of each message across warm-up, preflight and decoding. Build
+// constants erase verification messages for policies absent from the module.
+export function failure(status) {
+  if (status === 8) return RangeError("Wasm decoder memory allocation failed");
+  return Error(
+    status === 2
+      ? "Invalid payload length"
+      : status === 9
+        ? "Unsupported payload codec"
+        : status === 10
+          ? "Unsupported memory optimization option"
+          : PAYLOAD_INCLUDE_FORMAT && status === 1
+            ? "Invalid payload character"
+            : PAYLOAD_INCLUDE_FORMAT && status === 3
+              ? "Invalid payload header"
+              : PAYLOAD_INCLUDE_FORMAT && status === 4
+                ? "Invalid payload padding"
+                : PAYLOAD_CHECK_DATA && status === 5
+                  ? "Required payload integrity mode missing"
+                  : PAYLOAD_ALLOW_FAST && status === 6
+                    ? "Payload checksum mismatch"
+                    : PAYLOAD_ALLOW_SECURE && status === 7
+                      ? "Payload digest mismatch"
+                      : "Wasm decoder failure",
+  );
+}
 // Imports have already instantiated Wasm. Explicit warm-up only prepares its
 // selected reusable lookup caches; decoding also initializes them as needed.
 export function warmWasm(api, codecs, heavy) {
   const status = api.warmup(codecs, heavy);
-  if (status)
-    throw status === 8
-      ? RangeError("Wasm decoder memory allocation failed")
-      : Error(
-          status === 10
-            ? "Unsupported memory optimization option"
-            : "Unsupported payload codec",
-        );
+  if (status) throw failure(status);
 }
 export function runWasm(api, text, verifyFormat, dataKind, memoryHeavy) {
   // Dispatch before reserving/copying a large input. The kernel independently
   // repeats this guard for direct ABI callers, even in unchecked builds.
-  if (text.length < 2) throw Error("Invalid payload length");
+  const length = text.length;
+  if (length < 2) throw failure(2);
   const first = text.charCodeAt(0);
   if (PAYLOAD_LEGACY && (first === 9 || first === 10 || first === 12))
-    throw Error("Unsupported payload codec");
+    throw failure(9);
   if (
     !(
       PAYLOAD_LEGACY ||
@@ -31,11 +51,9 @@ export function runWasm(api, text, verifyFormat, dataKind, memoryHeavy) {
       (PAYLOAD_ALLOW_WINDOWS && first === 12)
     )
   )
-    throw Error("Unsupported payload codec");
-  const length = text.length,
-    pointer = api.input_ptr(length);
-  if (pointer === 0 && length)
-    throw RangeError("Wasm decoder memory allocation failed");
+    throw failure(9);
+  const pointer = api.input_ptr(length);
+  if (pointer === 0 && length) throw failure(8);
   // memory growth invalidates old views, so obtain the input view AFTER reserve
   // and obtain the output view AFTER decoding. Never retain either arena view.
   if (littleEndian) {
@@ -47,24 +65,7 @@ export function runWasm(api, text, verifyFormat, dataKind, memoryHeavy) {
       input.setUint16(i * 2, text.charCodeAt(i), true);
   }
   const status = api.decode(+verifyFormat, dataKind, +memoryHeavy);
-  if (status) {
-    if (status === 9) throw Error("Unsupported payload codec");
-    if (status === 2) throw Error("Invalid payload length");
-    if (status === 8) throw RangeError("Wasm decoder memory allocation failed");
-    if (PAYLOAD_INCLUDE_FORMAT) {
-      if (status === 1) throw Error("Invalid payload character");
-      if (status === 3) throw Error("Invalid payload header");
-      if (status === 4) throw Error("Invalid payload padding");
-    }
-    if (PAYLOAD_CHECK_DATA) {
-      if (status === 5) throw Error("Required payload integrity mode missing");
-      if (PAYLOAD_ALLOW_FAST && status === 6)
-        throw Error("Payload checksum mismatch");
-      if (PAYLOAD_ALLOW_SECURE && status === 7)
-        throw Error("Payload digest mismatch");
-    }
-    throw Error("Wasm decoder failure");
-  }
+  if (status) throw failure(status);
   const stored = api.stored_len(),
     end = api.payload_len(),
     bytes = new Uint8Array(stored);

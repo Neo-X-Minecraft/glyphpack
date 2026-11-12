@@ -15,6 +15,11 @@ is needed. Standalone exports are tested in Chrome 109 and Chromium 156.
 
 [**Open the live workbench →**](https://neo-x-minecraft.github.io/glyphpack/) · [performance measurements](docs/performance.md)
 
+The current default modules are 9,624 B (pair), 10,528 B (recommended pair+ANS),
+and 15,980 B (complete full). `build --compact-hash` produces smaller BLAKE3 code
+with identical verification, at a throughput tradeoff on some inputs.
+[Current size and initialization measurements](docs/decoder-optimization.md).
+
 Try JSON, multilingual text, SVG, arbitrary bytes, gzip logs, and empty files.
 The page encodes local files with Rust/Wasm, explains verification failures,
 compares actual transport sizes, and exports offline HTML viewers. Nothing is

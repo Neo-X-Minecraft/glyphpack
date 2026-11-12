@@ -297,7 +297,29 @@ function physicalFiles() {
           r.kind === (b.core ? "none" : "secure") && r.rawHex.length === 514,
       );
       const saved = binary(sample.packets[b.packings[0]]); // automatic cold initialization
+      if (!b.core)
+        for (const answer of v.official)
+          for (const name of ["ans", "windows"].filter((n) =>
+            b.packings.includes(n),
+          )) {
+            const out = binary(answer.packets[name]);
+            assert.equal(out.length, answer.size);
+            for (let i = 0; i < out.length; i++) assert.equal(out[i], i % 251);
+          }
       assert.equal(warmup.length, 2);
+      for (const name of b.packings) {
+        let reads = 0;
+        const codecs = [];
+        Object.defineProperty(codecs, 0, {
+          get() {
+            reads++;
+            return name;
+          },
+          configurable: true,
+        });
+        warmup(codecs, [false]);
+        assert.equal(reads, 1, "Warm-up reread a codec accessor");
+      }
       assert.equal(warmup(), undefined);
       assert.deepEqual(calls.at(-1), [1 << names.indexOf(b.packings[0]), 0]);
       assert.throws(
@@ -609,6 +631,30 @@ function physicalFiles() {
           },
           { builds: v.builds.map(({ source, wasm, ...b }) => b), rows: v.rows },
         );
+        const official = await page.evaluate(
+          ({ builds, answers }) => {
+            let cases = 0;
+            for (let i = 0; i < builds.length; i++) {
+              const b = builds[i];
+              if (b.core) continue;
+              for (const name of ["ans", "windows"].filter((n) =>
+                b.packings.includes(n),
+              ))
+                for (const a of answers) {
+                  const out = modules[i].binary(a.packets[name]);
+                  if (out.length !== a.size) throw Error("Official length");
+                  for (let p = 0; p < out.length; p++)
+                    if (out[p] !== p % 251) throw Error("Official bytes");
+                  cases++;
+                }
+            }
+            return cases;
+          },
+          {
+            builds: v.builds.map(({ source, wasm, ...b }) => b),
+            answers: v.official,
+          },
+        );
         const counts = await page.evaluate(
           ({ builds, rows, names, tags }) => {
             let positive = 0,
@@ -778,6 +824,7 @@ function physicalFiles() {
           offline,
           warmed,
           recommended,
+          official,
         });
         console.log(JSON.stringify(results.at(-1)));
       } finally {

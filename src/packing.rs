@@ -4,6 +4,17 @@
 pub const PAIR_TAG: u16 = 9;
 pub const ANS_TAG: u16 = 10;
 pub const WINDOWS_TAG: u16 = 12;
+/// Half-open ranges in the exact established BMP alphabet order. Contiguous
+/// spans let table initialization avoid a branch for every code point.
+pub const UNICODE_RANGES: [(usize, usize); 7] = [
+    (32, 60),
+    (61, 127),
+    (160, 8232),
+    (8234, 55296),
+    (57344, 64976),
+    (65008, 65279),
+    (65280, 65534),
+];
 pub const WINDOWS_C1: [u16; 32] = [
     8364, 129, 8218, 402, 8222, 8230, 8224, 8225, 710, 8240, 352, 8249, 338, 141, 381, 143, 144,
     8216, 8217, 8220, 8221, 8226, 8211, 8212, 732, 8482, 353, 8250, 339, 157, 382, 376,

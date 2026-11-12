@@ -97,3 +97,7 @@ required-features = ["tools"]
 [[example]]
 name = "codec_bench"
 required-features = ["tools"]
+
+[[example]]
+name = "optimize_decoder"
+required-features = ["tools"]

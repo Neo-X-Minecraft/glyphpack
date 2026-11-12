@@ -18,16 +18,11 @@ static ALPHABET: OnceLock<Vec<u16>> = OnceLock::new();
 /// surrogates, noncharacters, BOM, and JS line/paragraph separators.
 pub fn alphabet() -> &'static [u16] {
     ALPHABET.get_or_init(|| {
-        (32u32..65534)
-            .filter(|&c| {
-                !(c == 60
-                    || (127..=159).contains(&c)
-                    || (55296..=57343).contains(&c)
-                    || (64976..=65007).contains(&c)
-                    || [65279, 8232, 8233].contains(&c))
-            })
-            .map(|c| c as u16)
-            .collect()
+        let mut alphabet = Vec::with_capacity(RADIX as usize);
+        for (start, end) in crate::packing::UNICODE_RANGES {
+            alphabet.extend((start..end).map(|c| c as u16));
+        }
+        alphabet
     })
 }
 

@@ -3,11 +3,11 @@
 | Area | Authoritative source |
 | --- | --- |
 | Alphabet, mask scoring and encoding | `src/encoder.rs` |
-| Payload indicators and Windows character mapping | `src/packing.rs` |
+| Payload indicators, Unicode ranges and Windows character mapping | `src/packing.rs` |
 | Four-state ANS/Windows encoders | `src/encoder/ans.rs` |
 | Optional scoped native mask search | `src/encoder/parallel.rs` |
 | Native browser string conversion | `site/encoder-host.mjs` |
-| Native and Wasm checksum/digest | `src/hash.rs` |
+| Native and Wasm checksum/digest, including optional compact scalar rounds | `src/hash.rs` |
 | Four-chunk BLAKE3 SIMD compression | `src/hash/simd.rs` |
 | HTML insertion | `src/injector.rs` |
 | Specialization, optimization and ESM builds | `src/builder.rs` |
@@ -44,6 +44,10 @@ The ESM adapter targets Chrome 109. On that browser base64 initialization uses
 `dist/` is generated output, not a separate implementation. Wasm is specialized
 for the selected format/data/memory policies before gzip compression. A module
 loads that embedded member once, then calls the same instance synchronously.
+`--compact-hash` changes only the generated scalar BLAKE3 rounds; the normal
+expanded rounds and compact rounds produce identical digests. Pair-only builds
+use Binaryen O3, while broader codec builds use O4. The measurements and exact
+artifact hashes are documented in `docs/decoder-optimization.md`.
 
 Frozen JS sources in `tests/reference/` and optimization archives support exact
 byte/error comparisons. They are excluded from production bundles. The old
