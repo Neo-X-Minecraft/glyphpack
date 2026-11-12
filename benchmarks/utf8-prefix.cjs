@@ -51,6 +51,10 @@ sources.push({
   source: fs.readFileSync(path.join(work, "decoder.min.mjs"), "utf8"),
 });
 sources.push({
+  name: "balanced-delivered",
+  source: fs.readFileSync(path.join(work, "decoder-balanced.min.mjs"), "utf8"),
+});
+sources.push({
   name: "wasm",
   source: `const raw=Uint8Array.from(atob(${JSON.stringify(kernel.toString("base64"))}),c=>c.charCodeAt(0)),apis=await Promise.all(Array.from({length:6},async()=> (await WebAssembly.instantiate(raw)).instance.exports));export function binary(t){const api=apis[t.charCodeAt(3)-65],p=api.reserve(t.length);if(!p)throw Error('Reserve failed');const view=new Uint16Array(api.memory.buffer,p,t.length);for(let i=0;i<t.length;i++)view[i]=t.charCodeAt(i);const status=api.decode();if(status)throw Error('Status '+status);return new Uint8Array(api.memory.buffer,api.output_ptr(),api.output_len()).slice();}`,
 });
@@ -129,7 +133,7 @@ const peerInputs = inputs
               for (const [index, m] of modules.entries())
                 for (const c of cases) {
                   if (
-                    sources[index].name === "portable-delivered" &&
+                    sources[index].name.endsWith("-delivered") &&
                     c.text[3] !== "F"
                   )
                     continue;
@@ -146,7 +150,7 @@ const peerInputs = inputs
               for (let m = 0; m < modules.length; m++)
                 for (let i = 0; i < fixtures.length; i++)
                   if (
-                    sources[m].name !== "portable-delivered" ||
+                    !sources[m].name.endsWith("-delivered") ||
                     fixtures[i].profile === 5
                   )
                     jobs.push({
@@ -199,6 +203,7 @@ const peerInputs = inputs
                 jobs = jobs.filter(
                   (j) =>
                     j.name === "portable-delivered" ||
+                    j.name === "balanced-delivered" ||
                     j.name === "arithmetic" ||
                     j.name.startsWith("base122-") ||
                     j.name.startsWith("base64-") ||

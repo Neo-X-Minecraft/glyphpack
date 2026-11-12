@@ -20,49 +20,22 @@ const profiles = portableOnly
     ];
 // Half-open ranges, frozen as part of version 1. Do not regenerate from the
 // host Unicode version: adding code points would change every subsequent digit.
-const portableRanges = [
-  [160, 173],
-  [174, 768],
-  [880, 884],
-  [885, 888],
-  [890, 894],
-  [895, 896],
-  [900, 903],
-  [904, 907],
-  [908, 909],
-  [910, 930],
-  [931, 1155],
-  [1162, 1328],
-  [1329, 1367],
-  [1369, 1419],
-  [1421, 1424],
-  [1470, 1471],
-  [1472, 1473],
-  [1475, 1476],
-  [1478, 1479],
-  [1488, 1515],
-  [1519, 1525],
-  [1542, 1552],
-  [1563, 1564],
-  [1565, 1611],
-  [1632, 1648],
-  [1649, 1750],
-  [1758, 1759],
-  [1765, 1767],
-  [1769, 1770],
-  [1774, 1806],
-  [1808, 1809],
-  [1810, 1840],
-  [1869, 1958],
-  [1969, 1970],
-  [1984, 2027],
-  [2036, 2043],
-  [2046, 2048],
-];
+// Each pair stores (gap from previous end + 32, range length + 32).
+// This delta string is the same frozen 37-range alphabet, not a new wire set.
+const portableDeltas =
+  '\u00c0-!\u0272\u0090$!#"$!!$#!#!!!4!\u0100\'\u00c6!F"R"#N!!!"!"!);$&1*+!!N50!\u0085(!&""!$@"!!>=y+!.K)\'#"';
 const caches = [];
+export function fail(code) {
+  throw Error(
+    [
+      "Invalid UTF-8 header",
+      "Unsupported UTF-8 profile",
+      "Invalid payload length",
+    ][code],
+  );
+}
 export function warmup(profile = 5) {
-  if (!Number.isInteger(profile) || profile < 0 || !profiles[profile])
-    throw Error("Unsupported UTF-8 profile");
+  if (!Number.isInteger(profile) || profile < 0 || !profiles[profile]) fail(1);
   if (caches[profile]) return;
   const forbidden = profiles[profile],
     radix = Math.min(
@@ -74,45 +47,50 @@ export function warmup(profile = 5) {
   const base = Math.floor(Math.log2(radix)),
     cut = 2 ** (base + 1) - radix;
   // Truncated binary gives each escape class radix distinct tails. Some tails
-  // consume seven bits, the rest eight; ASCII always consumes seven. Each
-  // nonzero table entry stores its 7/14/15-bit width above the decoded value.
-  const table = new Uint32Array(2048);
+  // consume seven bits, the rest eight; ASCII always consumes seven.
+  // Nonzero entries store data in bits 0..14, width in bits 16..19 and a
+  // validity flag in bit 31. The balanced loop ANDs that flag across symbols;
+  // a missing/out-of-range lookup coerces to zero and clears it. Masking the
+  // width nibble is intentional. Both loops share this one 8 KiB table.
+  const table = new Int32Array(2048);
   for (let c = 1; c < 128; c++)
-    if (!forbidden.includes(c)) table[c] = c | (7 << 16);
-  let ordinal = 0;
-  for (const [start, end] of portableOnly || profile === 5
-    ? portableRanges
-    : [[160, 2048]])
+    if (!forbidden.includes(c)) table[c] = c | (7 << 16) | 0x80000000;
+  let ordinal = 0,
+    previousEnd = 0;
+  const deltas =
+    portableOnly || profile === 5 ? portableDeltas : "\u00c0\u0780";
+  for (let i = 0; i < deltas.length; i += 2) {
+    const start = previousEnd + deltas.charCodeAt(i) - 32;
+    const end = start + deltas.charCodeAt(i + 1) - 32;
+    previousEnd = end;
     for (let c = start; c < end; c++) {
       if (ordinal >= forbidden.length * radix) break;
       const digit = ordinal % radix,
         first = forbidden[Math.floor(ordinal / radix)],
         width = digit < cut ? base : base + 1,
         tail = digit < cut ? digit : digit + cut;
-      table[c] = (first << width) | tail | ((7 + width) << 16);
+      table[c] = (first << width) | tail | ((7 + width) << 16) | 0x80000000;
       ordinal++;
     }
+  }
   caches[profile] = { table };
 }
 export function prepare(text) {
-  if (text.slice(0, 3) !== "~u1" || text.length < 7)
-    throw Error("Invalid UTF-8 header");
+  if (text.slice(0, 3) !== "~u1" || text.length < 7) fail(0);
   const profile = alphabet.indexOf(text[3]);
-  if (profile < 0 || !profiles[profile])
-    throw Error("Unsupported UTF-8 profile");
+  if (profile < 0 || !profiles[profile]) fail(1);
   const a = alphabet.indexOf(text[4]),
     b = alphabet.indexOf(text[5]);
-  if (a < 0 || b < 0 || b > 3) throw Error("Invalid UTF-8 header");
+  if (a < 0 || b < 0 || b > 3) fail(0);
   const mask = a | (b << 6);
   let start = 6,
     length = 0,
     power = 1,
     digit;
   do {
-    if (start >= text.length || power > 0x40000000)
-      throw Error("Invalid payload length");
+    if (start >= text.length || power > 0x40000000) fail(2);
     digit = alphabet.indexOf(text[start++]);
-    if (digit < 0) throw Error("Invalid UTF-8 header");
+    if (digit < 0) fail(0);
     length += (digit & 31) * power;
     power *= 32;
   } while (digit & 32);
@@ -123,8 +101,8 @@ export function prepare(text) {
     length > 0x40000000 ||
     length > Math.floor(((text.length - start) * 15) / 8)
   )
-    throw Error("Invalid payload length");
-  if (power > 32 && !(digit & 31)) throw Error("Invalid UTF-8 header");
+    fail(2);
+  if (power > 32 && !(digit & 31)) fail(0);
   warmup(profile);
   return { ...caches[profile], mask, length, start };
 }
@@ -138,7 +116,7 @@ export function binary(text) {
     if (at >= length) throw Error("Invalid payload padding");
     const entry = table[text.charCodeAt(pos)];
     if (!entry) throw Error("Invalid payload character");
-    const width = entry >>> 16;
+    const width = (entry >>> 16) & 15;
     queue = (queue << width) | (entry & 32767);
     bits += width;
     if (bits >= 8) {
@@ -152,7 +130,7 @@ export function binary(text) {
       }
     }
   }
-  if (at !== length) throw Error("Invalid payload length");
+  if (at !== length) fail(2);
   if (queue & ((1 << bits) - 1)) throw Error("Invalid payload padding");
   return out;
 }

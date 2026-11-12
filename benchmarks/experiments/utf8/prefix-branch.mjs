@@ -18,7 +18,7 @@ export function binary(text) {
       bits += 7;
       lastWidth = 7;
     } else {
-      const width = entry >>> 16;
+      const width = (entry >>> 16) & 15;
       queue = (queue << width) | (entry & 32767);
       bits += width;
       lastWidth = width;

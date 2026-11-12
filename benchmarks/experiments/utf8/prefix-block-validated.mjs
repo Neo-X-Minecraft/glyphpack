@@ -59,7 +59,7 @@ export function binary(text) {
     } else {
       const entry = table[c];
       if (!entry) throw Error("Invalid payload character");
-      const width = entry >>> 16;
+      const width = (entry >>> 16) & 15;
       queue = (queue << width) | (entry & 32767);
       bits += width;
       lastWidth = width;

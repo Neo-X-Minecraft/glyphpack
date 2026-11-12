@@ -40,6 +40,7 @@ for (const browser of new Set(result.measurements.map((r) => r.browser))) {
   for (const n of [1024, 65536, 1048576])
     for (const name of [
       "portable-delivered",
+      "balanced-delivered",
       "prefix-split",
       "base122-block",
       "base122-reference",
@@ -54,7 +55,7 @@ for (const browser of new Set(result.measurements.map((r) => r.browser))) {
       if (!records.length) continue;
       if (records.length !== 3) throw Error("Missing processes");
       const variant =
-        name === "portable-delivered" ? 5 : name === "prefix-split" ? 4 : null;
+        name.endsWith("-delivered") ? 5 : name === "prefix-split" ? 4 : null;
       const payload =
         variant !== null
           ? manifest.rows.find(

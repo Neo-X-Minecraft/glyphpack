@@ -203,7 +203,11 @@ fn encode(data: &[u8], profile: usize, mask: u8) -> String {
     });
     out
 }
-fn decoder(classic: bool, portable: bool) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+fn decoder(
+    classic: bool,
+    portable: bool,
+    balanced: bool,
+) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let root = std::env::current_dir()?;
     let mut command = Command::new(root.join("node_modules/.bin/esbuild"));
     command.args([
@@ -228,7 +232,19 @@ fn decoder(classic: bool, portable: bool) -> Result<Vec<u8>, Box<dyn std::error:
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()?;
-    child.stdin.take().unwrap().write_all(if classic {b"import {binary} from './benchmarks/experiments/utf8/prefix-split.mjs';import {warmup} from './benchmarks/experiments/utf8/prefix.mjs';globalThis.UTF8Prefix={decode:binary,warmup};"}else{b"export {binary as decode} from './benchmarks/experiments/utf8/prefix-split.mjs';export {warmup} from './benchmarks/experiments/utf8/prefix.mjs';"})?;
+    // Pick the loop at build time. No second implementation or engine-guessing
+    // branch enters the delivered module; both loops decode the same wire data.
+    let entry = if balanced {
+        "prefix-split"
+    } else {
+        "prefix-throughput"
+    };
+    let source = if classic {
+        format!("import {{binary}} from './benchmarks/experiments/utf8/{entry}.mjs';import {{warmup}} from './benchmarks/experiments/utf8/prefix.mjs';globalThis.UTF8Prefix={{decode:binary,warmup}};")
+    } else {
+        format!("export {{binary as decode}} from './benchmarks/experiments/utf8/{entry}.mjs';export {{warmup}} from './benchmarks/experiments/utf8/prefix.mjs';")
+    };
+    child.stdin.take().unwrap().write_all(source.as_bytes())?;
     let result = child.wait_with_output()?;
     if !result.status.success() {
         return Err(String::from_utf8_lossy(&result.stderr).into_owned().into());
@@ -247,11 +263,11 @@ fn save(path: &str, bytes: impl AsRef<[u8]>) -> std::io::Result<()> {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = std::env::args().skip(1).collect();
     if args.first().is_some_and(|a| a == "build") {
-        let output = args
-            .get(1)
-            .ok_or("Usage: utf8_prefix build output.mjs [--classic] [--all-profiles]")?;
+        let output = args.get(1).ok_or(
+            "Usage: utf8_prefix build output.mjs [--classic] [--all-profiles] [--balanced]",
+        )?;
         for flag in &args[2..] {
-            if flag != "--classic" && flag != "--all-profiles" {
+            if flag != "--classic" && flag != "--all-profiles" && flag != "--balanced" {
                 return Err(format!("Unknown build option: {flag}").into());
             }
         }
@@ -260,6 +276,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             decoder(
                 args.iter().any(|a| a == "--classic"),
                 !args.iter().any(|a| a == "--all-profiles"),
+                args.iter().any(|a| a == "--balanced"),
             )?,
         )?;
         return Ok(());
@@ -267,12 +284,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if args.first().is_some_and(|a| a == "encode" || a == "html") {
         let (Some(input), Some(output)) = (args.get(1), args.get(2)) else {
             return Err(
-                "Usage: utf8_prefix encode|html input output [--profile portable|literal|compact|0..5] [--mask 0..255]"
+                "Usage: utf8_prefix encode|html input output [--profile portable|literal|compact|0..5] [--mask 0..255] [--balanced (html only)]"
                     .into(),
             );
         };
         let mut profile = 5;
         let mut mask = None;
+        let mut balanced = false;
         let mut i = 3;
         while i < args.len() {
             match args[i].as_str() {
@@ -289,6 +307,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     i += 1;
                     mask = Some(args.get(i).ok_or("Missing mask")?.parse::<u8>()?);
                 }
+                "--balanced" if args[0] == "html" => balanced = true,
                 _ => return Err("Unknown option".into()),
             }
             i += 1;
@@ -303,7 +322,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mask = mask.unwrap_or_else(|| choose_mask(&data, &Model::new(profile)));
         let encoded = encode(&data, profile, mask);
         if args[0] == "html" {
-            let code = String::from_utf8(decoder(true, profile == 5)?)?;
+            let code = String::from_utf8(decoder(true, profile == 5, balanced)?)?;
             let html=format!("\u{feff}<!doctype html><meta charset=utf-8><script>{code}globalThis.unpacked=UTF8Prefix.decode(\"{encoded}\");</script>");
             save(output, html)?;
         } else {
