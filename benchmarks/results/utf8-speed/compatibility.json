@@ -1,0 +1,85 @@
+{
+  "passed": true,
+  "positive": 5040,
+  "rejected": 309,
+  "browsers": [
+    {
+      "browser": "156.0.8078.79",
+      "pages": 13,
+      "protocol": "file:",
+      "offline": true,
+      "networkRequests": 0,
+      "wasm": false,
+      "decompressionStream": false,
+      "normalization": {
+        "pairs": 2748964,
+        "stable": true
+      },
+      "mislabelledHttp": {
+        "bytes": 1048576,
+        "sha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+        "charset": "UTF-8"
+      }
+    },
+    {
+      "browser": "109.0.5414.119",
+      "pages": 13,
+      "protocol": "file:",
+      "offline": true,
+      "networkRequests": 0,
+      "wasm": false,
+      "decompressionStream": false,
+      "normalization": {
+        "pairs": 2748964,
+        "stable": true
+      },
+      "mislabelledHttp": {
+        "bytes": 1048576,
+        "sha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+        "charset": "UTF-8"
+      }
+    }
+  ],
+  "builds": [
+    {
+      "file": "decoder.min.mjs",
+      "bytes": 1777,
+      "sha256": "3ba2759480278865a7ea0550c3bdd28b7add3d2ab9fe74750275083db8cea4f8"
+    },
+    {
+      "file": "decoder-full.min.mjs",
+      "bytes": 1951,
+      "sha256": "3cfdfad7f7b2df1914aa0c3368e3b4699d3a889d61d3a0676c251d253dee580f"
+    },
+    {
+      "file": "decoder.iife.js",
+      "bytes": 1798,
+      "sha256": "56b89704486286dc1118d87712150befd6b432d51aa2a3a5c47687e684bf3c3d"
+    }
+  ],
+  "html": {
+    "prefixBytes": 1197759,
+    "base122Bytes": 1199324,
+    "prefixSha256": "288f082be87acf61b192ab393cb4c6a5902516229c903a4204188daa996d0b54",
+    "base122Sha256": "7ea47d1a86c06c9839e8d4749f0b5a74c27a34c046e1a82b2801c3e9fe3b3e8f",
+    "baselines": [
+      {
+        "implementation": "block122",
+        "bytes": 1199324
+      },
+      {
+        "implementation": "inline122",
+        "bytes": 1198978
+      },
+      {
+        "implementation": "reference122",
+        "bytes": 1198781
+      }
+    ]
+  },
+  "alphabet": {
+    "ascii": 118,
+    "multibyte": 1540,
+    "scope": "No NUL, CR/LF, DEL/C1, quotes, backslash, backtick, dollar, less-than, marks, format characters, unassigned characters or supplementary scalars; frozen assigned alphabet is NFC-stable"
+  }
+}

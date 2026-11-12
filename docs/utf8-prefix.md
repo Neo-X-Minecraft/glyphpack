@@ -11,30 +11,35 @@ The same 1 MiB binary input, without integrity verification, on Linux aarch64:
 
 | Implementation | Payload bytes | Overhead | Chromium 156 | Chrome 109 |
 | --- | ---: | ---: | ---: | ---: |
-| Native Base64 / `atob` fallback | 1,398,104 | 33.334% | 1.015 ms | 14.830 ms |
-| Fastest tested Base122: block path | 1,198,373 | 14.286% | 4.220 ms | 5.160 ms |
-| Base122 upstream reference | 1,198,373 | 14.286% | 5.410 ms | 7.670 ms |
-| Base122 with exact-size allocation | 1,198,373 | 14.286% | 6.420 ms | 8.065 ms |
-| New portable prefix build | 1,195,879 | **14.048%** | **5.005 ms** | **7.095 ms** |
-| Prefix literal profile, broader build | 1,193,832 | **13.853%** | 5.240 ms | 7.210 ms |
-| Arithmetic candidate | about 1,170,479 | about 11.63% | 130.865 ms | 132.545 ms |
+| Native Base64 / `atob` fallback | 1,398,104 | 33.334% | 1.115 ms | 15.735 ms |
+| Fastest tested Base122: block path | 1,198,373 | 14.286% | 4.545 ms | 5.450 ms |
+| Base122 upstream reference | 1,198,373 | 14.286% | 5.745 ms | 8.100 ms |
+| Base122 with exact-size allocation | 1,198,373 | 14.286% | 6.725 ms | 8.460 ms |
+| Default prefix throughput build | 1,195,879 | **14.048%** | **4.770 ms** | 7.990 ms |
+| Prefix `--balanced` build | 1,195,879 | **14.048%** | 5.640 ms | **6.365 ms** |
+| Prefix literal profile, broader balanced build | 1,193,832 | **13.853%** | 6.000 ms | 7.015 ms |
+| Arithmetic candidate | 1,170,479 | 11.626% | 138.265 ms | 140.925 ms |
 
-The portable build is **26.1× faster** than the arithmetic candidate in this
-Chromium 156 campaign. It takes 18.6% more time than the fastest tested Base122
+The default build is **29.0× faster** than the arithmetic candidate in this
+Chromium 156 campaign. It takes 5.0% more time than the fastest tested Base122
 decoder while checking symbols, length and padding and returning a fresh,
 exactly sized buffer. Some peers skip structural checks or return a view over
 a larger backing buffer. Base122's exact-size variant makes a counting pass.
 All tested variants recover identical bytes; their validation policies differ.
+Chrome 109 has substantial process spread for the throughput build; raw ranges
+are preserved in the CSV. Prefer `--balanced` for that target.
 
-The portable ESM is **2,154 bytes**, its classic build **2,175 bytes**, and its
-lookup table **8 KiB**. Only the selected loop is bundled. The default build
-rejects omitted profiles before output allocation.
+The portable ESM is **1,777 bytes**, its classic build **1,798 bytes**, and its
+lookup table **8 KiB**. The balanced ESM is 1,781 bytes. Only the selected loop
+is bundled; omitted profiles are rejected before output allocation.
+The [optimization study](utf8-speed.md) separately compares the previous exact
+artifact and nineteen implementation variants, with a six-row shareable CSV.
 
 For this input, automatic masking produces a 1,195,864-byte packet. Complete
-standalone HTML, including code, metadata, BOM and data, is **1,198,136 bytes**.
+standalone HTML, including code, metadata, BOM and data, is **1,197,759 bytes**.
 The tested Base122 HTML files are 1,198,781 bytes with the compact upstream
 decoder, 1,198,978 with the inline decoder and 1,199,324 with the faster block
-decoder. The **645-byte** saving over the smallest of these is modest but
+decoder. The **1,022-byte** saving over the smallest of these is modest but
 survives inclusion of the decoder. Timings use mask zero; the HTML example uses
 automatic masking. Small files still pay for framing: no claim is made that
 every possible complete file beats Base122.
@@ -76,11 +81,14 @@ bits for tails below 102 and eight for the rest. A 2,048-entry table stores the
 bits and their 7/14/15-bit width. Fewer than eight carried bits remain between
 characters, so at most 22 live bits require a 32-bit queue.
 
-The selected loop specializes ASCII: an empty queue accepts seven bits;
-otherwise exactly one output byte is ready and the shift decreases by one.
-Every wide symbol yields one or two bytes. Padding is checked once afterward.
-Invalid symbols are rejected, allocation is bounded before decoding, and XOR
-unmasking is fused with output stores. There is no per-bit arithmetic loop.
+The default loop keeps pending bits at the high end of a 32-bit register and
+writes speculative bytes, then advances by the actual complete-byte count.
+Unfinished stores are overwritten; tail stores beyond the declared output are
+ignored. Character checks, bounded allocation and canonical padding checks
+remain mandatory. XOR unmasking is fused with the stores. The optional balanced
+loop specializes ASCII with a low-aligned queue and accumulates validity flags
+for one final character check. Both keep at most 22 live bits and need no
+per-bit arithmetic loop. See the [invariants and tradeoffs](utf8-speed.md).
 
 The Rust encoder reads whole bytes, reserves its output once and uses direct
 prefix lookup. Mask selection ranks all 256 masks on a bounded sample, then
@@ -98,6 +106,7 @@ From the repository root with the documented tool environment:
 ```sh
 cargo run --release --locked --example utf8_prefix -- encode input.bin payload.txt
 cargo run --release --locked --example utf8_prefix -- build decoder.mjs
+cargo run --release --locked --example utf8_prefix -- build balanced.mjs --balanced
 cargo run --release --locked --example utf8_prefix -- html input.bin output.html
 
 # Denser literal profile, without NFC guarantees:
@@ -125,12 +134,12 @@ and all Wasm transfers. Encoding, loading, HTML parsing, import and SHA-256
 correctness comparisons are excluded. This unpinned-host measurement describes
 warm batch throughput, not page startup or individual-call tail latency.
 
-Screening covers table/scalar loops, ASCII branches, block stores, deferred
-character checks and a Rust/Wasm kernel with four/eight-character bulk stores.
-The ordinary JS loop wins in the latest target browser. Wasm's transfer costs
-erase its kernel gain there. Deferred checks help Chrome 109 but slightly
-regress Chromium 156 and duplicate the table in the prototype; they are kept
-as research rather than selecting engines by unrelated feature heuristics.
+The current [nineteen-variant study](utf8-speed.md) covers table/scalar loops,
+ASCII branches, speculative and block stores, deferred character checks, table
+layouts and Rust/Wasm kernels with native UTF-8 input. The selected ordinary JS
+loops avoid Wasm transfer and loader costs. Native Base64 remains substantially
+faster on current Chromium, at higher transport overhead. No engine guessing
+or runtime autotuning is added to the delivered files.
 
 [Small CSV](../benchmarks/results/utf8-prefix/summary.csv),
 [all selected sizes/times](../benchmarks/results/utf8-prefix/sizes-and-times.csv),

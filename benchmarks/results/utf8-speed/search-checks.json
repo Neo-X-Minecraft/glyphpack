@@ -1,0 +1,444 @@
+{
+  "environment": {
+    "recordedAt": "2026-11-12T19:47:15.894Z",
+    "runs": 1,
+    "rounds": 5,
+    "checking": true,
+    "arch": "arm64",
+    "cpu": "unknown",
+    "scope": "Resident string to fresh exact-size bytes; format checks and all conversions included. No integrity verification.",
+    "order": "Rotated fixed batches; fresh process per run; malformed-input checks use separate processes. Import precedes cold first decode and warm-up.",
+    "candidates": [
+      {
+        "name": "before",
+        "bytes": 2154,
+        "sha256": "01e770988d9ec29a82339a17443198e9e723264409b826c1fdc25078ac961297"
+      },
+      {
+        "name": "delivered",
+        "bytes": 1777,
+        "sha256": "3ba2759480278865a7ea0550c3bdd28b7add3d2ab9fe74750275083db8cea4f8"
+      },
+      {
+        "name": "balanced",
+        "bytes": 1781,
+        "sha256": "1a0c0c900adcd89f08cd279c554ad4fd9af42f2adca6fbe14db6adafbd3535fe"
+      },
+      {
+        "name": "speculative",
+        "bytes": 1807,
+        "sha256": "8c15104405cacf75c6406d557c1c8713bd7b1147a2e7ad1433f5fcd3be76470b"
+      },
+      {
+        "name": "wordStores",
+        "bytes": 2054,
+        "sha256": "93d3f9858fd1e986b7633e703ac9b27d215f14a65ba19b19bacd3f2d5144c2fb"
+      },
+      {
+        "name": "splitTables",
+        "bytes": 1974,
+        "sha256": "2be6b677bbf3de88ad1f264204760a6eeea7b3bf4e73b8fa2a27fd1e4a6a9925"
+      },
+      {
+        "name": "sentinel",
+        "bytes": 1890,
+        "sha256": "b9c45ba396654a9c4a8694781b583577c8183a4e7b94117ea0b22f6cf58b124b"
+      },
+      {
+        "name": "stateTable",
+        "bytes": 2170,
+        "sha256": "39ec274802e51c41717afa265dd7fdfbc0329d00faf4d52b0a4a1ecb0bb9a432"
+      },
+      {
+        "name": "wideStateTable",
+        "bytes": 2170,
+        "sha256": "d6c1bf098ef3aa5e93d855cd1414b30cb8de3fa32780e9f34397a62685c61f02"
+      },
+      {
+        "name": "byteInput",
+        "bytes": 1936,
+        "sha256": "561e226421c15ff36f7470ebbf2f4ef7dffe96c1b4c65c05f646892e37152118"
+      },
+      {
+        "name": "bounded",
+        "bytes": 1808,
+        "sha256": "729f0a207c629c7c649038d2dd7dfda388fe6e710318b1541ab12e7ce5d681f4"
+      },
+      {
+        "name": "asciiPairs",
+        "bytes": 2009,
+        "sha256": "5708dd39c9812fdeb7f0b3860b14712420c538de3bf7927c92ac12af8bfc6db1"
+      },
+      {
+        "name": "fullTable",
+        "bytes": 1882,
+        "sha256": "fdb70dcbdd4176ed34dd8ab7e5e8e51cc2c04cb399e516730322b30e389dd155"
+      },
+      {
+        "name": "asciiSpec",
+        "bytes": 1693,
+        "sha256": "23c531f1e1d3f05b86bd53a3126ac09d1476a3d23d5e49ee8e1409834a553b98"
+      },
+      {
+        "name": "asciiConditional",
+        "bytes": 1694,
+        "sha256": "60e1e02066d0c8f5ce642fdaa4f4b51df642fa01a6061175209ab6c4a24d923b"
+      },
+      {
+        "name": "narrow",
+        "bytes": 1697,
+        "sha256": "bab9c2f0f1710fa39bf15a66b5acad0b27d92b8211ee8654e9017cabf8f9f194"
+      },
+      {
+        "name": "splitModel",
+        "bytes": 1821,
+        "sha256": "c35b0df6b55da416bfd53d932fdbe9142552b29ab811f3bf68218dcbd4c69791"
+      },
+      {
+        "name": "smallest",
+        "bytes": 1691,
+        "sha256": "f29aee730ba6d73f0015e0f56c8a3cb26cfd2fd450bc63325023fc60f9286f7c"
+      },
+      {
+        "name": "wasmBytes",
+        "bytes": 10920,
+        "sha256": "eb5567c81812e7e8f7ceb391b040b958c575e8714f97ffd0b7ff277e14e0dedf"
+      }
+    ],
+    "inputs": [
+      {
+        "binary": "generated/encoding-comparison/random-1KiB.bin",
+        "file": "generated/utf8-prefix/random-1KiB-5.txt",
+        "inputBytes": 1024,
+        "label": "random-1KiB",
+        "profile": 5,
+        "sourceBytes": 1178,
+        "sourceUnits": 1095,
+        "sha256": "cd5139c7cc61f7c5ca3fb9d4f4386af4b8b303029581629795cbd8ab131e54d0"
+      },
+      {
+        "binary": "generated/encoding-comparison/random-64KiB.bin",
+        "file": "generated/utf8-prefix/random-64KiB-5.txt",
+        "inputBytes": 65536,
+        "label": "random-64KiB",
+        "profile": 5,
+        "sourceBytes": 74751,
+        "sourceUnits": 69272,
+        "sha256": "f540ac5d87fd275467341d328f866d241bee9350a3f42ee2a93ebb8db0dd24ad"
+      },
+      {
+        "binary": "generated/encoding-comparison/random-1MiB.bin",
+        "file": "generated/utf8-prefix/random-1MiB-5.txt",
+        "inputBytes": 1048576,
+        "label": "random-1MiB",
+        "profile": 5,
+        "sourceBytes": 1195879,
+        "sourceUnits": 1109419,
+        "sha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+      },
+      {
+        "binary": "generated/encoding-comparison/zeros-1MiB.bin",
+        "file": "generated/utf8-prefix/zeros-1MiB-5.txt",
+        "inputBytes": 1048576,
+        "label": "zeros-1MiB",
+        "profile": 5,
+        "sourceBytes": 1198385,
+        "sourceUnits": 599198,
+        "sha256": "30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58"
+      },
+      {
+        "binary": "generated/encoding-comparison/sequential-1MiB.bin",
+        "file": "generated/utf8-prefix/sequential-1MiB-5.txt",
+        "inputBytes": 1048576,
+        "label": "sequential-1MiB",
+        "profile": 5,
+        "sourceBytes": 1196045,
+        "sourceUnits": 1093649,
+        "sha256": "fbbab289f7f94b25736c58be46a994c441fd02552cc6022352e3d86d2fab7c83"
+      }
+    ]
+  },
+  "rows": [],
+  "cold": [
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "before",
+      "firstDecodeMs": 0.9500000029802322,
+      "importMs": 5.715000003576279
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "delivered",
+      "firstDecodeMs": 1.1500000059604645,
+      "importMs": 0.9050000011920929
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "balanced",
+      "firstDecodeMs": 1.0150000005960464,
+      "importMs": 0.5550000071525574
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "speculative",
+      "firstDecodeMs": 1.0199999958276749,
+      "importMs": 0.5499999970197678
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wordStores",
+      "firstDecodeMs": 1.125,
+      "importMs": 0.6699999868869781
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "splitTables",
+      "firstDecodeMs": 2.9200000017881393,
+      "importMs": 0.5400000065565109
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "sentinel",
+      "firstDecodeMs": 1.4299999922513962,
+      "importMs": 0.5900000035762787
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "stateTable",
+      "firstDecodeMs": 1.9399999976158142,
+      "importMs": 0.6050000041723251
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wideStateTable",
+      "firstDecodeMs": 2.1849999874830246,
+      "importMs": 0.6599999964237213
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "byteInput",
+      "firstDecodeMs": 1.1199999898672104,
+      "importMs": 0.9450000077486038
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "bounded",
+      "firstDecodeMs": 1.0349999964237213,
+      "importMs": 0.5649999976158142
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "asciiPairs",
+      "firstDecodeMs": 0.9399999976158142,
+      "importMs": 0.510000005364418
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "fullTable",
+      "firstDecodeMs": 1,
+      "importMs": 0.4650000035762787
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "asciiSpec",
+      "firstDecodeMs": 1.104999989271164,
+      "importMs": 0.44999998807907104
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "asciiConditional",
+      "firstDecodeMs": 1.010000005364418,
+      "importMs": 0.4599999934434891
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "narrow",
+      "firstDecodeMs": 1.094999998807907,
+      "importMs": 0.5250000059604645
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "splitModel",
+      "firstDecodeMs": 1.2950000017881393,
+      "importMs": 0.8400000035762787
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "smallest",
+      "firstDecodeMs": 0.9300000071525574,
+      "importMs": 0.5849999934434891
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wasmBytes",
+      "firstDecodeMs": 1.3900000005960464,
+      "importMs": 3.104999989271164
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "before",
+      "firstDecodeMs": 1.0649999976158142,
+      "importMs": 5.13000001013279
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "delivered",
+      "firstDecodeMs": 0.9299999922513962,
+      "importMs": 0.8349999934434891
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "balanced",
+      "firstDecodeMs": 0.9950000047683716,
+      "importMs": 0.7849999964237213
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "speculative",
+      "firstDecodeMs": 0.885000005364418,
+      "importMs": 0.5949999988079071
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "wordStores",
+      "firstDecodeMs": 1.0049999952316284,
+      "importMs": 0.6550000011920929
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "splitTables",
+      "firstDecodeMs": 1.0349999964237213,
+      "importMs": 0.6700000017881393
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "sentinel",
+      "firstDecodeMs": 1.0450000017881393,
+      "importMs": 0.6200000047683716
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "stateTable",
+      "firstDecodeMs": 7.38000001013279,
+      "importMs": 0.6349999904632568
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "wideStateTable",
+      "firstDecodeMs": 2.2950000017881393,
+      "importMs": 0.6449999958276749
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "byteInput",
+      "firstDecodeMs": 1.0799999982118607,
+      "importMs": 0.5700000077486038
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "bounded",
+      "firstDecodeMs": 0.9099999964237213,
+      "importMs": 0.5300000011920929
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "asciiPairs",
+      "firstDecodeMs": 0.8949999958276749,
+      "importMs": 0.5850000083446503
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "fullTable",
+      "firstDecodeMs": 0.9249999970197678,
+      "importMs": 0.5849999934434891
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "asciiSpec",
+      "firstDecodeMs": 0.9349999874830246,
+      "importMs": 0.5199999958276749
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "asciiConditional",
+      "firstDecodeMs": 1.084999993443489,
+      "importMs": 0.5350000113248825
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "narrow",
+      "firstDecodeMs": 0.9150000065565109,
+      "importMs": 0.5399999916553497
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "splitModel",
+      "firstDecodeMs": 1.114999994635582,
+      "importMs": 0.625
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "smallest",
+      "firstDecodeMs": 0.875,
+      "importMs": 0.5399999916553497
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "wasmBytes",
+      "firstDecodeMs": 0.9350000023841858,
+      "importMs": 5.885000005364418
+    }
+  ],
+  "verification": [
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "positive": 13680,
+      "mutations": 18000
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "positive": 13680,
+      "mutations": 18000
+    }
+  ]
+}

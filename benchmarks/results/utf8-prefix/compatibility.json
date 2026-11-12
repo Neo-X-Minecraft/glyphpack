@@ -43,24 +43,24 @@
   "builds": [
     {
       "file": "decoder.min.mjs",
-      "bytes": 2154,
-      "sha256": "01e770988d9ec29a82339a17443198e9e723264409b826c1fdc25078ac961297"
+      "bytes": 1777,
+      "sha256": "3ba2759480278865a7ea0550c3bdd28b7add3d2ab9fe74750275083db8cea4f8"
     },
     {
       "file": "decoder-full.min.mjs",
-      "bytes": 2328,
-      "sha256": "4dff18b7b9670e879a20c2540af39e8e04af9c3782ea698cd1a6343cd3df04f1"
+      "bytes": 1951,
+      "sha256": "3cfdfad7f7b2df1914aa0c3368e3b4699d3a889d61d3a0676c251d253dee580f"
     },
     {
       "file": "decoder.iife.js",
-      "bytes": 2175,
-      "sha256": "b4355c9cc0fb800c6d271977d7150dc3a6b0cde8c7f039520c2bfe94b8e557ba"
+      "bytes": 1798,
+      "sha256": "56b89704486286dc1118d87712150befd6b432d51aa2a3a5c47687e684bf3c3d"
     }
   ],
   "html": {
-    "prefixBytes": 1198136,
+    "prefixBytes": 1197759,
     "base122Bytes": 1199324,
-    "prefixSha256": "8eed714a4ae36a1226e13e0f6f111c2b204e425b13a257e9344d92febc176c8b",
+    "prefixSha256": "288f082be87acf61b192ab393cb4c6a5902516229c903a4204188daa996d0b54",
     "base122Sha256": "7ea47d1a86c06c9839e8d4749f0b5a74c27a34c046e1a82b2801c3e9fe3b3e8f",
     "baselines": [
       {

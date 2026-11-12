@@ -45,17 +45,21 @@ changes the current GlyphPack wire format or verification defaults.
 - `prefix.mjs`: header parsing, fixed alphabets, allocation guards, table warm-up
   and the original scalar prefix candidate. Profile 5 is portable/NFC-stable;
   profile 4 favors literal compactness; 0..3 are intermediate studies.
-- `prefix-split.mjs`: selected fast loop, bundled into the delivered decoder.
+- `prefix-throughput.mjs`: default high-aligned queue and speculative stores.
+- `prefix-split.mjs`: balanced loop, selected at build time with `--balanced`.
 - `prefix-fast.mjs`, `prefix-branch.mjs`, `prefix-block-validated.mjs` and
   `prefix-deferred.mjs`: measured alternatives, excluded from delivered builds.
 - `examples/utf8_prefix.rs`: optimized native encoder, masking, fixture generation,
   build command and self-contained HTML creation. All authored code is 0BSD.
 - `benchmarks/fixtures/utf8-prefix.rs`: benchmark-only Wasm kernel; not shipped.
+- `speed/`: the newer [19-variant optimization study](../../../docs/utf8-speed.md),
+  its frozen models, exact historical baseline and reproduction commands.
 
 ```sh
 cargo run --release --locked -- bench prepare
 cargo run --release --locked --example utf8_prefix
 cargo run --release --locked --example utf8_prefix -- build generated/utf8-prefix/decoder.min.mjs
+cargo run --release --locked --example utf8_prefix -- build generated/utf8-prefix/decoder-balanced.min.mjs --balanced
 cargo run --release --locked --example utf8_prefix -- build generated/utf8-prefix/decoder-full.min.mjs --all-profiles
 cargo run --release --locked --example utf8_prefix -- build generated/utf8-prefix/decoder.iife.js --classic
 cargo run --release --locked --example utf8_prefix -- html generated/encoding-comparison/random-1MiB.bin generated/utf8-prefix/example.html

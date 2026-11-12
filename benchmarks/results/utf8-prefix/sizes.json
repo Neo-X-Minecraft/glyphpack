@@ -1,8 +1,8 @@
 {
-  "moduleBytes": 2154,
-  "classicBytes": 2175,
+  "moduleBytes": 1777,
+  "classicBytes": 1798,
   "autoPacketBytes": 1195864,
-  "autoHtmlBytes": 1198136,
+  "autoHtmlBytes": 1197759,
   "base122HtmlBytes": [
     {
       "implementation": "block122",
