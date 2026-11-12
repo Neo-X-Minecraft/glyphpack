@@ -46,6 +46,8 @@ glyphpack build --full --compact-hash -o smaller-full.mjs
 The compact version has a real throughput tradeoff on some payloads, so it is
 not the default. `--all` writes the standard profiles; request compact builds
 individually. Native encoders retain their expanded hash implementation.
+The [compact versus expanded speed comparison](compact-hash.md) measures hashing
+alone and complete decoding, with separate small-input and SIMD-heavy cases.
 
 ## Fresh measurements
 

@@ -26,7 +26,10 @@ const fixtures = JSON.parse(
 ).rows.filter((r) => allPolicies || r.integrity === "secure");
 const runs = Number(process.env.OPT_RUNS || 1),
   rounds = Number(process.env.OPT_ROUNDS || 5),
-  label = process.env.OPT_LABEL || "screen";
+  label = process.env.OPT_LABEL || "screen",
+  smallBatch = Number(process.env.OPT_SMALL_BATCH || 1000);
+if (!Number.isSafeInteger(smallBatch) || smallBatch < 1)
+  throw Error("OPT_SMALL_BATCH must be a positive integer");
 if (!candidates.length)
   throw Error("No matching candidates; prepare builds first");
 const allowed = {
@@ -92,7 +95,7 @@ const allowed = {
             },
           );
           const data = await page.evaluate(
-            ({ meta, fixtures, allowed, rounds, allPolicies }) => {
+            ({ meta, fixtures, allowed, rounds, allPolicies, smallBatch }) => {
               const jobs = [];
               let sink = 0;
               for (let m = 0; m < meta.length; m++) {
@@ -153,7 +156,7 @@ const allowed = {
                     size = fixtures[j.i].bytes,
                     batch =
                       size <= 1024
-                        ? 1000
+                        ? smallBatch
                         : size <= 65536
                           ? 40
                           : size <= 1048576
@@ -172,7 +175,14 @@ const allowed = {
                 };
               });
             },
-            { meta: candidates, fixtures, allowed, rounds, allPolicies },
+            {
+              meta: candidates,
+              fixtures,
+              allowed,
+              rounds,
+              allPolicies,
+              smallBatch,
+            },
           );
           for (const { m, i, ...timing } of data)
             rows.push({
@@ -273,6 +283,7 @@ const allowed = {
     cpu: os.cpus()[0].model,
     runs,
     rounds,
+    batches: { small: smallBatch, kib64: 40, mib1: 3, mib10: 1 },
     warmups: { smallInputCalls: 10000, otherInputCalls: 4 },
     integrity: allPolicies ? "none/XXH32/BLAKE3" : "BLAKE3",
     format: allPolicies ? "both" : true,
