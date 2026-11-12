@@ -1,0 +1,141 @@
+{
+  "referenceTestSourceSha256": "44993de8ca8d805f1a8c73758c63ce7ec4b2ef8e0997c92aa2d6b0c2e8aaf672",
+  "reference": [
+    {
+      "browser": "156.0.8078.79",
+      "roundTrips": 2528,
+      "scalarMapChecks": 3336311,
+      "engine": "Chromium",
+      "browserStatus": "passed",
+      "offlineFilePages": 11,
+      "files": [
+        {
+          "file": "utf8-data-enumerative.html",
+          "bytes": 65536,
+          "sourceBytes": 74776
+        },
+        {
+          "file": "utf8-data-arithmetic.html",
+          "bytes": 65536,
+          "sourceBytes": 75124
+        },
+        {
+          "file": "utf8-template-enumerative.html",
+          "bytes": 65536,
+          "sourceBytes": 74906
+        },
+        {
+          "file": "utf8-template-arithmetic.html",
+          "bytes": 65536,
+          "sourceBytes": 75256
+        },
+        {
+          "file": "utf8-clean-enumerative.html",
+          "bytes": 65536,
+          "sourceBytes": 74863
+        },
+        {
+          "file": "utf8-clean-arithmetic.html",
+          "bytes": 65536,
+          "sourceBytes": 75220
+        },
+        {
+          "file": "ascii-data-enumerative.html",
+          "bytes": 65536,
+          "sourceBytes": 76632
+        },
+        {
+          "file": "ascii-data-arithmetic.html",
+          "bytes": 65536,
+          "sourceBytes": 76988
+        },
+        {
+          "file": "all-unicode-data.html",
+          "bytes": 4382754,
+          "sourceBytes": 4382965
+        },
+        {
+          "file": "all-unicode-template.html",
+          "bytes": 4382748,
+          "sourceBytes": 4382893
+        },
+        {
+          "file": "random-1MiB-arithmetic.html",
+          "bytes": 1048576,
+          "sourceBytes": 1172447
+        }
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "roundTrips": 2528,
+      "scalarMapChecks": 3336311,
+      "engine": "Chromium",
+      "browserStatus": "passed",
+      "offlineFilePages": 11,
+      "files": [
+        {
+          "file": "utf8-data-enumerative.html",
+          "bytes": 65536,
+          "sourceBytes": 74776
+        },
+        {
+          "file": "utf8-data-arithmetic.html",
+          "bytes": 65536,
+          "sourceBytes": 75124
+        },
+        {
+          "file": "utf8-template-enumerative.html",
+          "bytes": 65536,
+          "sourceBytes": 74906
+        },
+        {
+          "file": "utf8-template-arithmetic.html",
+          "bytes": 65536,
+          "sourceBytes": 75256
+        },
+        {
+          "file": "utf8-clean-enumerative.html",
+          "bytes": 65536,
+          "sourceBytes": 74863
+        },
+        {
+          "file": "utf8-clean-arithmetic.html",
+          "bytes": 65536,
+          "sourceBytes": 75220
+        },
+        {
+          "file": "ascii-data-enumerative.html",
+          "bytes": 65536,
+          "sourceBytes": 76632
+        },
+        {
+          "file": "ascii-data-arithmetic.html",
+          "bytes": 65536,
+          "sourceBytes": 76988
+        },
+        {
+          "file": "all-unicode-data.html",
+          "bytes": 4382754,
+          "sourceBytes": 4382965
+        },
+        {
+          "file": "all-unicode-template.html",
+          "bytes": 4382748,
+          "sourceBytes": 4382893
+        },
+        {
+          "file": "random-1MiB-arithmetic.html",
+          "bytes": 1048576,
+          "sourceBytes": 1172447
+        }
+      ]
+    }
+  ],
+  "candidate": {
+    "passed": true,
+    "cases": 2590,
+    "targetedPrefixes": 8,
+    "malformed": 9
+  }
+}
