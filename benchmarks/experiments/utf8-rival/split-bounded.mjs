@@ -1,6 +1,6 @@
 /* 0BSD, NeoX. ASCII output is independent of LUT reads; only validity uses
  * the ASCII table entry. Wide symbols use the full 15-bit value. */
-import { prepare, finish, warmup } from "../../../src/utf8-raw/model.mjs";
+import { prepare, finish, warmup } from "./model.mjs";
 export { warmup };
 export function decode(text) {
   const { table, mask, length, start } = prepare(text),

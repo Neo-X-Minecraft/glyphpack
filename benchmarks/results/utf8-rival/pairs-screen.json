@@ -1,0 +1,467 @@
+{
+  "environment": {
+    "recordedAt": "2026-11-13T17:28:47.119Z",
+    "arch": "arm64",
+    "cpu": "unknown",
+    "runs": 1,
+    "rounds": 5,
+    "scope": "Complete warm decode; owned exact output for UTF-8, permissive view output allowed for Base122; no data integrity in either.",
+    "candidates": [
+      {
+        "name": "utf8-raw",
+        "family": "utf8",
+        "moduleBytes": 2342,
+        "sha256": "945ce5a10e77fd93b6cd0b3c1a6849ad3f8be1429ee10a9d57f52538f4e595a8"
+      },
+      {
+        "name": "utf8-unroll",
+        "family": "utf8",
+        "moduleBytes": 2311,
+        "sha256": "215f7d30ec47d08c85646fe109e1471b42d64ba8885692564e28bc1d6a11ae6c"
+      },
+      {
+        "name": "base122-groupUnroll",
+        "family": "base122",
+        "moduleBytes": 1325,
+        "sha256": "c86b858feae64cafcd71a1ce75227dadda5c8d5cbb93e876b1848efd77dd8211"
+      },
+      {
+        "name": "utf8-pairs",
+        "family": "utf8",
+        "moduleBytes": 2915,
+        "sha256": "67b39ec2a5bf8235bd98d23ed40023113951586874eb723a7606663a8bdf32db"
+      }
+    ],
+    "inputs": [
+      {
+        "base122": "generated/encoding-comparison/bootstrap-none.base122",
+        "binary": "generated/encoding-comparison/bootstrap.bin",
+        "bytes": 15200,
+        "file": "generated/utf8-rival/bootstrap.txt",
+        "label": "bootstrap",
+        "payloadBytes": 17209,
+        "sha256": "9e8c21305d4917f84bc172cbfda971881cf0422ee2ea545824531293b7e20d76",
+        "base122Bytes": 17372
+      },
+      {
+        "base122": "generated/encoding-comparison/random-1KiB-none.base122",
+        "binary": "generated/encoding-comparison/random-1KiB.bin",
+        "bytes": 1024,
+        "file": "generated/utf8-rival/random-1KiB.txt",
+        "label": "random-1KiB",
+        "payloadBytes": 1172,
+        "sha256": "cd5139c7cc61f7c5ca3fb9d4f4386af4b8b303029581629795cbd8ab131e54d0",
+        "base122Bytes": 1171
+      },
+      {
+        "base122": "generated/encoding-comparison/random-64KiB-none.base122",
+        "binary": "generated/encoding-comparison/random-64KiB.bin",
+        "bytes": 65536,
+        "file": "generated/utf8-rival/random-64KiB.txt",
+        "label": "random-64KiB",
+        "payloadBytes": 74432,
+        "sha256": "f540ac5d87fd275467341d328f866d241bee9350a3f42ee2a93ebb8db0dd24ad",
+        "base122Bytes": 74899
+      },
+      {
+        "base122": "generated/encoding-comparison/random-1MiB-none.base122",
+        "binary": "generated/encoding-comparison/random-1MiB.bin",
+        "bytes": 1048576,
+        "file": "generated/utf8-rival/random-1MiB.txt",
+        "label": "random-1MiB",
+        "payloadBytes": 1190768,
+        "sha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+        "base122Bytes": 1198373
+      },
+      {
+        "base122": "generated/encoding-comparison/zeros-1MiB-none.base122",
+        "binary": "generated/encoding-comparison/zeros-1MiB.bin",
+        "bytes": 1048576,
+        "file": "generated/utf8-rival/zeros-1MiB.txt",
+        "label": "zeros-1MiB",
+        "payloadBytes": 1118492,
+        "sha256": "30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58",
+        "base122Bytes": 1198374
+      },
+      {
+        "base122": "generated/encoding-comparison/sequential-1MiB-none.base122",
+        "binary": "generated/encoding-comparison/sequential-1MiB.bin",
+        "bytes": 1048576,
+        "file": "generated/utf8-rival/sequential-1MiB.txt",
+        "label": "sequential-1MiB",
+        "payloadBytes": 1191947,
+        "sha256": "fbbab289f7f94b25736c58be46a994c441fd02552cc6022352e3d86d2fab7c83",
+        "base122Bytes": 1198373
+      }
+    ]
+  },
+  "checks": [
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "checked": 5016
+    }
+  ],
+  "records": [
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-raw",
+      "label": "bootstrap",
+      "inputBytes": 15200,
+      "samples": [
+        0.7674999997019768,
+        0.045500001311302184,
+        0.04300000071525574,
+        0.04349999874830246,
+        0.042750000953674316
+      ],
+      "medianMs": 0.04349999874830246
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-raw",
+      "label": "random-1KiB",
+      "inputBytes": 1024,
+      "samples": [
+        0.007689999997615814,
+        0.0036899999976158144,
+        0.003679999977350235,
+        0.0035900000035762785,
+        0.00358500000834465
+      ],
+      "medianMs": 0.003679999977350235
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-raw",
+      "label": "random-64KiB",
+      "inputBytes": 65536,
+      "samples": [
+        0.1897499993443489,
+        0.20274999886751174,
+        0.2032499998807907,
+        0.20125000029802323,
+        0.19124999940395354
+      ],
+      "medianMs": 0.20125000029802323
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-raw",
+      "label": "random-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        3.510000005364418,
+        3.6200000047683716,
+        3.5225000083446503,
+        3.5450000017881393,
+        3.5575000047683716
+      ],
+      "medianMs": 3.5450000017881393
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-raw",
+      "label": "zeros-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        1.7550000101327896,
+        2.105000004172325,
+        1.709999993443489,
+        1.6875,
+        1.6924999952316284
+      ],
+      "medianMs": 1.709999993443489
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-raw",
+      "label": "sequential-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        2.935000002384186,
+        3.0799999982118607,
+        2.9625000059604645,
+        2.9650000035762787,
+        2.9300000071525574
+      ],
+      "medianMs": 2.9625000059604645
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-unroll",
+      "label": "bootstrap",
+      "inputBytes": 15200,
+      "samples": [
+        0.044749999046325685,
+        0.04400000125169754,
+        0.04149999916553497,
+        0.04099999964237213,
+        0.041249999403953554
+      ],
+      "medianMs": 0.04149999916553497
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-unroll",
+      "label": "random-1KiB",
+      "inputBytes": 1024,
+      "samples": [
+        0.003604999989271164,
+        0.0035899999737739564,
+        0.0034300000071525575,
+        0.0034950000047683717,
+        0.003405000001192093
+      ],
+      "medianMs": 0.0034950000047683717
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-unroll",
+      "label": "random-64KiB",
+      "inputBytes": 65536,
+      "samples": [
+        0.19449999928474426,
+        0.19224999994039535,
+        0.19025000035762787,
+        0.2950000002980232,
+        0.19124999940395354
+      ],
+      "medianMs": 0.19224999994039535
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-unroll",
+      "label": "random-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        3.375,
+        5.5775000005960464,
+        3.635000005364418,
+        12.997500002384186,
+        3.4000000059604645
+      ],
+      "medianMs": 3.635000005364418
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-unroll",
+      "label": "zeros-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        1.7799999862909317,
+        8.5,
+        2.4874999970197678,
+        2,
+        1.7549999952316284
+      ],
+      "medianMs": 2
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-unroll",
+      "label": "sequential-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        2.8275000005960464,
+        4.075000002980232,
+        2.9624999910593033,
+        2.8174999952316284,
+        2.822500005364418
+      ],
+      "medianMs": 2.8275000005960464
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "base122-groupUnroll",
+      "label": "bootstrap",
+      "inputBytes": 15200,
+      "samples": [
+        0.04825000017881394,
+        0.058750000596046445,
+        0.04749999940395355,
+        0.04575000107288361,
+        0.04150000065565109
+      ],
+      "medianMs": 0.04749999940395355
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "base122-groupUnroll",
+      "label": "random-1KiB",
+      "inputBytes": 1024,
+      "samples": [
+        0.004030000001192093,
+        0.004534999996423721,
+        0.004275000005960464,
+        0.004020000010728836,
+        0.004
+      ],
+      "medianMs": 0.004030000001192093
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "base122-groupUnroll",
+      "label": "random-64KiB",
+      "inputBytes": 65536,
+      "samples": [
+        0.19399999976158142,
+        0.19149999916553498,
+        0.1927499994635582,
+        0.19149999916553498,
+        0.19624999910593033
+      ],
+      "medianMs": 0.1927499994635582
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "base122-groupUnroll",
+      "label": "random-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        3.407499998807907,
+        3.3875000029802322,
+        3.4324999898672104,
+        3.467500001192093,
+        3.4025000035762787
+      ],
+      "medianMs": 3.407499998807907
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "base122-groupUnroll",
+      "label": "zeros-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        2.897499993443489,
+        2.9375,
+        3.1124999970197678,
+        2.905000001192093,
+        9.599999994039536
+      ],
+      "medianMs": 2.9375
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "base122-groupUnroll",
+      "label": "sequential-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        2.8700000047683716,
+        2.844999998807907,
+        2.882500007748604,
+        2.885000005364418,
+        4.167500004172325
+      ],
+      "medianMs": 2.882500007748604
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-pairs",
+      "label": "bootstrap",
+      "inputBytes": 15200,
+      "samples": [
+        0.051000000536441804,
+        0.04825000017881394,
+        0.04625000059604645,
+        0.04599999934434891,
+        0.04625000059604645
+      ],
+      "medianMs": 0.04625000059604645
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-pairs",
+      "label": "random-1KiB",
+      "inputBytes": 1024,
+      "samples": [
+        0.0037549999952316286,
+        0.0037649999856948853,
+        0.003669999986886978,
+        0.004080000013113022,
+        0.003939999997615814
+      ],
+      "medianMs": 0.0037649999856948853
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-pairs",
+      "label": "random-64KiB",
+      "inputBytes": 65536,
+      "samples": [
+        0.21799999922513963,
+        0.2145000010728836,
+        0.2030000001192093,
+        0.20750000029802323,
+        0.22450000047683716
+      ],
+      "medianMs": 0.2145000010728836
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-pairs",
+      "label": "random-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        3.905000001192093,
+        3.989999994635582,
+        3.8700000047683716,
+        3.8700000047683716,
+        3.894999995827675
+      ],
+      "medianMs": 3.894999995827675
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-pairs",
+      "label": "zeros-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        2.052499994635582,
+        2.032499998807907,
+        2.054999992251396,
+        2.032499998807907,
+        2.052500009536743
+      ],
+      "medianMs": 2.052499994635582
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-pairs",
+      "label": "sequential-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        3.115000009536743,
+        3.0899999886751175,
+        3.1175000071525574,
+        3.1525000035762787,
+        3.1399999856948853
+      ],
+      "medianMs": 3.1175000071525574
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 /* 0BSD, NeoX. Same resident bytes, actual UTF-8 payloads and complete decode
  * calls. Base122 keeps its permissive/view-returning policy, favoring its speed. */
 const fs = require("node:fs"),
+  assert = require("node:assert/strict"),
   path = require("node:path"),
   crypto = require("node:crypto"),
   http = require("node:http"),
@@ -35,7 +36,18 @@ const root = path.resolve(__dirname, ".."),
     };
   };
 fs.mkdirSync(dest, { recursive: true });
+const previous = fs.readFileSync(
+  path.join(root, "benchmarks/experiments/utf8-rival/baseline.min.mjs"),
+  "utf8",
+);
 const sources = [
+  {
+    name: "utf8-previous",
+    family: "utf8",
+    code: previous,
+    moduleBytes: Buffer.byteLength(previous),
+    sha256: sha(previous),
+  },
   build(
     "utf8-raw",
     "export{decode,warmup}from'./src/utf8-raw/decoder.mjs'",
@@ -100,7 +112,64 @@ const sources = [
     ),
   ),
 ];
+sources.push(
+  build(
+    "utf8-sentinel-small",
+    "export{decode,warmup}from'./benchmarks/experiments/utf8-rival/sentinel-small.mjs'",
+    "utf8",
+  ),
+);
+sources.push(
+  build(
+    "utf8-sentinel",
+    "export{decode,warmup}from'./benchmarks/experiments/utf8-rival/sentinel.mjs'",
+    "utf8",
+  ),
+);
+sources.push(
+  build(
+    "utf8-sentinel-unroll",
+    "export{decode,warmup}from'./benchmarks/experiments/utf8-rival/sentinel-unroll.mjs'",
+    "utf8",
+  ),
+);
+sources.push(
+  build(
+    "utf8-final-symbol",
+    "export{decode,warmup}from'./benchmarks/experiments/utf8-rival/final-symbol.mjs'",
+    "utf8",
+  ),
+);
+sources.push(
+  build(
+    "utf8-pairs",
+    "export{decode,warmup}from'./benchmarks/experiments/utf8-rival/pairs.mjs'",
+    "utf8",
+  ),
+);
+sources.push(
+  build(
+    "utf8-word16",
+    "export{decode,warmup}from'./benchmarks/experiments/utf8-rival/word16.mjs'",
+    "utf8",
+  ),
+);
+sources.push(
+  build(
+    "utf8-branchless",
+    "export{decode,warmup}from'./benchmarks/experiments/utf8-rival/branchless.mjs'",
+    "utf8",
+  ),
+);
 const selected = process.env.RIVAL_VARIANTS?.split(",");
+if (process.env.RIVAL_EXTRA_MANIFEST) {
+  for (const row of JSON.parse(
+    fs.readFileSync(path.resolve(root, process.env.RIVAL_EXTRA_MANIFEST)),
+  )) {
+    const code = fs.readFileSync(path.resolve(root, row.file), "utf8");
+    sources.push({ ...row, code, sha256: sha(code) });
+  }
+}
 if (selected) {
   for (let i = sources.length - 1; i >= 0; i--)
     if (!selected.includes(sources[i].name)) sources.splice(i, 1);
@@ -124,10 +193,9 @@ const manifest = require("../generated/utf8-rival/manifest.json"),
   const records = [],
     checks = [];
   try {
-    for (const executablePath of [
-      "/usr/bin/chromium",
-      path.join(root, ".tools/chromium109/chromium"),
-    ])
+    for (const executablePath of process.env.RIVAL_BROWSER === "current"
+      ? ["/usr/bin/chromium"]
+      : ["/usr/bin/chromium", path.join(root, ".tools/chromium109/chromium")])
       for (let run = 1; run <= runs; run++) {
         const ordered = sources.map(
             (_, i) => sources[(i + run - 1) % sources.length],
@@ -138,6 +206,12 @@ const manifest = require("../generated/utf8-rival/manifest.json"),
             args: ["--no-sandbox"],
           });
         try {
+          if (executablePath === "/usr/bin/chromium")
+            assert.equal(
+              browser.version(),
+              require("./chromium.json").version,
+              "Recorded Chromium version changed",
+            );
           const p = await browser.newPage();
           await p.goto("http://127.0.0.1:" + server.address().port);
           const result = await p.evaluate(

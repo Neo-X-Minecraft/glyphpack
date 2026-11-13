@@ -1,7 +1,7 @@
 /* 0BSD, NeoX. Fixed widths 7/15 share the same bit phase modulo 8. Every
  * eight symbols end byte-aligned, so all shifts in the bulk loop are constant.
  * This intentional unrolling is independent of payload length or CPU guessing. */
-import { prepare, finish, warmup } from "../../../src/utf8-raw/model.mjs";
+import { prepare, finish, warmup } from "./model.mjs";
 export { warmup };
 export function decode(text) {
   const { table, mask, length, start } = prepare(text),

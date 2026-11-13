@@ -1,5 +1,5 @@
 /* 0BSD, NeoX. Constant-width scalar candidate, same packet and validation. */
-import { prepare, finish, warmup } from "../../../src/utf8-raw/model.mjs";
+import { prepare, finish, warmup } from "./model.mjs";
 export { warmup };
 export function decode(text) {
   const { table, mask, length, start } = prepare(text),
