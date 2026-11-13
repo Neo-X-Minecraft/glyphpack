@@ -1,11 +1,15 @@
 # UTF-8 backend selection for Chromium 156
 
-The delivered `utf8-raw` module contains **one JavaScript decoder**, selected on
+This backend campaign predates the five-codec integration. Its frozen 2,319-byte
+selected decoder and measurements are retained for comparison. Current sizes
+and matched complete-call timings are in [integration.md](integration.md).
+
+The `utf8-raw` module contains **one JavaScript decoder**, selected on
 Chromium 156.0.8078.79. Wasm is used only if it makes the complete decode faster;
 none of the successful Wasm/hybrid candidates won here. Chrome 109 remains a
 compatibility requirement, without influencing the performance choice.
 
-The current [matched report](../benchmarks/results/utf8-rival/report.md) records
+The earlier [matched report](../benchmarks/results/utf8-rival/report.md) records
 3.305 ms for random 1 MiB input, versus 3.608 ms for the previous exact module,
 3.490 ms for the tuned Base122 loop, 5.995 ms for the upstream-derived reference,
 and 4.263 ms for the fastest Wasm finalist. That is 8.4% less decode time than
@@ -42,11 +46,11 @@ DataView 16-bit stores did not provide a better overall result.
 
 The Rust prototype builds 21 scalar configurations:
 
-| Input staging | Kernel / copying variants | Count |
-| --- | --- | ---: |
-| Native `TextEncoder.encodeInto` UTF-8 | Scalar, fixed-phase unroll, ASCII block, branch-free unroll, high queue | 5 |
-| Copied UTF-16 | Scalar, unroll, branch-free, high queue; each with scalar, eight-unit or paired-32-bit copying | 12 |
-| JS lookup into 16-bit tokens | Scalar, unroll, branch-free, high queue | 4 |
+| Input staging                         | Kernel / copying variants                                                                      | Count |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------- | ----: |
+| Native `TextEncoder.encodeInto` UTF-8 | Scalar, fixed-phase unroll, ASCII block, branch-free unroll, high queue                        |     5 |
+| Copied UTF-16                         | Scalar, unroll, branch-free, high queue; each with scalar, eight-unit or paired-32-bit copying |    12 |
+| JS lookup into 16-bit tokens          | Scalar, unroll, branch-free, high queue                                                        |     4 |
 
 Each module imports fresh unshared memory, creates its lookup once, reuses
 geometrically sized arenas and returns an exact owned copy. UTF-16 copying and

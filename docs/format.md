@@ -5,13 +5,17 @@
 The first code unit is a separate codec indicator, outside the older pair
 alphabet. It is included in `encode_units`, `encode_text`, and binary outputs.
 
-| Code unit | Codec | Source representation |
-| --- | --- | --- |
-| U+0009 (TAB) | `pair` | UTF-16LE; two source bytes |
-| U+000A (LF) | `ans` | UTF-16LE; two source bytes |
-| U+000C (FF) | `windows` | Windows-1252; one source byte |
+| Code unit    | Codec          | Source representation                   |
+| ------------ | -------------- | --------------------------------------- |
+| U+0009 (TAB) | `pair`         | UTF-16LE; two source bytes              |
+| U+000A (LF)  | `ans`          | UTF-16LE; two source bytes              |
+| U+000B (VT)  | `utf8`         | UTF-8, fast fixed-phase symbols         |
+| U+000E (SO)  | `utf8-compact` | UTF-8, enumerative/guarded fast symbols |
+| U+000C (FF)  | `windows`      | Windows-1252; one source byte           |
 
-These survive inert script raw-text parsing in Chrome 109 and current Chromium.
+The original three indicators survive inert script raw-text parsing. UTF-8
+uses the specialized safe embedding described in [integration.md](integration.md).
+All five are tested in Chrome 109 and current Chromium.
 Read `textContent` without trimming. Each builder selects any nonempty subset;
 an omitted codec always throws `Unsupported payload codec`, independently of
 optional format/integrity checks. Dispatch occurs once per payload, before the
@@ -45,17 +49,17 @@ The trailer is absent for `none`, four little-endian bytes for XXH32 (`fast`),
 and 32 BLAKE3 bytes for `secure`. The digest covers the original unmasked bytes.
 The mask applies to the entire stored buffer, including the digest.
 
-## Header
+## Pair/ANS header
 
 Header entries below are alphabet indices, not Unicode code points. Let `N` be
 the stored byte count, `q = floor(N / R)`, `r = N % R`, and
 `settings = mask | (kind << 8)`, with kinds 0, 1 and 2 for none, XXH32 and BLAKE3.
 Kind 3 is reserved.
 
-| Condition | Header indices |
-| --- | --- |
+| Condition    | Header indices             |
+| ------------ | -------------------------- |
 | `N < 32 * R` | `[settings + 1024 * q, r]` |
-| Otherwise | `[32768 + settings, r, q]` |
+| Otherwise    | `[32768 + settings, r, q]` |
 
 `N` must be smaller than `R * R`. The stored length includes the trailer.
 The body immediately follows the two- or three-symbol header. The preceding
@@ -92,21 +96,25 @@ a valid digest says nothing about the spelling of that encoded string.
 ## UTF-16LE HTML
 
 The encoder's `dense16()` output is always UTF-16LE, with no BOM. `encode_bytes()`
-and default CLI output use UTF-16LE for pair/ANS and Windows-1252 for Windows.
+and default CLI output use UTF-16LE for pair/ANS, Windows-1252 for Windows,
+and UTF-8 for the two UTF-8 codecs.
 `encode_text()`/`encode --text` returns a UTF-8 host string representing the
 same symbols. `utf16_document()` writes the whole document as UTF-16LE and prefixes
 `FF FE`. The browser consumes that BOM before HTML tokenization.
 
-Payloads exclude `<`, so they cannot introduce a script-end delimiter. Put them
+Pair/ANS/Windows payloads exclude `<`, so they cannot introduce a script-end delimiter. Put them
 in inert script data blocks and read `textContent` verbatim. Do not entity-escape,
 normalize Unicode, trim whitespace, or transcode UTF-16LE bytes as UTF-8.
 
 ```html
-<script id="payload" type="application/octet-stream">ENCODED_TEXT</script>
+<script id="payload" type="application/octet-stream">
+  ENCODED_TEXT
+</script>
 ```
 
 The generic injector validates attribute names, escapes attribute values, and
-rejects payload text containing `<`. Marker replacement scans the original
+rejects `<` in pair/ANS/Windows payload text. The new UTF-8 codecs use
+RCDATA escaping or reversible script guards instead. Marker replacement scans the original
 template once, prefers longer overlapping markers, and never rescans insertions.
 
 ## UTF-16 ANS
@@ -151,9 +159,16 @@ outside it must be expressed as HTML entities or JS/CSS escapes. The injector
 rejects unrepresentable template characters instead of silently losing them.
 `--text` emits UTF-8 logical text, not a Windows-1252 document.
 
-One file has one physical encoding. Mixed builds can decode all three logical
+One file has one physical encoding. Mixed builds can decode all five logical
 strings, including Windows payloads serialized in a UTF-16 container, but the
 single-byte source-size benefit applies only to Windows-1252 containers.
+
+## UTF-8 transports
+
+Both new transports use the same stored bytes, XOR masking and integrity
+trailer semantics. U+000B/U+000E is followed by an ASCII integrity digit and
+an inner UTF-8-specific header. They do not reuse the pair/ANS length header.
+See [the full framing, compact model and embedding specification](integration.md).
 
 ## Explicit legacy mode
 
@@ -173,7 +188,7 @@ import completes, the public decode function remains synchronous.
 All modules export `warmup(codecs?, memoryHeavy?): void`. The first parameter
 is a readonly array of codec names, narrowed to those compiled in the build;
 the second is an optional readonly boolean array of matching length. With no
-arguments, select exactly the first available codec in pair > ANS > Windows
+arguments, select exactly the first available codec in pair > ANS > Windows > UTF-8 > compact UTF-8
 order, always with memory optimization false. Omitted flags default to false
 for every supplied codec, regardless of the build's decoding memory policy.
 Empty arrays do nothing; duplicates are idempotent. Unavailable or unknown
@@ -182,15 +197,14 @@ argument that is not an array throws `TypeError('Expected an array of payload co
 
 Memory flags must be booleans, and the lists must have equal lengths. A true
 pair flag requests its optional high-digit table; if that strategy was omitted,
-throw `Unsupported memory optimization option`. ANS and Windows have no such
+throw `Unsupported memory optimization option`. The other codecs have no such
 strategy and ignore their flags. All list validation precedes warming.
 
 The raw Wasm `warmup(mask: u32, heavy: u32) -> status` export uses bits pair=1,
 ANS=2, Windows=4 in the first mask. The heavy mask accepts only the pair bit,
 which must also be selected and built with heavy support. Validate both masks
 before changing state. Status 9 rejects unavailable codec bits; status 10 rejects
-invalid/unavailable memory bits; status 8 reports allocation failure. Success is
-0. Both masks zero is a no-op. Pair/ANS share the main lookup.
+invalid/unavailable memory bits; status 8 reports allocation failure. Success is 0. Both masks zero is a no-op. Pair/ANS share the main lookup.
 This does not change input/output pointers or
 lengths. Repeated warming never allocates the same cache twice.
 

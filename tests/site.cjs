@@ -106,24 +106,27 @@ async function main() {
     }
     const text = "Local round trip: 世界 🌍\n</script><h1>literal text</h1>\n";
     // Cover every selectable format / integrity / lookup combination.
-    for (const mode of ["none", "fast", "secure"])
-      for (const format of [false, true])
-        for (const memory of [false, true]) {
-          await page.locator("#input").fill(text);
-          await page.locator("#integrity").selectOption(mode);
-          await idle();
-          await page.locator("#format").setChecked(format);
-          await page.locator("#memory").setChecked(memory);
-          await page.locator("#encode").click();
-          await idle();
-          await page.locator("#decode").click();
-          await idle();
-          assert.equal(await page.locator("#output").textContent(), text);
-          assert.equal(
-            await page.locator("#status").evaluate((el) => el.className),
-            "",
-          );
-        }
+    for (const packing of ["pair", "ans", "windows", "utf8", "utf8-compact"]) {
+      await page.locator("#packing").selectOption(packing);
+      for (const mode of ["none", "fast", "secure"])
+        for (const format of [false, true])
+          for (const memory of [false, true]) {
+            await page.locator("#input").fill(text);
+            await page.locator("#integrity").selectOption(mode);
+            await idle();
+            await page.locator("#format").setChecked(format);
+            await page.locator("#memory").setChecked(memory);
+            await page.locator("#encode").click();
+            await idle();
+            await page.locator("#decode").click();
+            await idle();
+            assert.equal(await page.locator("#output").textContent(), text);
+            assert.equal(
+              await page.locator("#status").evaluate((el) => el.className),
+              "",
+            );
+          }
+    }
     async function download(id) {
       const event = page.waitForEvent("download");
       await page.locator("#" + id).click();
@@ -133,7 +136,7 @@ async function main() {
       await idle();
       return file;
     }
-    // Exact UTF-16LE file round trip, including the no-BOM export.
+    // Exact native UTF-8 compact file round trip, including the no-BOM export.
     const packet = await download("download-payload");
     await page.locator("#payload-file").setInputFiles(packet);
     await idle();
@@ -168,16 +171,17 @@ async function main() {
     assert.equal(await offline.locator("pre").textContent(), text);
     await offline.close();
     // Binary files and browser-native gzip preserve every byte.
+    // UTF-8 modes use their own search and intentionally disable #effort.
+    assert.equal(await page.locator("#effort").isDisabled(), true);
+    await page.locator("#packing").selectOption("pair");
     const binary = Buffer.from(
       Array.from({ length: 65537 }, (_, i) => i & 255),
     );
-    await page
-      .locator("#file")
-      .setInputFiles({
-        name: "fixture.bin",
-        mimeType: "application/octet-stream",
-        buffer: binary,
-      });
+    await page.locator("#file").setInputFiles({
+      name: "fixture.bin",
+      mimeType: "application/octet-stream",
+      buffer: binary,
+    });
     await page.locator("#encode").click();
     await idle();
     assert.deepEqual(
@@ -230,7 +234,7 @@ async function main() {
       JSON.stringify({
         browser: await browser.version(),
         site: base,
-        combinations: 12,
+        combinations: 60,
         examples: 6,
         checks: 4,
         offline: true,

@@ -3,7 +3,8 @@
 Dense binary payloads for standalone HTML, by **NeoX**, under **0BSD**.
 Rust handles encoding, adaptive XOR mask selection, HTML insertion, builds and
 benchmark preparation. The dense UTF-16 codecs use a specialized Rust/Wasm
-decoder; the separate raw UTF-8 transport uses a small JavaScript decoder.
+decoder; the two UTF-8 codecs use JavaScript unpacking and share the same
+Rust/Wasm verification routines.
 
 The pair/ANS/Windows modules embed their Wasm as **native gzip level 9 + base64**.
 The browser's `DecompressionStream('gzip')` inflates it once during module import.
@@ -16,22 +17,18 @@ is needed. Standalone exports are tested in Chrome 109 and Chromium 156.
 
 [**Open the live workbench →**](https://neo-x-minecraft.github.io/glyphpack/) · [performance measurements](docs/performance.md)
 
-The current default modules are 9,624 B (pair), 10,528 B (recommended pair+ANS),
-and 15,980 B (complete full). `build --compact-hash` produces smaller BLAKE3 code
-with identical verification, at a throughput tradeoff on some inputs.
-[Current size and initialization measurements](docs/decoder-optimization.md).
+The full module now handles **five codecs**, BLAKE3/XXH32/no verification, both
+format policies and both pair lookup strategies. Defaults remain format checking
+on, BLAKE3 on, and heavy memory off. [Exact integration and current measurements](docs/integration.md).
 
-**For conventional UTF-8 HTML**, use [`glyphpack/utf8-raw`](docs/utf8-raw.md):
-13.56% expected random-data overhead versus Base122's 14.29%, a 2,319-byte plain
-JavaScript decoder, and direct offline `file://` support. On the measured 1 MiB
-random fixture its complete HTML is 5,578 bytes smaller than the smallest tested
-Base122 HTML. The current Chromium 156 comparison records 3.31 ms decoding versus
-3.49 ms for tuned Base122 and 4.26 ms for the fastest Wasm finalist. One selected
-JavaScript implementation ships; [the Wasm/hybrid search](docs/utf8-backends.md)
-keeps slower candidates out of the delivered module.
-[Repeated benchmarks and CSV](benchmarks/results/utf8-rival/report.md).
-It checks the encoding
-structure without a digest, like Base122; existing BLAKE3 defaults are unchanged.
+For ordinary **UTF-8 HTML**, choose `utf8` for speed or `utf8-compact` for
+size. Both use the established `binary()` API and verification options. Fast
+UTF-8 has 13.56% expected random-data overhead versus Base122's 14.29%; compact
+UTF-8 measured 11.77% on the new 1 MiB fixture, with much slower decoding.
+The separate [`glyphpack/utf8-raw`](docs/utf8-raw.md) entry remains a tiny,
+strict, digest-free decoder for the original bare `~u2` transport.
+[The JS/Wasm backend study](docs/utf8-backends.md) explains why UTF-8 unpacking
+uses JavaScript; hashes still use the shared Wasm implementation.
 Try the small [offline UTF-8 example](dist/utf8-raw-standalone.html).
 
 The earlier [UTF-8 transport experiment](docs/utf8-prefix.md) offers a small
@@ -50,7 +47,7 @@ uploaded.
 ## Use a ready-built module
 
 ```js
-import {binary} from './dist/full.min.mjs';
+import { binary } from "./dist/full.min.mjs";
 
 const bytes = binary(encodedText);
 ```
@@ -64,15 +61,15 @@ Every module exports synchronous `warmup(codecs?, memoryHeavy?)`. Both parameter
 are optional arrays, including in single-codec builds:
 
 ```js
-import {warmup} from './dist/full.min.mjs';
-warmup(); // First available codec: pair > ANS > Windows; memory always off.
-warmup(['ans', 'pair'], [true, false]); // Flags correspond by position.
-warmup(['pair'], [true]); // Requires a build containing the heavy strategy.
-warmup(['windows']); // Omitted flags are all false.
+import { warmup } from "./dist/full.min.mjs";
+warmup(); // First available codec: pair > ans > windows > utf8 > utf8-compact; memory off.
+warmup(["ans", "pair"], [true, false]); // Flags correspond by position.
+warmup(["pair"], [true]); // Requires a build containing the heavy strategy.
+warmup(["windows"]); // Omitted flags are all false.
 ```
 
 Warm-up prepares reusable lookup tables. Only pair uses the optional 256 KiB
-heavy table; flags for ANS and Windows are accepted and ignored. A true pair flag
+heavy table; flags for the other codecs are accepted and ignored. A true pair flag
 requires a build containing that strategy. Default warm-up always uses false,
 even in a build whose decoder uses heavy lookup exclusively. Warming does not
 change decode options or clear an already prepared cache.
@@ -83,33 +80,33 @@ any selected cache is initialized. Pair and ANS share their alphabet table.
 warm-up is optional. Warming preserves pending input and previous output; it
 does not reserve payload-sized arenas or promise a particular V8 optimization tier.
 
-The full module supports all three payload codecs and all twelve verification/
+The full module supports all five payload codecs and all twelve verification/
 memory combinations for each codec. The payload chooses its codec automatically:
 
 ```js
 binary(encodedText, {
   verifyFormat: true,
-  verifyData: 'secure', // 'secure', 'fast', 'none'; true/false aliases
-  memoryHeavy: false
+  verifyData: "secure", // 'secure', 'fast', 'none'; true/false aliases
+  memoryHeavy: false,
 });
 ```
 
-| Option | Meaning |
-| --- | --- |
-| `verifyFormat` | Check symbols, header rules, decoded coverage and padding |
-| `verifyData: 'secure'` | Require and verify BLAKE3-256 |
-| `verifyData: 'fast'` | Require and verify XXH32 |
-| `verifyData: 'none'` | Skip integrity verification |
-| `memoryHeavy` | Use a lazy, reusable 256 KiB high-digit lookup |
+| Option                 | Meaning                                                   |
+| ---------------------- | --------------------------------------------------------- |
+| `verifyFormat`         | Check symbols, header rules, decoded coverage and padding |
+| `verifyData: 'secure'` | Require and verify BLAKE3-256                             |
+| `verifyData: 'fast'`   | Require and verify XXH32                                  |
+| `verifyData: 'none'`   | Skip integrity verification                               |
+| `memoryHeavy`          | Use a lazy, reusable 256 KiB high-digit lookup            |
 
-The memory-heavy lookup applies to pair packing; ANS codecs do not use it.
+The memory-heavy lookup applies only to pair packing.
 
 ## Choose a packing
 
 Two recommended distributions keep format verification and BLAKE3 fixed on and
 omit the heavy lookup. `recommended.min.mjs` contains only pair (identical to
 `default.min.mjs`); `recommended-full.min.mjs` contains pair and ANS. The complete
-`full.min.mjs` retains all three codecs and all verification/memory choices.
+`full.min.mjs` retains all five codecs and all verification/memory choices.
 The npm paths are `glyphpack/recommended` and `glyphpack/recommended-full`.
 
 ```sh
@@ -119,11 +116,13 @@ glyphpack build --packing pair ans -o recommended-full.mjs
 glyphpack build --packing pair ans --memory-heavy off on -o recommended-adaptive.mjs
 ```
 
-| Packing | Storage | Recommended use |
-| --- | --- | --- |
-| `pair` (default) | UTF-16LE | Small payloads; lowest per-payload framing overhead |
-| `ans` | UTF-16LE | Larger payloads; denser packing with four ANS states |
-| `windows` | Windows-1252 | Highest source density when you control document encoding |
+| Packing          | Storage      | Recommended use                                             |
+| ---------------- | ------------ | ----------------------------------------------------------- |
+| `pair` (default) | UTF-16LE     | Small payloads; lowest per-payload framing overhead         |
+| `ans`            | UTF-16LE     | Larger payloads; denser packing with four ANS states        |
+| `windows`        | Windows-1252 | Highest source density when you control document encoding   |
+| `utf8`           | UTF-8        | Fast Base122 alternative with the same verification options |
+| `utf8-compact`   | UTF-8        | Denser enumerative packing; substantially slower            |
 
 Windows-1252 is a document encoding, supported on Chrome 109+ across operating
 systems. It is not a Windows requirement. It restricts the document shell to
@@ -136,7 +135,7 @@ any selected combination; omitted codecs throw `Unsupported payload codec`,
 including when both optional checks are disabled. Unmarked format-3 pair
 payloads remain readable in modern builds supporting `pair`.
 
-A single HTML file has one charset. A mixed build can decode all three logical
+A single HTML file has one charset. A mixed build can decode all five logical
 strings, but storing Windows payloads alongside pair/ANS payloads in UTF-16LE
 does not retain the Windows byte-density advantage. Never trim payload text.
 
@@ -227,7 +226,7 @@ glyphpack build --format on off --data fast none -o choices.mjs
 glyphpack build --packing pair ans -o mixed.mjs
 glyphpack build --packing windows -o windows.mjs
 
-# All three codecs and all 12 runtime combinations.
+# All five codecs and all 12 runtime combinations.
 glyphpack build --full -o full.mjs
 
 # Select one or both memory strategies independently.
@@ -244,7 +243,8 @@ are ES modules. Use an inline `<script type="module">` when embedding one in HTM
 are secure profiles for those individual codecs. `core.*` and `none.*` are identical
 minimal profiles. `fast-none.*`, `high-memory.*`, and `full.*` show other selections.
 Sizes, digests and embedded Wasm/gzip sizes are recorded in `dist/profiles.json`.
-Missing Wasm or `DecompressionStream` rejects module import with a clear error.
+Profiles containing Wasm require it and `DecompressionStream` during import.
+UTF-8-only builds with `--data none` omit both the kernel and its loader.
 
 ## HTML insertion
 

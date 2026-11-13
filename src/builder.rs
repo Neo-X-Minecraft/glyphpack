@@ -1,6 +1,6 @@
-//! Build a specialized Rust/Wasm decoder and an independent, self-contained ESM
-//! adapter. There is one production backend. Gzip/base64 loading happens once at
-//! module evaluation; binary() remains synchronous after import resolves.
+//! Specialize codec and verification choices into one self-contained ESM.
+//! JS handles UTF-8 unpacking; Rust/Wasm handles pair/ANS/Windows and hashes.
+//! Required Wasm loads once via gzip/base64; binary() is then synchronous.
 use crate::{
     encoder::Integrity, hash::blake3, packing::Packing, tooling::fixtures::hex, transport,
 };
@@ -13,6 +13,12 @@ use std::{
 };
 
 const FILES: &[(&str, &str)] = &[
+    ("utf8.js", include_str!("decoder/utf8.js")),
+    ("stored.js", include_str!("decoder/stored.js")),
+    ("utf8-compact.js", include_str!("decoder/utf8-compact.js")),
+    ("compact-core.mjs", include_str!("utf8-compact/decoder.mjs")),
+    ("utf8-model.mjs", include_str!("utf8-raw/model.mjs")),
+    ("utf8-unpack.mjs", include_str!("utf8-raw/unpack.mjs")),
     ("wasm-runtime.js", include_str!("decoder/wasm-runtime.js")),
     ("loader.js", include_str!("decoder/loader.js")),
     ("options.js", include_str!("decoder/options.js")),
@@ -60,7 +66,13 @@ impl BuildOptions {
     }
     pub fn full() -> Self {
         Self {
-            packings: vec![Packing::Pair, Packing::Ans, Packing::Windows],
+            packings: vec![
+                Packing::Pair,
+                Packing::Ans,
+                Packing::Windows,
+                Packing::Utf8,
+                Packing::Utf8Compact,
+            ],
             formats: vec![false, true],
             data: vec![Integrity::None, Integrity::Fast, Integrity::Secure],
             memory: vec![false, true],
@@ -130,10 +142,14 @@ fn features(options: &BuildOptions) -> Vec<&'static str> {
     let mut out = options
         .packings
         .iter()
-        .map(|p| match p {
-            Packing::Pair => "pair",
-            Packing::Ans => "ans",
-            Packing::Windows => "windows",
+        .filter_map(|p| match p {
+            Packing::Pair => Some("pair"),
+            Packing::Ans => Some("ans"),
+            Packing::Windows => Some("windows"),
+            Packing::Utf8 | Packing::Utf8Compact if options.data != [Integrity::None] => {
+                Some("utf8")
+            }
+            Packing::Utf8 | Packing::Utf8Compact => None,
         })
         .collect::<Vec<_>>();
     if options.compact_hash {
@@ -155,6 +171,8 @@ fn features(options: &BuildOptions) -> Vec<&'static str> {
     if options.legacy {
         out.push("legacy");
     }
+    out.sort_unstable();
+    out.dedup();
     out
 }
 pub fn profile_key(options: &BuildOptions) -> String {
@@ -173,6 +191,8 @@ pub fn profile_key(options: &BuildOptions) -> String {
                 Packing::Pair => 'p',
                 Packing::Ans => 'a',
                 Packing::Windows => 'w',
+                Packing::Utf8 => 'u',
+                Packing::Utf8Compact => 'c',
             })
             .collect::<String>(),
         flags(&options.formats),
@@ -198,7 +218,17 @@ fn version(executable: &Path) -> Result<Vec<u8>, String> {
 /// format checks and heavy strategies; a cached optimized artifact is reused
 /// between readable/minified adapters and repeated builds of the same profile.
 pub fn build_wasm(options: &BuildOptions) -> Result<PathBuf, String> {
-    let options = canonical(options)?;
+    let mut options = canonical(options)?;
+    if options.packings.iter().all(|p| p.is_utf8()) && options.data == [Integrity::None] {
+        return Err("This profile needs no Wasm kernel".into());
+    }
+    // Both JS codecs share one hash-only ABI. Cache by native capabilities,
+    // rather than recompiling identical Wasm for every JS codec subset.
+    let js_hash = options.packings.iter().any(|p| p.is_utf8()) && options.data != [Integrity::None];
+    options.packings.retain(|p| !p.is_utf8());
+    if js_hash {
+        options.packings.push(Packing::Utf8);
+    }
     let root = crate::project::root()?;
     let key = profile_key(&options);
     let folder = root.join("generated/wasm/profiles");
@@ -350,18 +380,40 @@ impl Drop for Scratch {
 }
 
 pub fn build_decoder(options: &BuildOptions) -> Result<String, String> {
-    let wasm = io(fs::read(build_wasm(options)?))?;
-    build_adapter(options, &wasm)
+    let options = canonical(options)?;
+    if options.packings.iter().all(|p| p.is_utf8()) && options.data == [Integrity::None] {
+        return build_adapter(&options, &[]);
+    }
+    let wasm = io(fs::read(build_wasm(&options)?))?;
+    build_adapter(&options, &wasm)
 }
 
 /// Bundle a matching kernel into an independent ESM. Separating assembly from
 /// compilation lets experiments compare kernels through the identical adapter.
 pub fn build_adapter(options: &BuildOptions, wasm: &[u8]) -> Result<String, String> {
     let options = canonical(options)?;
-    let payload = transport::base64(&transport::gzip9(wasm)?);
-    let mut imports = String::from(
+    let has_utf8 = options.packings.contains(&Packing::Utf8);
+    let has_wasm =
+        options.packings.iter().any(|p| !p.is_utf8()) || options.data != [Integrity::None];
+    let has_compact = options.packings.contains(&Packing::Utf8Compact);
+    let payload = if has_wasm {
+        transport::base64(&transport::gzip9(wasm)?)
+    } else {
+        String::new()
+    };
+    let mut imports = if has_wasm {
+        String::from(
         "import {runWasm,warmWasm,failure} from './wasm-runtime.js';\nimport {loadWasm} from './loader.js';\n",
-    );
+    )
+    } else {
+        String::from("import{failure}from './wasm-runtime.js';\n")
+    };
+    if has_utf8 {
+        imports.push_str("import{runUtf8,warmUtf8}from './utf8.js';\n");
+    }
+    if has_compact {
+        imports.push_str("import{runCompact,warmCompact}from './utf8-compact.js';\n");
+    }
     let mut selectors = Vec::new();
     let mut statements = Vec::new();
     let format = if options.formats.len() > 1 {
@@ -403,7 +455,7 @@ pub fn build_adapter(options: &BuildOptions, wasm: &[u8]) -> Result<String, Stri
         "text,options={}"
     };
     // Generate only available names. The canonical ordering gives a no-argument
-    // priority of pair > ANS > Windows; warm-up never enables heavy implicitly.
+    // priority pair > ANS > Windows > UTF-8 > compact UTF-8; never heavy implicitly.
     let cases = options
         .packings
         .iter()
@@ -415,13 +467,79 @@ pub fn build_adapter(options: &BuildOptions, wasm: &[u8]) -> Result<String, Stri
         ""
     };
     let default_codec = options.packings[0].name();
-    let warmup=format!("export function warmup(codecs,memoryHeavy){{\nif(codecs===undefined)codecs=[{default_codec:?}];\nif(!Array.isArray(codecs))throw TypeError('Expected an array of payload codecs');\nif(memoryHeavy!==undefined){{if(!Array.isArray(memoryHeavy))throw TypeError('Expected an array of memory flags');if(memoryHeavy.length!==codecs.length)throw Error('Warm-up lists must have the same length');}}\nlet mask=0,heavy=0;\nfor(let i=0;i<codecs.length;i++){{const codec=codecs[i],bit={cases}0;if(!bit)throw failure(9);\nconst flag=memoryHeavy===undefined?false:memoryHeavy[i];\nif(typeof flag!=='boolean')throw TypeError('Expected boolean memory flags');\nmask|=bit;{heavy}}}\nwarmWasm(api,mask,heavy);\n}}\n");
-    let entry=format!("{imports}\nconst api=await loadWasm({payload:?});\n{warmup}export function binary({parameters}){{\n{}\nreturn runWasm(api,text,{format},{data},{memory});\n}}\n",statements.join("\n"));
+    let warm_dispatch = format!(
+        "{}{}",
+        if has_wasm {
+            "warmWasm(api,mask&7,heavy);"
+        } else {
+            ""
+        },
+        if has_utf8 {
+            "if(mask&8)warmUtf8();"
+        } else {
+            ""
+        }
+    );
+    let warm_dispatch = format!(
+        "{}{}",
+        warm_dispatch,
+        if has_compact {
+            "if(mask&16)warmCompact();"
+        } else {
+            ""
+        }
+    );
+    let warmup=format!("export function warmup(codecs,memoryHeavy){{\nif(codecs===undefined)codecs=[{default_codec:?}];\nif(!Array.isArray(codecs))throw TypeError('Expected an array of payload codecs');\nif(memoryHeavy!==undefined){{if(!Array.isArray(memoryHeavy))throw TypeError('Expected an array of memory flags');if(memoryHeavy.length!==codecs.length)throw Error('Warm-up lists must have the same length');}}\nlet mask=0,heavy=0;\nfor(let i=0;i<codecs.length;i++){{const codec=codecs[i],bit={cases}0;if(!bit)throw failure(9);\nconst flag=memoryHeavy===undefined?false:memoryHeavy[i];\nif(typeof flag!=='boolean')throw TypeError('Expected boolean memory flags');\nmask|=bit;{heavy}}}\n{warm_dispatch}\n}}\n");
+    let initialization = if has_wasm {
+        format!("const api=await loadWasm({payload:?});")
+    } else {
+        "const api=null;".into()
+    };
+    let dispatch = if has_utf8 {
+        format!("if(text.charCodeAt(0)===11)return runUtf8(api,text,{format},{data});\n")
+    } else {
+        "if(text.charCodeAt(0)===11)throw failure(9);\n".into()
+    };
+    let dispatch = format!(
+        "{}{}",
+        dispatch,
+        if has_compact {
+            format!("if(text.charCodeAt(0)===14)return runCompact(api,text,{format},{data});\n")
+        } else {
+            "if(text.charCodeAt(0)===14)throw failure(9);\n".into()
+        }
+    );
+    let rest = if options.packings.iter().any(|p| !p.is_utf8()) {
+        format!("return runWasm(api,text,{format},{data},{memory});")
+    } else {
+        "throw failure(9);".into()
+    };
+    let mut raw_exports = String::new();
+    if options.formats.contains(&true) && options.data.contains(&Integrity::None) {
+        if has_utf8 {
+            raw_exports.push_str(
+                "export function decodeRawUtf8(text){return runUtf8(api,String.fromCharCode(11,48)+text,true,0);}\n",
+            );
+        }
+        if has_compact {
+            raw_exports.push_str("export function decodeRawUtf8Compact(text){return runCompact(api,String.fromCharCode(14,48)+text,true,0);}\n");
+        }
+    }
+    let entry=format!("{imports}\n{initialization}\n{warmup}{raw_exports}export function binary({parameters}){{\n{}\nif(text.length<2)throw failure(2);\n{dispatch}{rest}\n}}\n",statements.join("\n"));
     let scratch = Scratch::new()?;
     for &(name, contents) in FILES {
+        let contents = contents.replace("\"./model.mjs\"", "\"./utf8-model.mjs\"");
         io(fs::write(scratch.0.join(name), contents))?;
     }
     let defines = [
+        (
+            "UTF8_FORMAT_RUNTIME",
+            (options.formats.len() > 1).to_string(),
+        ),
+        (
+            "UTF8_VERIFY_FORMAT",
+            options.formats.contains(&true).to_string(),
+        ),
         (
             "PAYLOAD_ALLOW_PAIR",
             options.packings.contains(&Packing::Pair).to_string(),
@@ -532,5 +650,15 @@ pub fn type_declaration(options: &BuildOptions) -> Result<String, String> {
         .collect::<Vec<_>>()
         .join(" | ");
     declaration.push_str(&format!("export declare function warmup(codecs?: readonly ({names})[], memoryHeavy?: readonly boolean[]): void;\n"));
+    if options.formats.contains(&true) && options.data.contains(&Integrity::None) {
+        for (p, name) in [
+            (Packing::Utf8, "decodeRawUtf8"),
+            (Packing::Utf8Compact, "decodeRawUtf8Compact"),
+        ] {
+            if options.packings.contains(&p) {
+                declaration.push_str(&format!("/** Strict raw transport, without integrity verification. */\nexport declare function {name}(text: string): Uint8Array;\n"));
+            }
+        }
+    }
     Ok(declaration)
 }

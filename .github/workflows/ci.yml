@@ -30,7 +30,7 @@ jobs:
       - name: Lint SIMD implementation
         env:
           CARGO_ENCODED_RUSTFLAGS: -Ctarget-feature=+simd128
-        run: cargo clippy --locked --target wasm32v1-none -p glyphpack-decoder-wasm --no-default-features --features full -- -D warnings
+        run: cargo clippy --locked --target wasm32v1-none -p glyphpack-decoder-wasm --no-default-features --features full,utf8 -- -D warnings
       - name: Lint browser encoder
         run: cargo clippy --locked --target wasm32-unknown-unknown -p glyphpack-encoder-wasm --all-features -- -D warnings
       - run: npm test
@@ -49,6 +49,10 @@ jobs:
           browser=$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')
           version=$("$browser" --version | sed -E 's/.* ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
           CHROMIUM_BIN="$browser" CHROMIUM_VERSION="$version" target/release/glyphpack bench history --quick
+      - name: Five-codec subsets, verification and offline HTML
+        run: |
+          browser=$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')
+          CHROMIUM_BIN="$browser" npm run test:integration
       - name: Raw UTF-8 native vectors and offline HTML
         run: |
           cargo run --release --locked --example utf8_raw_fixtures

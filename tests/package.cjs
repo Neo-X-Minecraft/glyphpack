@@ -62,11 +62,11 @@ for(const name of ['glyphpack/core','glyphpack/none']){const m=await import(name
 const {binary,warmup}=await import('glyphpack/full');warmup(['pair','ans','windows']);warmup([]);let cases=4;
 for(const verifyData of ['none','fast','secure'])for(const verifyFormat of [false,true])for(const memoryHeavy of [false,true]){check(binary(fixture.packets[verifyData],{verifyData,verifyFormat,memoryHeavy}));cases++;}
 const {binary:fast,warmup:warmFast}=await import('glyphpack/fast-none');warmFast();for(const verifyData of ['none','fast'])for(const verifyFormat of [false,true]){check(fast(fixture.packets[verifyData],{verifyData,verifyFormat}));cases++;}
-for(const packing of ['pair','ans','windows']){
+for(const packing of ['pair','ans','windows','utf8','utf8-compact']){
  const name=packing==='pair'?'glyphpack':'glyphpack/'+packing, mod=await import(name), selected=mod.binary;
  assert.equal(mod.warmup.length,2);assert.equal(mod.warmup(),undefined);mod.warmup([packing],[false]);
  check(selected(fixture.tagged[packing].secure));cases++;
- for(const other of ['pair','ans','windows'])if(other!==packing){assert.throws(()=>selected(fixture.tagged[other].secure),/Unsupported payload codec/);cases++;}
+ for(const other of ['pair','ans','windows','utf8','utf8-compact'])if(other!==packing){assert.throws(()=>selected(fixture.tagged[other].secure),/Unsupported payload codec/);cases++;}
  for(const verifyData of ['none','fast','secure'])for(const verifyFormat of [false,true])for(const memoryHeavy of [false,true]){check(binary(fixture.tagged[packing][verifyData],{verifyData,verifyFormat,memoryHeavy}));cases++;}
 }
 for(const name of ['glyphpack/recommended','glyphpack/recommended-full']){
@@ -82,7 +82,7 @@ const raw=await import('glyphpack/utf8-raw');raw.warmup();raw.warmup();
 assert.deepEqual(raw.decode('~u2AAA'),new Uint8Array(0));
 assert.deepEqual(raw.decode('~u2AABA@'),new Uint8Array([131]));
 assert.throws(()=>raw.decode('~u2AAggggB'),/Invalid payload length/);cases+=3;
-console.log(JSON.stringify({pass:true,node:process.version,cases,exports:11}));`;
+console.log(JSON.stringify({pass:true,node:process.version,cases,exports:13}));`;
     await fs.writeFile(path.join(temp, "consumer.mjs"), script);
     process.stdout.write(
       execFileSync(process.execPath, ["consumer.mjs"], {

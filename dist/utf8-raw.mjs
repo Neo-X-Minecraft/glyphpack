@@ -16,12 +16,12 @@ function warmup() {
       table[c] = forbidden[ordinal >>> 8] << 8 | ordinal & 255;
   }
 }
-function prepare(text) {
-  if (text.length < 6 || text.slice(0, 3) !== "~u2")
+function prepare(text, offset = 0) {
+  if (text.length - offset < 6 || text.slice(offset, offset + 3) !== "~u2")
     throw Error("Invalid UTF-8 header");
-  const a = digits.indexOf(text[3]), b = digits.indexOf(text[4]);
+  const a = digits.indexOf(text[offset + 3]), b = digits.indexOf(text[offset + 4]);
   if (a < 0 || b < 0 || b > 3) throw Error("Invalid UTF-8 header");
-  let start = 5, length = 0, power = 1, digit;
+  let start = offset + 5, length = 0, power = 1, digit;
   do {
     if (start >= text.length || power > 1073741824)
       throw Error("Invalid payload length");
@@ -44,62 +44,71 @@ function finish(valid, at, bits, length, last, width, body) {
     throw Error("Invalid payload padding");
 }
 
-// src/utf8-raw/decoder.mjs
-function decode(text) {
-  const { table: table2, mask, length, start } = prepare(text), out = new Uint8Array(length), end = text.length;
+// src/utf8-raw/unpack.mjs
+function unpack(text, { table: table2, mask, length, start }, verifyFormat) {
+  const check = false ? true : false ? verifyFormat : true;
+  const out = new Uint8Array(length), end = text.length;
   let pos = start, at = 0, carry = 0, valid = 0, c = 0, entry = 0, data = 0;
   while (pos + 8 <= end && at + 15 <= length) {
     c = text.charCodeAt(pos++);
     entry = table2[c] ?? -1;
-    valid |= entry;
+    if (check)
+      valid |= entry;
     data = entry;
     if (c >= 128) out[at++] = data >>> 7 ^ mask;
     carry = data & 127;
     c = text.charCodeAt(pos++);
     entry = table2[c] ?? -1;
-    valid |= entry;
+    if (check)
+      valid |= entry;
     data = entry;
     out[at++] = (carry << 1 | data >>> 14) ^ mask;
     if (c >= 128) out[at++] = data >>> 6 ^ mask;
     carry = data & 63;
     c = text.charCodeAt(pos++);
     entry = table2[c] ?? -1;
-    valid |= entry;
+    if (check)
+      valid |= entry;
     data = entry;
     out[at++] = (carry << 2 | data >>> 13) ^ mask;
     if (c >= 128) out[at++] = data >>> 5 ^ mask;
     carry = data & 31;
     c = text.charCodeAt(pos++);
     entry = table2[c] ?? -1;
-    valid |= entry;
+    if (check)
+      valid |= entry;
     data = entry;
     out[at++] = (carry << 3 | data >>> 12) ^ mask;
     if (c >= 128) out[at++] = data >>> 4 ^ mask;
     carry = data & 15;
     c = text.charCodeAt(pos++);
     entry = table2[c] ?? -1;
-    valid |= entry;
+    if (check)
+      valid |= entry;
     data = entry;
     out[at++] = (carry << 4 | data >>> 11) ^ mask;
     if (c >= 128) out[at++] = data >>> 3 ^ mask;
     carry = data & 7;
     c = text.charCodeAt(pos++);
     entry = table2[c] ?? -1;
-    valid |= entry;
+    if (check)
+      valid |= entry;
     data = entry;
     out[at++] = (carry << 5 | data >>> 10) ^ mask;
     if (c >= 128) out[at++] = data >>> 2 ^ mask;
     carry = data & 3;
     c = text.charCodeAt(pos++);
     entry = table2[c] ?? -1;
-    valid |= entry;
+    if (check)
+      valid |= entry;
     data = entry;
     out[at++] = (carry << 6 | data >>> 9) ^ mask;
     if (c >= 128) out[at++] = data >>> 1 ^ mask;
     carry = data & 1;
     c = text.charCodeAt(pos++);
     entry = table2[c] ?? -1;
-    valid |= entry;
+    if (check)
+      valid |= entry;
     data = entry;
     out[at++] = (carry << 7 | data >>> 8) ^ mask;
     if (c >= 128) out[at++] = data ^ mask;
@@ -108,7 +117,8 @@ function decode(text) {
   while (pos < end) {
     c = text.charCodeAt(pos++);
     entry = table2[c] ?? -1;
-    valid |= entry;
+    if (check)
+      valid |= entry;
     data = entry;
     if (step) {
       if (at < length)
@@ -122,16 +132,24 @@ function decode(text) {
     carry = data & (1 << 7 - step) - 1;
     step = step + 1 & 7;
   }
-  finish(
-    valid,
-    at,
-    -(end - start) & 7,
-    length,
-    data,
-    c < 128 ? 7 : 15,
-    end > start
-  );
+  if (check)
+    finish(
+      valid,
+      at,
+      -(end - start) & 7,
+      length,
+      data,
+      c < 128 ? 7 : 15,
+      end > start
+    );
+  else if (at * 8 + (-(end - start) & 7) < length * 8)
+    throw Error("Invalid payload length");
   return out;
+}
+
+// src/utf8-raw/decoder.mjs
+function decode(text) {
+  return unpack(text, prepare(text), true);
 }
 export {
   decode,

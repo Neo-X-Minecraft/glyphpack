@@ -37,6 +37,20 @@ pub fn build_all(root: &Path) -> Result<Value, String> {
         ("recommended", BuildOptions::default()),
         ("recommended-full", BuildOptions::recommended_full()),
         (
+            "utf8",
+            BuildOptions {
+                packings: vec![Packing::Utf8],
+                ..BuildOptions::default()
+            },
+        ),
+        (
+            "utf8-compact",
+            BuildOptions {
+                packings: vec![Packing::Utf8Compact],
+                ..BuildOptions::default()
+            },
+        ),
+        (
             "ans",
             BuildOptions {
                 packings: vec![Packing::Ans],
@@ -99,7 +113,7 @@ pub fn build_all(root: &Path) -> Result<Value, String> {
                 json!({
                     "bytes":source.len(),
                     "blake3":super::fixtures::hex(&crate::hash::blake3(source.as_bytes())),
-                    "backend":"wasm", "browserTarget":"chrome109",
+                    "backend":if options.packings.iter().any(|p|p.is_utf8()) {"js+wasm"}else{"wasm"}, "browserTarget":"chrome109",
                     "formatVersion":encoder::FORMAT_VERSION,
                     "compactHash":options.compact_hash,
                     "packings":options.packings.iter().map(|p|p.name()).collect::<Vec<_>>(),
@@ -149,5 +163,5 @@ pub fn build_all(root: &Path) -> Result<Value, String> {
         serde_json::to_string_pretty(&manifest).unwrap() + "\n",
     )
     .map_err(|e| e.to_string())?;
-    Ok(json!({"profiles":10,"moduleFiles":manifest.len(),"output":out}))
+    Ok(json!({"profiles":12,"moduleFiles":manifest.len(),"output":out}))
 }

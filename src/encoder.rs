@@ -401,9 +401,71 @@ impl Output for Text<'_> {
     }
 }
 
+fn utf8_text(data: &[u8], options: &EncodeOptions) -> Result<String, String> {
+    if options.legacy {
+        return Err("Legacy packets support only pair packing".into());
+    }
+    let trailer = match options.integrity {
+        Integrity::None => Vec::new(),
+        Integrity::Fast => xxhash32(data).to_le_bytes().to_vec(),
+        Integrity::Secure => blake3(data).to_vec(),
+    };
+    let size = data
+        .len()
+        .checked_add(trailer.len())
+        .ok_or("Payload too large")?;
+    if size > 0x40000000 {
+        return Err("Payload too large".into());
+    }
+    let stored = if trailer.is_empty() {
+        std::borrow::Cow::Borrowed(data)
+    } else {
+        let mut v = Vec::with_capacity(size);
+        v.extend_from_slice(data);
+        v.extend_from_slice(&trailer);
+        std::borrow::Cow::Owned(v)
+    };
+    let mut text = if options.packing == Packing::Utf8Compact {
+        let dense = crate::utf8_compact::encode(&stored, options.mask)?;
+        let fast = crate::utf8_raw::encode(
+            &stored,
+            options
+                .mask
+                .unwrap_or_else(|| crate::utf8_raw::select_mask(&stored)),
+        )?;
+        let fast = crate::utf8_compact::protect(&fast);
+        if fast.len() < dense.len() {
+            fast
+        } else {
+            dense
+        }
+    } else {
+        crate::utf8_raw::encode(
+            &stored,
+            options
+                .mask
+                .unwrap_or_else(|| crate::utf8_raw::select_mask(&stored)),
+        )?
+    };
+    let prefix = [
+        options.packing.tag() as u8,
+        b'0' + options.integrity.kind() as u8,
+    ];
+    text.insert_str(0, std::str::from_utf8(&prefix).unwrap());
+    Ok(text)
+}
+
 fn encode<O: Output>(data: &[u8], options: &EncodeOptions, out: &mut O) -> Result<(), String> {
     if options.legacy && options.packing != Packing::Pair {
         return Err("Legacy packets support only pair packing".into());
+    }
+    if options.packing.is_utf8() {
+        let text = utf8_text(data, options)?;
+        out.reset(text.len());
+        for c in text.encode_utf16() {
+            out.unit(c);
+        }
+        return Ok(());
     }
     if options.packing != Packing::Pair {
         return ans::encode(data, options, out);
@@ -531,7 +593,13 @@ pub fn encode_bytes_into(
     options: &EncodeOptions,
     out: &mut Vec<u8>,
 ) -> Result<(), String> {
-    if options.packing == Packing::Windows {
+    if options.packing.is_utf8() {
+        let mut text = String::new();
+        encode_text_into(data, options, &mut text)?;
+        out.clear();
+        out.extend_from_slice(text.as_bytes());
+        Ok(())
+    } else if options.packing == Packing::Windows {
         encode(data, options, &mut Windows(out))
     } else {
         dense16_into(data, options, out)
@@ -570,7 +638,14 @@ pub fn encode_text_into(
     options: &EncodeOptions,
     out: &mut String,
 ) -> Result<(), String> {
-    encode(data, options, &mut Text(out))
+    if options.packing.is_utf8() {
+        let text = utf8_text(data, options)?;
+        out.clear();
+        out.push_str(&text);
+        Ok(())
+    } else {
+        encode(data, options, &mut Text(out))
+    }
 }
 
 #[cfg(test)]

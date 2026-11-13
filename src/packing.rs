@@ -1,9 +1,12 @@
 //! Payload codec identifiers, shared by native encoding and the no_std decoder.
-//! These HTML-preserved whitespace units are outside the format-3 alphabet,
+//! These HTML-preserved control units are outside the format-3 alphabet,
 //! so the single-unit field cannot collide with an older pair header.
 pub const PAIR_TAG: u16 = 9;
 pub const ANS_TAG: u16 = 10;
 pub const WINDOWS_TAG: u16 = 12;
+/// Vertical tab is outside the old pair alphabet and survives HTML text nodes.
+pub const UTF8_TAG: u16 = 11;
+pub const UTF8_COMPACT_TAG: u16 = 14;
 /// Half-open ranges in the exact established BMP alphabet order. Contiguous
 /// spans let table initialization avoid a branch for every code point.
 pub const UNICODE_RANGES: [(usize, usize); 7] = [
@@ -41,6 +44,8 @@ pub enum Packing {
     Pair,
     Ans,
     Windows,
+    Utf8,
+    Utf8Compact,
 }
 impl Packing {
     pub fn name(self) -> &'static str {
@@ -48,6 +53,8 @@ impl Packing {
             Self::Pair => "pair",
             Self::Ans => "ans",
             Self::Windows => "windows",
+            Self::Utf8 => "utf8",
+            Self::Utf8Compact => "utf8-compact",
         }
     }
     pub fn tag(self) -> u16 {
@@ -55,6 +62,8 @@ impl Packing {
             Self::Pair => PAIR_TAG,
             Self::Ans => ANS_TAG,
             Self::Windows => WINDOWS_TAG,
+            Self::Utf8 => UTF8_TAG,
+            Self::Utf8Compact => UTF8_COMPACT_TAG,
         }
     }
     pub fn parse(s: &str) -> Result<Self, &'static str> {
@@ -62,7 +71,12 @@ impl Packing {
             "pair" => Ok(Self::Pair),
             "ans" => Ok(Self::Ans),
             "windows" | "windows1252" => Ok(Self::Windows),
-            _ => Err("packing must be pair, ans or windows"),
+            "utf8" | "utf-8" => Ok(Self::Utf8),
+            "utf8-compact" => Ok(Self::Utf8Compact),
+            _ => Err("packing must be pair, ans, windows, utf8 or utf8-compact"),
         }
+    }
+    pub fn is_utf8(self) -> bool {
+        matches!(self, Self::Utf8 | Self::Utf8Compact)
     }
 }

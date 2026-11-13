@@ -25,6 +25,7 @@ const root = path.resolve(__dirname, ".."),
       minify: true,
       format: "esm",
       target: "chrome109",
+      define: { UTF8_FORMAT_RUNTIME: "false", UTF8_VERIFY_FORMAT: "true" },
     }).outputFiles[0].text;
     fs.writeFileSync(path.join(work, name + ".mjs"), text);
     return {

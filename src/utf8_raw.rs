@@ -159,6 +159,8 @@ pub fn build_decoder(
         "--loader=js",
         "--target=chrome109",
         "--legal-comments=none",
+        "--define:UTF8_FORMAT_RUNTIME=false",
+        "--define:UTF8_VERIFY_FORMAT=true",
     ]);
     command.arg(if classic {
         "--format=iife"

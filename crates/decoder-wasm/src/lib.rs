@@ -231,6 +231,7 @@ impl State {
             return LENGTH;
         }
         let (codec, tagged) = match input[0] {
+            packing::UTF8_TAG | packing::UTF8_COMPACT_TAG => return CODEC, // UTF-8 unpackers run in JS.
             packing::PAIR_TAG => (1, true),
             packing::ANS_TAG => (2, true),
             packing::WINDOWS_TAG => (3, true),
@@ -516,4 +517,47 @@ pub extern "C" fn stored_len() -> u32 {
 #[no_mangle]
 pub extern "C" fn payload_len() -> u32 {
     unsafe { (*STATE.0.get()).payload_length as u32 }
+}
+
+/// Verify a JS-decoded stored byte sequence copied into the input arena.
+/// This export is absent unless UTF-8 plus a hash was selected by the builder.
+/// Length checks are independent of JS header parsing and always precede views.
+#[cfg(feature = "utf8")]
+#[no_mangle]
+pub extern "C" fn verify_bytes(length: u32, kind: u32) -> u32 {
+    let state = unsafe { &*STATE.0.get() };
+    let length = length as usize;
+    let trailer = match kind {
+        1 if cfg!(feature = "fast") => 4,
+        2 if cfg!(feature = "secure") => 32,
+        _ => return MODE,
+    };
+    if length < trailer || length > state.input_len.saturating_mul(2) {
+        return LENGTH;
+    }
+    let bytes = unsafe { core::slice::from_raw_parts(state.input_ptr as *const u8, length) };
+    let end = length - trailer;
+    #[cfg(feature = "fast")]
+    if kind == 1 {
+        return if hash::xxhash32(&bytes[..end])
+            == u32::from_le_bytes(bytes[end..].try_into().unwrap())
+        {
+            0
+        } else {
+            CHECKSUM
+        };
+    }
+    #[cfg(feature = "secure")]
+    if kind == 2 {
+        #[cfg(feature = "compact-hash")]
+        let digest = hash::blake3_compact(&bytes[..end]);
+        #[cfg(not(feature = "compact-hash"))]
+        let digest = hash::blake3(&bytes[..end]);
+        let mut different = 0u8;
+        for i in 0..32 {
+            different |= digest[i] ^ bytes[end + i];
+        }
+        return if different == 0 { 0 } else { DIGEST };
+    }
+    MODE
 }

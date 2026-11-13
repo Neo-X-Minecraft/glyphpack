@@ -1,0 +1,55 @@
+{
+  "node": {
+    "passed": true,
+    "node": "v24.21.0",
+    "subsets": 31,
+    "builds": 39,
+    "comparisons": 53613,
+    "rejections": 441,
+    "nativeDispatch": {
+      "decode": 1,
+      "verify": 2,
+      "warm": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    }
+  },
+  "browser": {
+    "passed": true,
+    "results": [
+      {
+        "browser": "156.0.8078.79",
+        "builds": 39,
+        "comparisons": 14467,
+        "rejections": 4989,
+        "offlinePages": 6,
+        "largeCases": 10,
+        "network": 0
+      },
+      {
+        "browser": "109.0.5414.119",
+        "builds": 39,
+        "comparisons": 14467,
+        "rejections": 4989,
+        "offlinePages": 6,
+        "largeCases": 10,
+        "network": 0
+      }
+    ]
+  },
+  "hostileHtml": {
+    "browsers": [
+      "156.0.8078.79",
+      "109.0.5414.119"
+    ],
+    "pagesPerBrowser": 3,
+    "network": 0
+  }
+}

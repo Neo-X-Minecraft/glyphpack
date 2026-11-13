@@ -2,8 +2,9 @@
 
 `glyphpack/utf8-raw` encodes arbitrary bytes for ordinary **UTF-8** HTML. It is a
 dependency-free JavaScript decoder with a Rust encoder. Its wire identifier is
-`~u2`; it is separate from the UTF-16 pair/ANS and Windows codecs, and from the
-older `~u1` research format.
+`~u2`; it is the bare raw form of the integrated `utf8` codec, distinct from the
+older `~u1` research format. [The integrated API](integration.md) adds an outer
+indicator and the established optional XXH32/BLAKE3 verification.
 
 This entry point is explicitly **raw transport**, like Base122: it validates
 structure, characters, length and padding, without a checksum or cryptographic
@@ -13,7 +14,7 @@ format cannot replace an application signature, MAC, or integrity requirement.
 ## Use
 
 ```js
-import {decode, warmup} from 'glyphpack/utf8-raw';
+import { decode, warmup } from "glyphpack/utf8-raw";
 warmup(); // Optional, idempotent; initializes a 4 KiB table.
 const bytes = decode(encodedText); // Synchronous, fresh exact-sized buffer.
 ```
@@ -48,6 +49,9 @@ and HTML-literal escaping are independent. Mask selection samples at most
 4 KiB to rank all 256 masks, then completely scores four finalists and mask
 zero. It never chooses a larger body than mask zero, but does not promise the
 global optimum among all masks for large inputs.
+
+The full module exposes explicit `decodeRawUtf8()` for these bare packets;
+`binary()` dispatches tagged packets, preserving unmarked pair compatibility.
 
 ## Packing and compatibility
 

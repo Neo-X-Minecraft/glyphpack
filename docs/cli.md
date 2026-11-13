@@ -15,6 +15,11 @@ source files:
 ./glyphpack encode input.bin --packing ans -o payload.gp16
 ./glyphpack encode input.bin --packing windows -o payload.gp1252
 
+# Ordinary UTF-8 with the same BLAKE3/format policies.
+./glyphpack encode input.bin --packing utf8 -o payload.gp8
+./glyphpack encode input.bin --packing utf8-compact -o compact.gp8
+./glyphpack inject template.html payload.gp8 standalone.html
+
 # Faster sampled mask search; never larger than the identity-mask body.
 ./glyphpack encode input.bin --effort fast -o payload.gp16
 
@@ -37,7 +42,9 @@ bytes; an unkeyed digest does not establish authorship. See the repository's
 format documentation and browser examples.
 
 Build any nonempty codec subset with `build --packing pair ans windows` (space
-or comma separated). The default is pair only; `--full` includes all three.
+or comma separated). The default is pair only; `--full` includes all five.
+`utf8` and `utf8-compact` can be mixed with any of the original codecs.
+The injector auto-selects UTF-8 for their tagged payloads.
 Detection uses the payload's leading code unit, independently of verification.
 
 Commands that compile decoders, build the demo, or run repository tests and

@@ -11,6 +11,8 @@
     "./recommended-full": "./dist/recommended-full.min.mjs",
     "./ans": "./dist/ans.min.mjs",
     "./windows": "./dist/windows.min.mjs",
+    "./utf8": "./dist/utf8.min.mjs",
+    "./utf8-compact": "./dist/utf8-compact.min.mjs",
     "./core": "./dist/core.min.mjs",
     "./none": "./dist/none.min.mjs",
     "./fast-none": "./dist/fast-none.min.mjs",
@@ -34,7 +36,8 @@
     "build:site": "cargo run --release --locked -- site --output generated/pages",
     "test:site": "node tests/site.cjs",
     "test:types": "tsc --noEmit --strict --module nodenext --target es2022 tests/types.mts",
-    "test:package": "node tests/package.cjs"
+    "test:package": "node tests/package.cjs",
+    "test:integration": "cargo run --release --locked --example integration && node tests/integration.cjs && node tests/integration-browser.cjs && node tests/integration-html.cjs"
   },
   "engines": {
     "node": ">=20"

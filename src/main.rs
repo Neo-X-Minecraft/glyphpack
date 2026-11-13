@@ -186,7 +186,13 @@ fn main_impl() -> Result<()> {
             }
             if full {
                 if !packing_selected {
-                    options.packings = vec![Packing::Pair, Packing::Ans, Packing::Windows];
+                    options.packings = vec![
+                        Packing::Pair,
+                        Packing::Ans,
+                        Packing::Windows,
+                        Packing::Utf8,
+                        Packing::Utf8Compact,
+                    ];
                 }
                 options.formats = vec![false, true];
                 options.data = vec![Integrity::None, Integrity::Fast, Integrity::Secure];
@@ -199,7 +205,7 @@ fn main_impl() -> Result<()> {
             write(output, source.as_bytes())
         }
         "inject" => {
-            let mut encoding = "utf16le";
+            let mut encoding = "auto";
             let mut paths = Vec::new();
             let mut at = 0;
             while at < args.len() {
@@ -210,18 +216,40 @@ fn main_impl() -> Result<()> {
                 }
                 at += 1;
             }
-            if paths.len() != 3 || !["utf16le", "windows1252", "windows-1252"].contains(&encoding) {
+            if paths.len() != 3
+                || ![
+                    "auto",
+                    "utf8",
+                    "utf-8",
+                    "utf16le",
+                    "windows1252",
+                    "windows-1252",
+                ]
+                .contains(&encoding)
+            {
                 return Err(
-                    "Usage: glyphpack inject template.html payload output.html [--encoding utf16le|windows1252]".into(),
+                    "Usage: glyphpack inject template.html payload output.html [--encoding utf8|utf16le|windows1252]".into(),
                 );
             }
             let template = String::from_utf8(read(paths[0])?).map_err(|e| e.to_string())?;
             let raw = read(paths[1])?;
-            let windows = encoding != "utf16le";
-            if !windows && raw.len() % 2 != 0 {
+            if encoding == "auto" {
+                encoding = if raw.first().is_some_and(|b| matches!(b, 11 | 14))
+                    && raw.get(1).is_some_and(|b| matches!(b, b'0'..=b'2'))
+                {
+                    "utf8"
+                } else {
+                    "utf16le"
+                };
+            }
+            let utf8 = matches!(encoding, "utf8" | "utf-8");
+            let windows = matches!(encoding, "windows1252" | "windows-1252");
+            if !windows && !utf8 && raw.len() % 2 != 0 {
                 return Err("UTF-16LE payload has an odd byte count".into());
             }
-            let text = if windows {
+            let text = if utf8 {
+                String::from_utf8(raw).map_err(|e| e.to_string())?
+            } else if windows {
                 injector::windows1252_payload_text(&raw)
             } else {
                 let units: Vec<u16> = raw
@@ -237,11 +265,20 @@ fn main_impl() -> Result<()> {
                     ("__PAYLOAD__".into(), element),
                     (
                         "__CHARSET__".into(),
-                        if windows { "windows-1252" } else { "utf-16le" }.into(),
+                        if utf8 {
+                            "utf-8"
+                        } else if windows {
+                            "windows-1252"
+                        } else {
+                            "utf-16le"
+                        }
+                        .into(),
                     ),
                 ]),
             )?;
-            let document = if windows {
+            let document = if utf8 {
+                injector::utf8_document(&html)
+            } else if windows {
                 injector::windows1252_document(&html)?
             } else {
                 injector::utf16_document(&html)
@@ -350,7 +387,7 @@ fn main_impl() -> Result<()> {
             _ => Err("Usage: glyphpack summary [--input CSV --output directory]".into()),
         },
         "help" | "--help" | "-h" => {
-            println!("GlyphPack\n\n  encode [input|-] [--packing pair|ans|windows] [--checksum secure|fast|none] [--mask N] [--text] [-o path]\n  build [--full|--all] [--packing pair ans windows] [--format on off] [--data none fast secure]\n        [--memory-heavy off on] [--compact-hash] [--module] [--readable] [--types path] [-o path]\n  inject template.html payload output.html [--encoding utf16le|windows1252]\n  demo [output.html]\n  fixtures\n  test-js\n  test-codecs\n  bench prepare|run|smoke|history [--quick]\n  history-report\n  site [--output directory]\n  summary");
+            println!("GlyphPack\n\n  encode [input|-] [--packing pair|ans|windows|utf8|utf8-compact] [--checksum secure|fast|none] [--mask N] [--text] [-o path]\n  build [--full|--all] [--packing pair ans windows utf8 utf8-compact] [--format on off] [--data none fast secure]\n        [--memory-heavy off on] [--compact-hash] [--module] [--readable] [--types path] [-o path]\n  inject template.html payload output.html [--encoding utf8|utf16le|windows1252]\n  demo [output.html]\n  fixtures\n  test-js\n  test-codecs\n  bench prepare|run|smoke|history [--quick]\n  history-report\n  site [--output directory]\n  summary");
             Ok(())
         }
         s => Err(format!("Unknown command: {s}")),

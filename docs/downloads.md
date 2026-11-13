@@ -19,15 +19,15 @@ loading rules.
 - `default.min.mjs`: pair codec, fixed BLAKE3 integrity and format checks.
 - `recommended.min.mjs`: identical to default; pair only, both checks fixed on.
 - `recommended-full.min.mjs`: pair + ANS, both checks fixed on.
-- `ans.min.mjs`, `windows.min.mjs`: secure single-codec alternatives.
-- `full.min.mjs`: all three codecs and all 12 verification/lookup combinations.
+- `ans.min.mjs`, `windows.min.mjs`, `utf8.min.mjs`, `utf8-compact.min.mjs`: secure single-codec alternatives.
+- `full.min.mjs`: all five codecs and all 12 verification/lookup combinations.
 - `core.min.mjs`: mandatory allocation bounds, without optional verification.
 - The web ZIP includes every readable/minified profile, examples and docs.
-- `glyphpack-full.wasm` is the raw full decoder for custom host integration.
+- `glyphpack-full.wasm` contains native codecs and shared hashes for custom host integration; UTF-8 unpacking is JavaScript in the full ES module.
   Most users should import an ES module instead.
 
 ```js
-import {binary} from './full.min.mjs';
+import { binary } from "./full.min.mjs";
 const bytes = binary(payload);
 ```
 
@@ -38,9 +38,9 @@ codec indicator; modern pair-capable decoders also accept unmarked format-3 data
 
 Recommended profiles omit heavy lookup. Use a custom build with
 `--memory-heavy off on` to include it. Every module exports `warmup()` (first
-available codec in pair > ANS > Windows order, memory false), or
+available codec in pair > ANS > Windows > UTF-8 > compact UTF-8 order, memory false), or
 `warmup(['ans','pair'],[true,false])` for explicit aligned lists. Only pair uses
-the memory flag; ANS and Windows ignore it.
+the memory flag; the other codecs ignore it.
 
 The npm tarball can be installed directly with `npm install ./glyphpack-0.2.2.tgz`;
 it contains the same modules and specialized TypeScript declarations.
@@ -57,3 +57,6 @@ browser versions; they are not universal performance guarantees.
 
 Verify downloads with `sha256sum -c SHA256SUMS`. Use GitHub's source archive
 for the Rust encoder, injector, specialized decoder, tests and build tooling.
+
+See [the five-codec integration](integration.md) for framing, raw helpers and
+UTF-8-only builds that omit Wasm when verification is disabled.

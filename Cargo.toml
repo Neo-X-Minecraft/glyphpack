@@ -113,3 +113,7 @@ required-features = ["tools"]
 [[example]]
 name = "utf8_raw"
 required-features = ["tools"]
+
+[[example]]
+name = "integration"
+required-features = ["tools"]

@@ -2,7 +2,8 @@
  * the instance; returned bytes always own a fresh JS buffer, matching the wire API.
  * Feature constants remove messages for verification absent from the build.
  */
-const littleEndian = new Uint8Array(new Uint16Array([1]).buffer)[0] === 1;
+const littleEndian = /* @__PURE__ */ (() =>
+  new Uint8Array(new Uint16Array([1]).buffer)[0] === 1)();
 // Keep one copy of each message across warm-up, preflight and decoding. Build
 // constants erase verification messages for policies absent from the module.
 export function failure(status) {

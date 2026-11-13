@@ -11,6 +11,12 @@ mod hash;
 #[allow(dead_code)]
 #[path = "../../../src/packing.rs"]
 mod packing;
+#[allow(dead_code)]
+#[path = "../../../src/utf8_compact.rs"]
+mod utf8_compact;
+#[allow(dead_code, unexpected_cfgs)]
+#[path = "../../../src/utf8_raw.rs"]
+mod utf8_raw;
 
 #[derive(Default)]
 struct Buffers {
@@ -27,7 +33,7 @@ pub extern "C" fn input_ptr(length: u32) -> u32 {
     })
 }
 #[no_mangle]
-pub extern "C" fn encode(mode: u32, exact: u32) -> u32 {
+pub extern "C" fn encode(mode: u32, exact: u32, packing: u32) -> u32 {
     BUFFERS.with_borrow_mut(|b| {
         let integrity = match mode {
             0 => encoder::Integrity::None,
@@ -36,6 +42,17 @@ pub extern "C" fn encode(mode: u32, exact: u32) -> u32 {
             _ => return 1,
         };
         let options = encoder::EncodeOptions {
+            packing: match packing {
+                0 => packing::Packing::Pair,
+                1 => packing::Packing::Ans,
+                2 => packing::Packing::Windows,
+                3 => packing::Packing::Utf8,
+                4 => packing::Packing::Utf8Compact,
+                _ => {
+                    b.error = "Unsupported encoder packing".into();
+                    return 1;
+                }
+            },
             integrity,
             effort: if exact != 0 {
                 encoder::Effort::Full

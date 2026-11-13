@@ -26,13 +26,15 @@ export function warmup() {
       table[c] = (forbidden[ordinal >>> 8] << 8) | (ordinal & 255);
   }
 }
-export function prepare(text) {
-  if (text.length < 6 || text.slice(0, 3) !== "~u2")
+// An envelope offset avoids allocating a substring in the public binary() path.
+// Keeping the original string also gives V8 one direct charCodeAt receiver.
+export function prepare(text, offset = 0) {
+  if (text.length - offset < 6 || text.slice(offset, offset + 3) !== "~u2")
     throw Error("Invalid UTF-8 header");
-  const a = digits.indexOf(text[3]),
-    b = digits.indexOf(text[4]);
+  const a = digits.indexOf(text[offset + 3]),
+    b = digits.indexOf(text[offset + 4]);
   if (a < 0 || b < 0 || b > 3) throw Error("Invalid UTF-8 header");
-  let start = 5,
+  let start = offset + 5,
     length = 0,
     power = 1,
     digit;
