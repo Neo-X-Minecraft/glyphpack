@@ -68,3 +68,9 @@ full("", { verifyData: "crc32" });
 full("", { verifyFormat: "true" });
 // @ts-expect-error Encoded payloads are strings.
 full(bytes);
+
+import { decode as rawUTF8, warmup as warmUTF8 } from "glyphpack/utf8-raw";
+const rawBytes: Uint8Array = rawUTF8("");
+warmUTF8();
+// @ts-expect-error Raw UTF-8 has no verification options.
+rawUTF8("", { verifyData: "secure" });

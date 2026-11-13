@@ -78,7 +78,11 @@ for(const name of ['glyphpack/recommended','glyphpack/recommended-full']){
  assert.throws(()=>m.warmup(['pair'],[true]),/Unsupported memory optimization option/);
 }
 warmup(['ans','pair'],[true,false]);
-console.log(JSON.stringify({pass:true,node:process.version,cases,exports:10}));`;
+const raw=await import('glyphpack/utf8-raw');raw.warmup();raw.warmup();
+assert.deepEqual(raw.decode('~u2AAA'),new Uint8Array(0));
+assert.deepEqual(raw.decode('~u2AABA@'),new Uint8Array([131]));
+assert.throws(()=>raw.decode('~u2AAggggB'),/Invalid payload length/);cases+=3;
+console.log(JSON.stringify({pass:true,node:process.version,cases,exports:11}));`;
     await fs.writeFile(path.join(temp, "consumer.mjs"), script);
     process.stdout.write(
       execFileSync(process.execPath, ["consumer.mjs"], {

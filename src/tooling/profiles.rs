@@ -116,6 +116,20 @@ pub fn build_all(root: &Path) -> Result<Value, String> {
             fs::write(out.join(&file), source).map_err(|e| e.to_string())?;
         }
     }
+    // Explicit raw UTF-8 entry point: no digest, Wasm, fetch or gzip loader.
+    // This does not alter the security defaults of any existing profile.
+    for minify in [false, true] {
+        let file = format!("utf8-raw{}.mjs", if minify { ".min" } else { "" });
+        let source = crate::utf8_raw::build_decoder(root, false, minify)?;
+        manifest.insert(file.clone(), json!({
+            "bytes":source.len(), "blake3":super::fixtures::hex(&crate::hash::blake3(source.as_bytes())),
+            "backend":"js", "browserTarget":"chrome109", "formatVersion":2,
+            "documentEncoding":"utf-8", "verifyFormat":true, "verifyData":"none", "lookupBytes":4096
+        }));
+        fs::write(out.join(file.replace(".mjs", ".d.mts")),
+            "/** Raw UTF-8 transport. Checks encoding structure, without a digest or MAC. */\nexport declare function decode(text: string): Uint8Array;\n/** Optional, idempotent 4 KiB lookup initialization; decode calls it automatically. */\nexport declare function warmup(): void;\n").map_err(|e|e.to_string())?;
+        fs::write(out.join(file), source).map_err(|e| e.to_string())?;
+    }
     // A real file:// entry point: embed the readable default module and payload
     // in the document. No external ESM import, fetch, worker or server is needed.
     let text = encoder::encode_text(

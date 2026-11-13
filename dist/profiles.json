@@ -431,6 +431,28 @@
     ],
     "wasmBytes": 12857
   },
+  "utf8-raw.min.mjs": {
+    "backend": "js",
+    "blake3": "e94b67d1d7c8dab136a909983b9f264484ebab0688f518d31b3e8908d0bd7c1c",
+    "browserTarget": "chrome109",
+    "bytes": 2342,
+    "documentEncoding": "utf-8",
+    "formatVersion": 2,
+    "lookupBytes": 4096,
+    "verifyData": "none",
+    "verifyFormat": true
+  },
+  "utf8-raw.mjs": {
+    "backend": "js",
+    "blake3": "3b2b576a28ce1e3da2f25ca04459723dc2ec86ddd736db65a427e69381951058",
+    "browserTarget": "chrome109",
+    "bytes": 4564,
+    "documentEncoding": "utf-8",
+    "formatVersion": 2,
+    "lookupBytes": 4096,
+    "verifyData": "none",
+    "verifyFormat": true
+  },
   "windows.min.mjs": {
     "backend": "wasm",
     "base64Bytes": 7512,

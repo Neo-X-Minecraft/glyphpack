@@ -20,60 +20,10 @@ const PROFILES: [&[u8]; 6] = [
 ];
 // Frozen version-1 alphabet. Each range contains only assigned two-byte scalars
 // with stable NFC spelling and no combining marks or Unicode format controls.
-const PORTABLE_RANGES: [(u16, u16); 37] = [
-    (160, 173),
-    (174, 768),
-    (880, 884),
-    (885, 888),
-    (890, 894),
-    (895, 896),
-    (900, 903),
-    (904, 907),
-    (908, 909),
-    (910, 930),
-    (931, 1155),
-    (1162, 1328),
-    (1329, 1367),
-    (1369, 1419),
-    (1421, 1424),
-    (1470, 1471),
-    (1472, 1473),
-    (1475, 1476),
-    (1478, 1479),
-    (1488, 1515),
-    (1519, 1525),
-    (1542, 1552),
-    (1563, 1564),
-    (1565, 1611),
-    (1632, 1648),
-    (1649, 1750),
-    (1758, 1759),
-    (1765, 1767),
-    (1769, 1770),
-    (1774, 1806),
-    (1808, 1809),
-    (1810, 1840),
-    (1869, 1958),
-    (1969, 1970),
-    (1984, 2027),
-    (2036, 2043),
-    (2046, 2048),
-];
-const PORTABLE: [u16; 1547] = {
-    let mut out = [0; 1547];
-    let mut n = 0;
-    let mut i = 0;
-    while i < PORTABLE_RANGES.len() {
-        let mut c = PORTABLE_RANGES[i].0;
-        while c < PORTABLE_RANGES[i].1 {
-            out[n] = c;
-            n += 1;
-            c += 1;
-        }
-        i += 1;
-    }
-    out
-};
+#[path = "../src/utf8-raw/alphabet.rs"]
+mod alphabet;
+use alphabet::PORTABLE;
+
 struct Model {
     blocked: [u8; 128],
     portable: bool,

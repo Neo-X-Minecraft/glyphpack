@@ -1,7 +1,7 @@
 {
   "name": "glyphpack",
   "version": "0.2.2",
-  "description": "Dense UTF-16 payloads with a Rust/Wasm decoder and gzip/base64 ESM loader",
+  "description": "Dense UTF-8/UTF-16 HTML payloads with JavaScript and Rust/Wasm decoders",
   "license": "0BSD",
   "type": "commonjs",
   "exports": {
@@ -14,7 +14,8 @@
     "./core": "./dist/core.min.mjs",
     "./none": "./dist/none.min.mjs",
     "./fast-none": "./dist/fast-none.min.mjs",
-    "./high-memory": "./dist/high-memory.min.mjs"
+    "./high-memory": "./dist/high-memory.min.mjs",
+    "./utf8-raw": "./dist/utf8-raw.min.mjs"
   },
   "files": [
     "dist",

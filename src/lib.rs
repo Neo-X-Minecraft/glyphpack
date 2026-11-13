@@ -15,3 +15,5 @@ pub mod project;
 pub mod tooling;
 
 pub mod transport;
+/// Explicitly raw UTF-8 transport; secure encoder defaults are unchanged.
+pub mod utf8_raw;

@@ -3,7 +3,7 @@ name = "glyphpack"
 version = "0.2.2"
 edition = "2021"
 rust-version = "1.85"
-description = "Dense UTF-16 payload encoding with a specialized Rust/Wasm decoder"
+description = "Dense UTF-8/UTF-16 HTML payloads with JavaScript and Rust/Wasm decoders"
 license = "0BSD"
 readme = "README.md"
 authors = ["NeoX"]
@@ -104,4 +104,12 @@ required-features = ["tools"]
 
 [[example]]
 name = "utf8_prefix"
+required-features = ["tools"]
+
+[[example]]
+name = "utf8_raw_fixtures"
+required-features = ["tools"]
+
+[[example]]
+name = "utf8_raw"
 required-features = ["tools"]
