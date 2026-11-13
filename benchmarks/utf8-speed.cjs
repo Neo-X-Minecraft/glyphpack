@@ -10,7 +10,10 @@ const fs = require("node:fs"),
   esbuild = require("esbuild");
 const root = path.resolve(__dirname, ".."),
   dir = path.join(root, "generated/utf8-speed"),
-  out = path.join(root, "benchmarks/results/utf8-speed");
+  out = path.resolve(
+    root,
+    process.env.SPEED_OUT || "benchmarks/results/utf8-speed",
+  );
 fs.mkdirSync(dir, { recursive: true });
 fs.mkdirSync(out, { recursive: true });
 const chosen = (
@@ -100,7 +103,10 @@ const manifest = JSON.parse(
         const browser = await chromium.launch({
           executablePath: bin,
           headless: true,
-          args: ["--no-sandbox"],
+          args: [
+            "--no-sandbox",
+            ...JSON.parse(process.env.SPEED_BROWSER_ARGS || "[]"),
+          ],
         });
         try {
           const page = await browser.newPage();
@@ -113,6 +119,7 @@ const manifest = JSON.parse(
               rounds,
               checking,
               referenceIndex,
+              allowFallback,
             }) => {
               const modules = [],
                 imports = [];
@@ -130,6 +137,15 @@ const manifest = JSON.parse(
                   "",
                 );
               const reference = modules[referenceIndex].decode;
+              for (const m of modules)
+                if (
+                  !allowFallback &&
+                  m.backend !== undefined &&
+                  m.backend !== "wasm"
+                )
+                  throw Error(
+                    "Hybrid silently fell back to JS during benchmark",
+                  );
               for (let m = 0; m < modules.length; m++) {
                 const t = performance.now(),
                   first = modules[m].decode(fixtures[0].text);
@@ -196,7 +212,14 @@ const manifest = JSON.parse(
                   mutated++;
                 }
               }
-              if (checking) return { cold, checked, mutated, rows: [] };
+              if (checking)
+                return {
+                  cold,
+                  checked,
+                  mutated,
+                  rows: [],
+                  backends: modules.map((m) => m.backend || "js"),
+                };
               for (let m = 0; m < modules.length; m++)
                 for (let i = 0; i < fixtures.length; i++) {
                   const bytes = modules[m].decode(fixtures[i].text),
@@ -229,6 +252,7 @@ const manifest = JSON.parse(
               globalThis.sink = sink;
               return {
                 cold,
+                backends: modules.map((m) => m.backend || "js"),
                 checked,
                 mutated,
                 rows: jobs.map((j) => ({
@@ -249,6 +273,7 @@ const manifest = JSON.parse(
               cases,
               rounds,
               checking,
+              allowFallback: process.env.SPEED_ALLOW_FALLBACK === "1",
             },
           );
           for (const r of result.rows)
@@ -274,6 +299,7 @@ const manifest = JSON.parse(
             run,
             positive: result.checked,
             mutations: result.mutated,
+            backends: result.backends,
           });
           console.log(JSON.stringify(verification.at(-1)));
         } finally {
@@ -284,6 +310,7 @@ const manifest = JSON.parse(
     await new Promise((r) => server.close(r));
   }
   const environment = {
+    browserArgs: JSON.parse(process.env.SPEED_BROWSER_ARGS || "[]"),
     recordedAt: new Date().toISOString(),
     runs,
     rounds,
