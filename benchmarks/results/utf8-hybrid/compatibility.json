@@ -1,0 +1,343 @@
+{
+  "passed": true,
+  "records": [
+    {
+      "browser": "156.0.8078.79",
+      "name": "hybrid-words-scalar-4096",
+      "disabled": false,
+      "mode": "native",
+      "network": 0,
+      "backend": "wasm",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "156.0.8078.79",
+      "name": "hybrid-words-scalar-4096",
+      "disabled": true,
+      "mode": "disabled",
+      "network": 0,
+      "backend": "js",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "156.0.8078.79",
+      "name": "hybrid-words-high-32768",
+      "disabled": false,
+      "mode": "native",
+      "network": 0,
+      "backend": "wasm",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "156.0.8078.79",
+      "name": "hybrid-words-high-32768",
+      "disabled": true,
+      "mode": "disabled",
+      "network": 0,
+      "backend": "js",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "156.0.8078.79",
+      "name": "hybrid-utf8-scalar-32768",
+      "disabled": false,
+      "mode": "native",
+      "network": 0,
+      "backend": "wasm",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "156.0.8078.79",
+      "name": "hybrid-utf8-scalar-32768",
+      "disabled": true,
+      "mode": "disabled",
+      "network": 0,
+      "backend": "js",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "156.0.8078.79",
+      "name": "hybrid-utf8-high",
+      "disabled": false,
+      "mode": "native",
+      "network": 0,
+      "backend": "wasm",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "156.0.8078.79",
+      "name": "hybrid-utf8-high",
+      "disabled": true,
+      "mode": "disabled",
+      "network": 0,
+      "backend": "js",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "156.0.8078.79",
+      "name": "stateless-utf8-high",
+      "disabled": false,
+      "mode": "native",
+      "network": 0,
+      "backend": "wasm",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "156.0.8078.79",
+      "name": "stateless-utf8-high",
+      "disabled": true,
+      "mode": "disabled",
+      "network": 0,
+      "backend": "js",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "156.0.8078.79",
+      "name": "string-length",
+      "disabled": false,
+      "mode": "native",
+      "network": 0,
+      "backend": "wasm",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "156.0.8078.79",
+      "name": "string-length",
+      "disabled": true,
+      "mode": "disabled",
+      "network": 0,
+      "backend": "js",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "156.0.8078.79",
+      "name": "hybrid-words-scalar-4096-gzip",
+      "disabled": false,
+      "mode": "native",
+      "network": 0,
+      "backend": "wasm",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "156.0.8078.79",
+      "name": "hybrid-words-scalar-4096-gzip",
+      "disabled": true,
+      "mode": "disabled",
+      "network": 0,
+      "backend": "js",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "156.0.8078.79",
+      "name": "hybrid-words-scalar-4096-gzip",
+      "disabled": false,
+      "mode": "gzip-disabled",
+      "network": 0,
+      "backend": "js",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "156.0.8078.79",
+      "boundaryErrorComparisons": 168
+    },
+    {
+      "browser": "109.0.5414.119",
+      "name": "hybrid-words-scalar-4096",
+      "disabled": false,
+      "mode": "native",
+      "network": 0,
+      "backend": "wasm",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "109.0.5414.119",
+      "name": "hybrid-words-scalar-4096",
+      "disabled": true,
+      "mode": "disabled",
+      "network": 0,
+      "backend": "js",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "109.0.5414.119",
+      "name": "hybrid-words-high-32768",
+      "disabled": false,
+      "mode": "native",
+      "network": 0,
+      "backend": "wasm",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "109.0.5414.119",
+      "name": "hybrid-words-high-32768",
+      "disabled": true,
+      "mode": "disabled",
+      "network": 0,
+      "backend": "js",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "109.0.5414.119",
+      "name": "hybrid-utf8-scalar-32768",
+      "disabled": false,
+      "mode": "native",
+      "network": 0,
+      "backend": "wasm",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "109.0.5414.119",
+      "name": "hybrid-utf8-scalar-32768",
+      "disabled": true,
+      "mode": "disabled",
+      "network": 0,
+      "backend": "js",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "109.0.5414.119",
+      "name": "hybrid-utf8-high",
+      "disabled": false,
+      "mode": "native",
+      "network": 0,
+      "backend": "wasm",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "109.0.5414.119",
+      "name": "hybrid-utf8-high",
+      "disabled": true,
+      "mode": "disabled",
+      "network": 0,
+      "backend": "js",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "109.0.5414.119",
+      "name": "stateless-utf8-high",
+      "disabled": false,
+      "mode": "native",
+      "network": 0,
+      "backend": "wasm",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "109.0.5414.119",
+      "name": "stateless-utf8-high",
+      "disabled": true,
+      "mode": "disabled",
+      "network": 0,
+      "backend": "js",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "109.0.5414.119",
+      "name": "string-length",
+      "disabled": false,
+      "mode": "native",
+      "network": 0,
+      "backend": "js",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "109.0.5414.119",
+      "name": "string-length",
+      "disabled": true,
+      "mode": "disabled",
+      "network": 0,
+      "backend": "js",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "109.0.5414.119",
+      "name": "hybrid-words-scalar-4096-gzip",
+      "disabled": false,
+      "mode": "native",
+      "network": 0,
+      "backend": "wasm",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "109.0.5414.119",
+      "name": "hybrid-words-scalar-4096-gzip",
+      "disabled": true,
+      "mode": "disabled",
+      "network": 0,
+      "backend": "js",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "109.0.5414.119",
+      "name": "hybrid-words-scalar-4096-gzip",
+      "disabled": false,
+      "mode": "gzip-disabled",
+      "network": 0,
+      "backend": "js",
+      "bytes": 1048576,
+      "owned": true,
+      "sha": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+    },
+    {
+      "browser": "109.0.5414.119",
+      "boundaryErrorComparisons": 168
+    }
+  ]
+}

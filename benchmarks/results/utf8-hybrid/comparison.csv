@@ -1,0 +1,5 @@
+browser,input,jsDefaultMs,jsBalancedMs,wasmWordsMs,wasmUtf8Ms,jsStringBuiltinMs,jsStringBackend
+"156.0.8078.79","random-1MiB","4.795","6.002","6.043","8.667","9.032","wasm"
+"156.0.8078.79","zeros-1MiB","3.185","3.582","3.013","3.803","4.230","wasm"
+"109.0.5414.119","random-1MiB","8.907","6.460","7.015","9.340","8.892","js"
+"109.0.5414.119","zeros-1MiB","5.063","4.127","3.542","4.410","5.192","js"

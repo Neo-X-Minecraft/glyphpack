@@ -54,6 +54,8 @@ changes the current GlyphPack wire format or verification defaults.
 - `benchmarks/fixtures/utf8-prefix.rs`: benchmark-only Wasm kernel; not shipped.
 - `speed/`: the newer [19-variant optimization study](../../../docs/utf8-speed.md),
   its frozen models, exact historical baseline and reproduction commands.
+- `hybrid/`: the follow-up [JS/Wasm study](../../../docs/utf8-hybrid.md), with
+  native-copy, translated-word, stateless and direct-string configurations.
 
 ```sh
 cargo run --release --locked -- bench prepare

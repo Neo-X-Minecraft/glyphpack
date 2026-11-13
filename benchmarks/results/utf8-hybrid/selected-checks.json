@@ -1,0 +1,235 @@
+{
+  "environment": {
+    "browserArgs": [],
+    "recordedAt": "2026-11-13T13:56:29.982Z",
+    "runs": 1,
+    "rounds": 9,
+    "checking": true,
+    "arch": "arm64",
+    "cpu": "unknown",
+    "scope": "Resident string to fresh exact-size bytes; format checks and all conversions included. No integrity verification.",
+    "order": "Rotated fixed batches; fresh process per run; malformed-input checks use separate processes. Import precedes cold first decode and warm-up.",
+    "candidates": [
+      {
+        "name": "delivered",
+        "bytes": 1777,
+        "sha256": "3ba2759480278865a7ea0550c3bdd28b7add3d2ab9fe74750275083db8cea4f8"
+      },
+      {
+        "name": "balanced",
+        "bytes": 1781,
+        "sha256": "1a0c0c900adcd89f08cd279c554ad4fd9af42f2adca6fbe14db6adafbd3535fe"
+      },
+      {
+        "name": "hybrid-words-scalar-4096",
+        "bytes": 3710,
+        "sha256": "da269df91a3ee2a84ba7879b974a77fe865381072f31aacecc3573837d5e7bb0"
+      },
+      {
+        "name": "hybrid-words-high-4096",
+        "bytes": 3698,
+        "sha256": "ac558303236e086f8f8986ec8fb156e83df5a33d82639417d87daa9c42d3a6f8"
+      },
+      {
+        "name": "stateless-words-scalar",
+        "bytes": 3074,
+        "sha256": "61146520e48b75c478b4a2deaf32445030d4e6b6727228e464775ce465c9f429"
+      },
+      {
+        "name": "stateless-utf8-high",
+        "bytes": 3305,
+        "sha256": "ffe42c94ebfcf1eb36ee23990281c8ae493da5b7382db59e4a0b6cfca1719041"
+      },
+      {
+        "name": "string-length",
+        "bytes": 3191,
+        "sha256": "82ab8ddd91523b31ec3f00cf78c8c8ee50b2162029b669ab610c218e9c9ba715"
+      }
+    ],
+    "inputs": [
+      {
+        "binary": "generated/encoding-comparison/random-1KiB.bin",
+        "file": "generated/utf8-prefix/random-1KiB-5.txt",
+        "inputBytes": 1024,
+        "label": "random-1KiB",
+        "profile": 5,
+        "sourceBytes": 1178,
+        "sourceUnits": 1095,
+        "sha256": "cd5139c7cc61f7c5ca3fb9d4f4386af4b8b303029581629795cbd8ab131e54d0"
+      },
+      {
+        "binary": "generated/encoding-comparison/random-64KiB.bin",
+        "file": "generated/utf8-prefix/random-64KiB-5.txt",
+        "inputBytes": 65536,
+        "label": "random-64KiB",
+        "profile": 5,
+        "sourceBytes": 74751,
+        "sourceUnits": 69272,
+        "sha256": "f540ac5d87fd275467341d328f866d241bee9350a3f42ee2a93ebb8db0dd24ad"
+      },
+      {
+        "binary": "generated/encoding-comparison/random-1MiB.bin",
+        "file": "generated/utf8-prefix/random-1MiB-5.txt",
+        "inputBytes": 1048576,
+        "label": "random-1MiB",
+        "profile": 5,
+        "sourceBytes": 1195879,
+        "sourceUnits": 1109419,
+        "sha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+      },
+      {
+        "binary": "generated/encoding-comparison/zeros-1MiB.bin",
+        "file": "generated/utf8-prefix/zeros-1MiB-5.txt",
+        "inputBytes": 1048576,
+        "label": "zeros-1MiB",
+        "profile": 5,
+        "sourceBytes": 1198385,
+        "sourceUnits": 599198,
+        "sha256": "30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58"
+      },
+      {
+        "binary": "generated/encoding-comparison/sequential-1MiB.bin",
+        "file": "generated/utf8-prefix/sequential-1MiB-5.txt",
+        "inputBytes": 1048576,
+        "label": "sequential-1MiB",
+        "profile": 5,
+        "sourceBytes": 1196045,
+        "sourceUnits": 1093649,
+        "sha256": "fbbab289f7f94b25736c58be46a994c441fd02552cc6022352e3d86d2fab7c83"
+      }
+    ]
+  },
+  "rows": [],
+  "cold": [
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "delivered",
+      "firstDecodeMs": 1.399999976158142,
+      "importMs": 15.370000004768372
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "balanced",
+      "firstDecodeMs": 1.375,
+      "importMs": 1.3900000154972076
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "hybrid-words-scalar-4096",
+      "firstDecodeMs": 1.9149999916553497,
+      "importMs": 6.96000000834465
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "hybrid-words-high-4096",
+      "firstDecodeMs": 1.7300000190734863,
+      "importMs": 2.5850000083446503
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "stateless-words-scalar",
+      "firstDecodeMs": 1.4800000190734863,
+      "importMs": 10.074999988079071
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "stateless-utf8-high",
+      "firstDecodeMs": 1.520000010728836,
+      "importMs": 1.7350000143051147
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "string-length",
+      "firstDecodeMs": 2.030000001192093,
+      "importMs": 2.0250000059604645
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "delivered",
+      "firstDecodeMs": 1.3900000154972076,
+      "importMs": 5.990000009536743
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "balanced",
+      "firstDecodeMs": 1.4749999940395355,
+      "importMs": 1.1349999904632568
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "hybrid-words-scalar-4096",
+      "firstDecodeMs": 1.4549999833106995,
+      "importMs": 4.570000022649765
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "hybrid-words-high-4096",
+      "firstDecodeMs": 1.4149999916553497,
+      "importMs": 2.6099999845027924
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "stateless-words-scalar",
+      "firstDecodeMs": 1.3900000154972076,
+      "importMs": 1.8100000023841858
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "stateless-utf8-high",
+      "firstDecodeMs": 1.2400000095367432,
+      "importMs": 1.7949999868869781
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "string-length",
+      "firstDecodeMs": 1.5100000202655792,
+      "importMs": 2.455000013113022
+    }
+  ],
+  "verification": [
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "positive": 5040,
+      "mutations": 6000,
+      "backends": [
+        "js",
+        "js",
+        "wasm",
+        "wasm",
+        "wasm",
+        "wasm",
+        "wasm"
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "positive": 5040,
+      "mutations": 6000,
+      "backends": [
+        "js",
+        "js",
+        "wasm",
+        "wasm",
+        "wasm",
+        "wasm",
+        "js"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,431 @@
+{
+  "environment": {
+    "browserArgs": [],
+    "recordedAt": "2026-11-13T14:10:09.492Z",
+    "runs": 1,
+    "rounds": 5,
+    "checking": false,
+    "arch": "arm64",
+    "cpu": "unknown",
+    "scope": "Resident string to fresh exact-size bytes; format checks and all conversions included. No integrity verification.",
+    "order": "Rotated fixed batches; fresh process per run; malformed-input checks use separate processes. Import precedes cold first decode and warm-up.",
+    "candidates": [
+      {
+        "name": "delivered",
+        "bytes": 1777,
+        "sha256": "3ba2759480278865a7ea0550c3bdd28b7add3d2ab9fe74750275083db8cea4f8"
+      },
+      {
+        "name": "string-prime-32768",
+        "bytes": 3247,
+        "sha256": "83c428db9d6cb88a82946cecbd579137a816ca6230686b010932afa03083857c"
+      }
+    ],
+    "inputs": [
+      {
+        "binary": "generated/encoding-comparison/random-1KiB.bin",
+        "file": "generated/utf8-prefix/random-1KiB-5.txt",
+        "inputBytes": 1024,
+        "label": "random-1KiB",
+        "profile": 5,
+        "sourceBytes": 1178,
+        "sourceUnits": 1095,
+        "sha256": "cd5139c7cc61f7c5ca3fb9d4f4386af4b8b303029581629795cbd8ab131e54d0"
+      },
+      {
+        "binary": "generated/encoding-comparison/random-64KiB.bin",
+        "file": "generated/utf8-prefix/random-64KiB-5.txt",
+        "inputBytes": 65536,
+        "label": "random-64KiB",
+        "profile": 5,
+        "sourceBytes": 74751,
+        "sourceUnits": 69272,
+        "sha256": "f540ac5d87fd275467341d328f866d241bee9350a3f42ee2a93ebb8db0dd24ad"
+      },
+      {
+        "binary": "generated/encoding-comparison/random-1MiB.bin",
+        "file": "generated/utf8-prefix/random-1MiB-5.txt",
+        "inputBytes": 1048576,
+        "label": "random-1MiB",
+        "profile": 5,
+        "sourceBytes": 1195879,
+        "sourceUnits": 1109419,
+        "sha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+      },
+      {
+        "binary": "generated/encoding-comparison/zeros-1MiB.bin",
+        "file": "generated/utf8-prefix/zeros-1MiB-5.txt",
+        "inputBytes": 1048576,
+        "label": "zeros-1MiB",
+        "profile": 5,
+        "sourceBytes": 1198385,
+        "sourceUnits": 599198,
+        "sha256": "30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58"
+      },
+      {
+        "binary": "generated/encoding-comparison/sequential-1MiB.bin",
+        "file": "generated/utf8-prefix/sequential-1MiB-5.txt",
+        "inputBytes": 1048576,
+        "label": "sequential-1MiB",
+        "profile": 5,
+        "sourceBytes": 1196045,
+        "sourceUnits": 1093649,
+        "sha256": "fbbab289f7f94b25736c58be46a994c441fd02552cc6022352e3d86d2fab7c83"
+      }
+    ]
+  },
+  "rows": [
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "delivered",
+      "label": "random-1KiB",
+      "inputBytes": 1024,
+      "medianMs": 0.004865000009536743,
+      "samples": [
+        0.014860000014305114,
+        0.00471000000834465,
+        0.004865000009536743,
+        0.029180000007152557,
+        0.0047300000190734865
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "delivered",
+      "label": "random-64KiB",
+      "inputBytes": 65536,
+      "medianMs": 0.29249999970197677,
+      "samples": [
+        0.7852500006556511,
+        0.29249999970197677,
+        0.28524999916553495,
+        0.2912499994039536,
+        0.29424999952316283
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "delivered",
+      "label": "random-1MiB",
+      "inputBytes": 1048576,
+      "medianMs": 4.762500002980232,
+      "samples": [
+        4.717500001192093,
+        4.762500002980232,
+        4.802499994635582,
+        4.780000001192093,
+        4.760000005364418
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "delivered",
+      "label": "zeros-1MiB",
+      "inputBytes": 1048576,
+      "medianMs": 3.167500004172325,
+      "samples": [
+        3.125,
+        3.3924999982118607,
+        3.1700000017881393,
+        3.0975000113248825,
+        3.167500004172325
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "delivered",
+      "label": "sequential-1MiB",
+      "inputBytes": 1048576,
+      "medianMs": 3.7974999994039536,
+      "samples": [
+        3.780000001192093,
+        3.7974999994039536,
+        3.842500001192093,
+        3.857499986886978,
+        3.7549999952316284
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "string-prime-32768",
+      "label": "random-1KiB",
+      "inputBytes": 1024,
+      "medianMs": 0.008110000014305115,
+      "samples": [
+        0.008895000010728836,
+        0.007949999988079071,
+        0.008110000014305115,
+        0.008380000025033951,
+        0.007950000017881393
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "string-prime-32768",
+      "label": "random-64KiB",
+      "inputBytes": 65536,
+      "medianMs": 0.5182499989867211,
+      "samples": [
+        0.5269999995827674,
+        0.5297499999403954,
+        0.5182499989867211,
+        0.5174999997019768,
+        0.514249999821186
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "string-prime-32768",
+      "label": "random-1MiB",
+      "inputBytes": 1048576,
+      "medianMs": 8.95499999821186,
+      "samples": [
+        8.974999994039536,
+        8.907499998807907,
+        8.917500004172325,
+        9,
+        8.95499999821186
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "string-prime-32768",
+      "label": "zeros-1MiB",
+      "inputBytes": 1048576,
+      "medianMs": 4.2125000059604645,
+      "samples": [
+        4.262500002980232,
+        4.192499995231628,
+        4.152500003576279,
+        4.2125000059604645,
+        10.407499998807907
+      ]
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "string-prime-32768",
+      "label": "sequential-1MiB",
+      "inputBytes": 1048576,
+      "medianMs": 6.704999998211861,
+      "samples": [
+        6.662500008940697,
+        6.704999998211861,
+        6.732500001788139,
+        7.0150000005960464,
+        6.6724999994039536
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "delivered",
+      "label": "random-1KiB",
+      "inputBytes": 1024,
+      "medianMs": 0.03359500002861023,
+      "samples": [
+        0.03472500002384186,
+        0.03359500002861023,
+        0.038444999992847444,
+        0.02505000001192093,
+        0.02924000000953674
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "delivered",
+      "label": "random-64KiB",
+      "inputBytes": 65536,
+      "medianMs": 1.3695000007748603,
+      "samples": [
+        1.3695000007748603,
+        1.672749999165535,
+        1.2174999997019769,
+        1.1429999992251396,
+        1.8725000008940698
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "delivered",
+      "label": "random-1MiB",
+      "inputBytes": 1048576,
+      "medianMs": 19.802499994635582,
+      "samples": [
+        19.802499994635582,
+        19.655000001192093,
+        21.827500000596046,
+        19.84000000357628,
+        19.599999994039536
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "delivered",
+      "label": "zeros-1MiB",
+      "inputBytes": 1048576,
+      "medianMs": 5.75,
+      "samples": [
+        6.309999987483025,
+        5.75,
+        5.747499987483025,
+        5.74499998986721,
+        5.782499998807907
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "delivered",
+      "label": "sequential-1MiB",
+      "inputBytes": 1048576,
+      "medianMs": 15.347500011324883,
+      "samples": [
+        14.832500010728836,
+        15.347500011324883,
+        14.600000008940697,
+        17.157499998807907,
+        18.092500001192093
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "string-prime-32768",
+      "label": "random-1KiB",
+      "inputBytes": 1024,
+      "medianMs": 0.010519999980926514,
+      "samples": [
+        0.010519999980926514,
+        0.010360000014305116,
+        0.016300000011920928,
+        0.010375,
+        0.010520000010728836
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "string-prime-32768",
+      "label": "random-64KiB",
+      "inputBytes": 65536,
+      "medianMs": 0.4877499997615814,
+      "samples": [
+        0.4864999994635582,
+        0.4877499997615814,
+        0.47475000023841857,
+        0.4945000007748604,
+        0.5109999999403954
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "string-prime-32768",
+      "label": "random-1MiB",
+      "inputBytes": 1048576,
+      "medianMs": 7.962499991059303,
+      "samples": [
+        7.96000000834465,
+        7.962499991059303,
+        8.432500004768372,
+        11.202500000596046,
+        7.959999993443489
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "string-prime-32768",
+      "label": "zeros-1MiB",
+      "inputBytes": 1048576,
+      "medianMs": 4.524999991059303,
+      "samples": [
+        4.357500001788139,
+        4.395000010728836,
+        4.524999991059303,
+        5.950000002980232,
+        4.97749999165535
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "string-prime-32768",
+      "label": "sequential-1MiB",
+      "inputBytes": 1048576,
+      "medianMs": 7.1724999994039536,
+      "samples": [
+        7.1724999994039536,
+        7.1624999940395355,
+        7.03999999165535,
+        8.030000001192093,
+        7.22749999165535
+      ]
+    }
+  ],
+  "cold": [
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "delivered",
+      "firstDecodeMs": 0.8799999952316284,
+      "importMs": 11.7049999833107
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "string-prime-32768",
+      "firstDecodeMs": 3.7450000047683716,
+      "importMs": 1.899999976158142
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "delivered",
+      "firstDecodeMs": 1.375,
+      "importMs": 5.629999995231628
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "string-prime-32768",
+      "firstDecodeMs": 1.1649999916553497,
+      "importMs": 3.219999998807907
+    }
+  ],
+  "verification": [
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "positive": 0,
+      "mutations": 0,
+      "backends": [
+        "js",
+        "wasm"
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "positive": 0,
+      "mutations": 0,
+      "backends": [
+        "js",
+        "js"
+      ]
+    }
+  ]
+}

@@ -25,6 +25,8 @@ plain-JS decoder and native Rust encoder for conventional UTF-8 HTML. It leaves
 the standard builds and verification defaults unchanged.
 Its [19-variant optimization study](docs/utf8-speed.md) provides a 1,777-byte
 throughput build and a separate `--balanced` build for older browsers.
+The follow-up [JS/Wasm study](docs/utf8-hybrid.md) tests 52 hybrid configurations
+and keeps the JS defaults, with optional experimental Wasm modules available.
 
 Try JSON, multilingual text, SVG, arbitrary bytes, gzip logs, and empty files.
 The page encodes local files with Rust/Wasm, explains verification failures,

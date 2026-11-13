@@ -1,0 +1,172 @@
+{
+  "environment": {
+    "browserArgs": [],
+    "recordedAt": "2026-11-13T14:06:43.407Z",
+    "runs": 1,
+    "rounds": 5,
+    "checking": true,
+    "arch": "arm64",
+    "cpu": "unknown",
+    "scope": "Resident string to fresh exact-size bytes; format checks and all conversions included. No integrity verification.",
+    "order": "Rotated fixed batches; fresh process per run; malformed-input checks use separate processes. Import precedes cold first decode and warm-up.",
+    "candidates": [
+      {
+        "name": "delivered",
+        "bytes": 1777,
+        "sha256": "3ba2759480278865a7ea0550c3bdd28b7add3d2ab9fe74750275083db8cea4f8"
+      },
+      {
+        "name": "balanced",
+        "bytes": 1781,
+        "sha256": "1a0c0c900adcd89f08cd279c554ad4fd9af42f2adca6fbe14db6adafbd3535fe"
+      },
+      {
+        "name": "string-cast",
+        "bytes": 3191,
+        "sha256": "84e7bf20ba72670b5fe97dd87e34c093d04fc39bf502bf78124f3eb30a998a90"
+      },
+      {
+        "name": "string-cast-high",
+        "bytes": 3195,
+        "sha256": "d3c97ef0cbd2dc2a8c162d0c044b93d85952d0e7fab55f008b53f057ab956f73"
+      }
+    ],
+    "inputs": [
+      {
+        "binary": "generated/encoding-comparison/random-1KiB.bin",
+        "file": "generated/utf8-prefix/random-1KiB-5.txt",
+        "inputBytes": 1024,
+        "label": "random-1KiB",
+        "profile": 5,
+        "sourceBytes": 1178,
+        "sourceUnits": 1095,
+        "sha256": "cd5139c7cc61f7c5ca3fb9d4f4386af4b8b303029581629795cbd8ab131e54d0"
+      },
+      {
+        "binary": "generated/encoding-comparison/random-64KiB.bin",
+        "file": "generated/utf8-prefix/random-64KiB-5.txt",
+        "inputBytes": 65536,
+        "label": "random-64KiB",
+        "profile": 5,
+        "sourceBytes": 74751,
+        "sourceUnits": 69272,
+        "sha256": "f540ac5d87fd275467341d328f866d241bee9350a3f42ee2a93ebb8db0dd24ad"
+      },
+      {
+        "binary": "generated/encoding-comparison/random-1MiB.bin",
+        "file": "generated/utf8-prefix/random-1MiB-5.txt",
+        "inputBytes": 1048576,
+        "label": "random-1MiB",
+        "profile": 5,
+        "sourceBytes": 1195879,
+        "sourceUnits": 1109419,
+        "sha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434"
+      },
+      {
+        "binary": "generated/encoding-comparison/zeros-1MiB.bin",
+        "file": "generated/utf8-prefix/zeros-1MiB-5.txt",
+        "inputBytes": 1048576,
+        "label": "zeros-1MiB",
+        "profile": 5,
+        "sourceBytes": 1198385,
+        "sourceUnits": 599198,
+        "sha256": "30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58"
+      },
+      {
+        "binary": "generated/encoding-comparison/sequential-1MiB.bin",
+        "file": "generated/utf8-prefix/sequential-1MiB-5.txt",
+        "inputBytes": 1048576,
+        "label": "sequential-1MiB",
+        "profile": 5,
+        "sourceBytes": 1196045,
+        "sourceUnits": 1093649,
+        "sha256": "fbbab289f7f94b25736c58be46a994c441fd02552cc6022352e3d86d2fab7c83"
+      }
+    ]
+  },
+  "rows": [],
+  "cold": [
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "delivered",
+      "firstDecodeMs": 1.3149999976158142,
+      "importMs": 11.439999997615814
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "balanced",
+      "firstDecodeMs": 0.9050000011920929,
+      "importMs": 1.0399999916553497
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "string-cast",
+      "firstDecodeMs": 1.7249999940395355,
+      "importMs": 5.489999979734421
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "string-cast-high",
+      "firstDecodeMs": 0.8400000035762787,
+      "importMs": 1.5100000202655792
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "delivered",
+      "firstDecodeMs": 1.4099999964237213,
+      "importMs": 19.37999999523163
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "balanced",
+      "firstDecodeMs": 1.4149999916553497,
+      "importMs": 1.030000001192093
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "string-cast",
+      "firstDecodeMs": 1.1200000047683716,
+      "importMs": 1.6100000143051147
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "variant": "string-cast-high",
+      "firstDecodeMs": 1.1099999845027924,
+      "importMs": 1.2849999964237213
+    }
+  ],
+  "verification": [
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "positive": 2880,
+      "mutations": 3000,
+      "backends": [
+        "js",
+        "js",
+        "wasm",
+        "wasm"
+      ]
+    },
+    {
+      "browser": "109.0.5414.119",
+      "run": 1,
+      "positive": 2880,
+      "mutations": 3000,
+      "backends": [
+        "js",
+        "js",
+        "js",
+        "js"
+      ]
+    }
+  ]
+}
