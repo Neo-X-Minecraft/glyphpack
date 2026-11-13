@@ -9,20 +9,21 @@ const ranges =
 let table;
 export function warmup() {
   if (table) return;
-  table = new Int16Array(2048);
-  // Every valid entry is negative (bit 15 set). A bitwise AND accumulates
-  // validity with no branch per character; zero/undefined entries invalidate.
+  table = new Int16Array(2048).fill(-1);
+  // Valid entries are the unmodified 15 payload bits; zero is valid. Invalid
+  // entries are -1. OR accumulates the sign bit without masking every symbol.
+  // Out-of-range UTF-16 units are mapped to -1 by the decoder (?? -1).
   // Duplicate ASCII in both bytes. Every entry's high seven bits are the
   // original 7-bit prefix; its low byte supplies the final carried bits.
   for (let c = 1; c < 128; c++)
-    if (!forbidden.includes(c)) table[c] = 0x8000 | (c << 8) | c;
+    if (!forbidden.includes(c)) table[c] = (c << 8) | c;
   let ordinal = 0,
     end = 0;
   for (let i = 0; i < ranges.length; i += 2) {
     const begin = end + ranges.charCodeAt(i) - 32;
     end = begin + ranges.charCodeAt(i + 1) - 32;
     for (let c = begin; c < end && ordinal < 1536; c++, ordinal++)
-      table[c] = 0x8000 | (forbidden[ordinal >>> 8] << 8) | (ordinal & 255);
+      table[c] = (forbidden[ordinal >>> 8] << 8) | (ordinal & 255);
   }
 }
 export function prepare(text) {
@@ -57,7 +58,7 @@ export function prepare(text) {
   return { table, mask: a | (b << 6), length, start };
 }
 export function finish(valid, at, bits, length, last, width, body) {
-  if (valid >= 0) throw Error("Invalid payload character");
+  if (valid < 0) throw Error("Invalid payload character");
   const padding = at * 8 + bits - length * 8;
   if (padding < 0) throw Error("Invalid payload length");
   // Padding can occupy only the final symbol; zero-filled decoded bytes do

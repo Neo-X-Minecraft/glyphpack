@@ -10,73 +10,73 @@ export function decode(text) {
   let pos = start,
     at = 0,
     carry = 0,
-    valid = -1,
+    valid = 0,
     c = 0,
     entry = 0,
     data = 0;
   // Eight symbols produce at most 15 bytes. Reserve that much before entering
   // the unrolled lap so valid padding never causes an out-of-bounds store.
-  // Even ignored typed-array stores can poison V8 feedback on Chrome 109.
+  // Even ignored typed-array stores can change V8 feedback.
   while (pos + 8 <= end && at + 15 <= length) {
     c = text.charCodeAt(pos++);
-    entry = table[c];
-    valid &= entry;
-    data = entry & 32767;
+    entry = table[c] ?? -1;
+    valid |= entry;
+    data = entry;
     if (c >= 128) out[at++] = (data >>> 7) ^ mask;
     carry = data & 127;
 
     c = text.charCodeAt(pos++);
-    entry = table[c];
-    valid &= entry;
-    data = entry & 32767;
+    entry = table[c] ?? -1;
+    valid |= entry;
+    data = entry;
     out[at++] = ((carry << 1) | (data >>> 14)) ^ mask;
     if (c >= 128) out[at++] = (data >>> 6) ^ mask;
     carry = data & 63;
 
     c = text.charCodeAt(pos++);
-    entry = table[c];
-    valid &= entry;
-    data = entry & 32767;
+    entry = table[c] ?? -1;
+    valid |= entry;
+    data = entry;
     out[at++] = ((carry << 2) | (data >>> 13)) ^ mask;
     if (c >= 128) out[at++] = (data >>> 5) ^ mask;
     carry = data & 31;
 
     c = text.charCodeAt(pos++);
-    entry = table[c];
-    valid &= entry;
-    data = entry & 32767;
+    entry = table[c] ?? -1;
+    valid |= entry;
+    data = entry;
     out[at++] = ((carry << 3) | (data >>> 12)) ^ mask;
     if (c >= 128) out[at++] = (data >>> 4) ^ mask;
     carry = data & 15;
 
     c = text.charCodeAt(pos++);
-    entry = table[c];
-    valid &= entry;
-    data = entry & 32767;
+    entry = table[c] ?? -1;
+    valid |= entry;
+    data = entry;
     out[at++] = ((carry << 4) | (data >>> 11)) ^ mask;
     if (c >= 128) out[at++] = (data >>> 3) ^ mask;
     carry = data & 7;
 
     c = text.charCodeAt(pos++);
-    entry = table[c];
-    valid &= entry;
-    data = entry & 32767;
+    entry = table[c] ?? -1;
+    valid |= entry;
+    data = entry;
     out[at++] = ((carry << 5) | (data >>> 10)) ^ mask;
     if (c >= 128) out[at++] = (data >>> 2) ^ mask;
     carry = data & 3;
 
     c = text.charCodeAt(pos++);
-    entry = table[c];
-    valid &= entry;
-    data = entry & 32767;
+    entry = table[c] ?? -1;
+    valid |= entry;
+    data = entry;
     out[at++] = ((carry << 6) | (data >>> 9)) ^ mask;
     if (c >= 128) out[at++] = (data >>> 1) ^ mask;
     carry = data & 1;
 
     c = text.charCodeAt(pos++);
-    entry = table[c];
-    valid &= entry;
-    data = entry & 32767;
+    entry = table[c] ?? -1;
+    valid |= entry;
+    data = entry;
     out[at++] = ((carry << 7) | (data >>> 8)) ^ mask;
     if (c >= 128) out[at++] = data ^ mask;
   }
@@ -85,9 +85,9 @@ export function decode(text) {
   let step = 0;
   while (pos < end) {
     c = text.charCodeAt(pos++);
-    entry = table[c];
-    valid &= entry;
-    data = entry & 32767;
+    entry = table[c] ?? -1;
+    valid |= entry;
+    data = entry;
     if (step) {
       if (at < length)
         out[at] = ((carry << step) | (data >>> (15 - step))) ^ mask;

@@ -102,12 +102,16 @@ stop after the symbol that first covers the original bit length. Zero input
 bytes produce no body. The decoder rejects extra complete symbols, nonzero
 padding, invalid symbols, noncanonical headers and insufficient body bits.
 
-The JavaScript lookup stores 15 data bits and a sign-bit validity flag in each
-`Int16` entry. Both symbol widths, 7 and 15, are congruent modulo 8. Every eight
+The JavaScript lookup stores the unmodified 15 data bits in each `Int16` entry;
+**zero is valid**. Invalid entries are -1. The decoder accumulates the sign bit
+with OR, avoiding a data-mask operation on each symbol. A `?? -1` maps UTF-16
+units outside the 2,048-entry table to the invalid sentinel. Exhaustive code-unit
+comparisons check this path, including surrogates and noncharacters. Both
+symbol widths, 7 and 15, are congruent modulo 8. Every eight
 symbols therefore end byte-aligned: the bulk loop uses constant shifts without
 a variable-width reservoir. Its bound reserves the maximum possible 15 output
 bytes before a lap; the tail guards stores and validates the final padding.
-This avoids even ignored out-of-bounds writes that can hurt older V8 feedback.
+This avoids even ignored out-of-bounds writes that can change V8 feedback.
 
 Every declared length is checked before allocation, including a 1 GiB cap and
 the physical bound of 15 bits per available body character. `decode()` returns
@@ -136,14 +140,18 @@ cargo run --release --locked -- bench prepare --quick
 cargo run --release --locked --example utf8_raw_fixtures
 cargo build --release --locked --example utf8_raw
 node benchmarks/utf8-rival-verify.cjs
-RIVAL_RUNS=3 RIVAL_ROUNDS=9 RIVAL_LABEL=final \
-  RIVAL_VARIANTS=utf8-raw,utf8-unroll,base122-groupUnroll,base122-blockStores,base122-inline122,base122-block122,base122-reference,base122-fork \
+node benchmarks/utf8-wasm-prepare.cjs
+RIVAL_BROWSER=current RIVAL_EXTRA_MANIFEST=generated/utf8-wasm/builds.json \
+  RIVAL_RUNS=3 RIVAL_ROUNDS=9 RIVAL_LABEL=final \
+  RIVAL_VARIANTS=utf8-raw,utf8-previous,utf8-unroll,base122-groupUnroll,base122-block122,base122-reference,wasm-utf16-branchless-copy1,wasm-tokens-unroll \
   node benchmarks/utf8-rival.cjs
 node benchmarks/utf8-rival-report.cjs
 ```
 
-The drivers use `/usr/bin/chromium` and `.tools/chromium109/chromium`. Each
-campaign uses three fresh processes per browser, rotated candidate/batch order,
+The final performance selection uses `/usr/bin/chromium`, pinned to our recorded
+Chromium 156.0.8078.79. Compatibility also runs `.tools/chromium109/chromium`;
+Chrome 109 performance does not decide the selected implementation. The final
+campaign uses three fresh processes, rotated candidate/batch order,
 warm-up, nine measured batches and output hashing outside timing. Valid fixtures
 are checked before timing; malformed-input tests run in separate processes to
 avoid contaminating V8 feedback. The host is unpinned, so the report retains

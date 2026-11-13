@@ -22,10 +22,13 @@ with identical verification, at a throughput tradeoff on some inputs.
 [Current size and initialization measurements](docs/decoder-optimization.md).
 
 **For conventional UTF-8 HTML**, use [`glyphpack/utf8-raw`](docs/utf8-raw.md):
-13.56% expected random-data overhead versus Base122's 14.29%, a 2,342-byte plain
+13.56% expected random-data overhead versus Base122's 14.29%, a 2,319-byte plain
 JavaScript decoder, and direct offline `file://` support. On the measured 1 MiB
-random fixture its complete HTML is 5,555 bytes smaller than the smallest tested
-Base122 HTML, with decode time about 3–4% above the fastest tested Base122 loop.
+random fixture its complete HTML is 5,578 bytes smaller than the smallest tested
+Base122 HTML. The current Chromium 156 comparison records 3.31 ms decoding versus
+3.49 ms for tuned Base122 and 4.26 ms for the fastest Wasm finalist. One selected
+JavaScript implementation ships; [the Wasm/hybrid search](docs/utf8-backends.md)
+keeps slower candidates out of the delivered module.
 [Repeated benchmarks and CSV](benchmarks/results/utf8-rival/report.md).
 It checks the encoding
 structure without a digest, like Base122; existing BLAKE3 defaults are unchanged.

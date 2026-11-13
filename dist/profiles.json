@@ -433,9 +433,9 @@
   },
   "utf8-raw.min.mjs": {
     "backend": "js",
-    "blake3": "e94b67d1d7c8dab136a909983b9f264484ebab0688f518d31b3e8908d0bd7c1c",
+    "blake3": "55789c6c9aa9e390af8c8bfc8318a487196c885dc770da384fd53b05104db210",
     "browserTarget": "chrome109",
-    "bytes": 2342,
+    "bytes": 2319,
     "documentEncoding": "utf-8",
     "formatVersion": 2,
     "lookupBytes": 4096,
@@ -444,9 +444,9 @@
   },
   "utf8-raw.mjs": {
     "backend": "js",
-    "blake3": "3b2b576a28ce1e3da2f25ca04459723dc2ec86ddd736db65a427e69381951058",
+    "blake3": "5c6a896089f141a119079309e34dbc5a2ee7b9cc9f17964f96970543683c0276",
     "browserTarget": "chrome109",
-    "bytes": 4564,
+    "bytes": 4537,
     "documentEncoding": "utf-8",
     "formatVersion": 2,
     "lookupBytes": 4096,

@@ -220,6 +220,30 @@ const root = path.resolve(__dirname, ".."),
               throw Error("Accepted malformed header");
             rejected++;
           }
+          // The sign sentinel and ?? -1 must reject every out-of-alphabet
+          // UTF-16 code unit, including lone surrogates and noncharacters.
+          // Compare output and exact exception text with the independent loop.
+          let unicodeComparisons = 0;
+          for (let cp = 0; cp < 65536; cp++)
+            for (const suffix of ["", "@"]) {
+              const text = "~u2AAB" + String.fromCharCode(cp) + suffix;
+              if (outcome(a.decode, text) !== outcome(b.decode, text))
+                throw Error("Unicode comparison " + cp);
+              unicodeComparisons++;
+            }
+          let state = 0x82a1;
+          const random = () =>
+            (state = (Math.imul(state, 1664525) + 1013904223) >>> 0);
+          for (let i = 0; i < 10000; i++) {
+            const text = cases[random() % cases.length].text,
+              pos = random() % text.length,
+              changed =
+                text.slice(0, pos) +
+                String.fromCharCode(random() & 65535) +
+                text.slice(pos + 1);
+            if (outcome(a.decode, changed) !== outcome(b.decode, changed))
+              throw Error("Random mutation comparison");
+          }
           // Every ordered pair covers potential Unicode composition across symbols.
           const rows = [];
           for (const x of letters) {
@@ -243,6 +267,8 @@ const root = path.resolve(__dirname, ".."),
             valid,
             mutations,
             rejected,
+            unicodeComparisons,
+            randomMutationComparisons: 10000,
             normalizationPairs: letters.length ** 2,
             ownedOutput: true,
           };

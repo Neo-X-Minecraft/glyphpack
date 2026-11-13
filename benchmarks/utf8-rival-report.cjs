@@ -8,7 +8,7 @@ const root = path.resolve(__dirname, ".."),
   raw = JSON.parse(fs.readFileSync(path.join(dir, "final.json"))),
   compat = JSON.parse(fs.readFileSync(path.join(dir, "compatibility.json"))),
   median = (a) => [...a].sort((a, b) => a - b)[a.length >> 1],
-  format = (n) => n.toFixed(3),
+  format = (n) => n.toFixed(n < 0.01 ? 6 : 3),
   csv = (header, rows) =>
     [header, ...rows]
       .map((row) =>
@@ -67,6 +67,7 @@ fs.writeFileSync(
       "process_max_ms",
       "processes",
       "batches",
+      "calls_per_batch",
     ],
     rows.map((r) => [
       r.browser,
@@ -80,6 +81,7 @@ fs.writeFileSync(
       format(r.max),
       r.runs,
       r.batches,
+      r.inputBytes <= 1024 ? 1000 : r.inputBytes <= 65536 ? 20 : 2,
     ]),
   ),
 );
@@ -136,6 +138,13 @@ for (const browser of [...new Set(rows.map((r) => r.browser))])
 const html = compat.pages.filter((p) =>
   ["native-zero", "base122-reference", "base122-groupUnroll"].includes(p.name),
 );
+const backendRows = rows.filter((r) => r.dataset === "random-1MiB");
+const backendTable = backendRows
+  .map(
+    (r) =>
+      `| ${r.variant} | ${format(r.median)} | ${format(r.min)}–${format(r.max)} | ${r.moduleBytes.toLocaleString("en-US")} |`,
+  )
+  .join("\n");
 const report =
   `# UTF-8 versus Base122\n\nRecorded ${raw.environment.recordedAt}; ${raw.environment.arch}, ${raw.environment.cpu}.\n\n` +
   `The selected UTF-8 decoder is **${delivered.moduleBytes.toLocaleString("en-US")} bytes**, with a 4 KiB lazy table. It returns validated, owned, exactly sized output. The Base122 competitors keep their unchecked/view-returning policies. Neither side computes a digest.\n\n` +
@@ -151,9 +160,16 @@ const report =
   compact.join("\n") +
   "\n\n" +
   `The group-unrolled Base122 candidate applies this format's main constant-shift insight to Base122 too. Comparing only with the slower historical baseline would overstate the gain. The result is a size advantage at competitive decode speed, not a universal speed record. Zero/sequential/ASCII fixtures can favor different loops; the same UTF-8 implementation is used throughout.\n\n` +
+  `## One selected implementation\n\nPerformance selection targets **Chromium 156.0.8078.79**. Chrome 109 remains a compatibility check, not a performance target. The shipped decoder contains one 4 KiB-table JavaScript implementation, with no Wasm, backend selection, runtime benchmarking or fallback code.\n\n` +
+  `| Random 1 MiB, complete call | Median ms | Process median range ms | ESM bytes |\n| --- | ---: | ---: | ---: |\n` +
+  backendTable +
+  "\n\n" +
+  `The final Wasm candidates are the best scalar/hybrid finalists from a 21-variant search: UTF-8 staging, UTF-16 staging with three copy loops, translated tokens, scalar/high queues, fixed-phase unrolling, branch-free stores and ASCII blocks. Staging, memory growth when required, decoding and exact output copying are included. The previous delivered module is frozen byte-for-byte as utf8-previous. The selected sign-sentinel lookup removes a mask per symbol and shrinks the module from 2,342 to 2,319 bytes without changing API, packet format, validation or errors. A 128 KiB table did not justify its memory against the 4 KiB table.\n\n` +
+  `An additional SIMD prototype passed native Node vectors and a 1 MiB output hash but crashed this Chromium renderer. It has no accepted browser timing and is excluded. Its cause is unresolved; this does not establish that SIMD is unsupported. Experimental kernels never enter the distribution. See [the backend study](../../../docs/utf8-backends.md) for reproduction and rejected candidates.\n\n` +
   `## Correctness and limits\n\nBoth Chrome versions pass ${compat.browsers[0].valid.toLocaleString("en-US")} valid native vectors (including all 256 masks), ${compat.browsers[0].rejected.toLocaleString("en-US")} rejection cases and ${compat.browsers[0].normalizationPairs.toLocaleString("en-US")} ordered NFC alphabet pairs. ${compat.browsers[0].pages} offline file pages include hostile script sequences and 10 MiB native HTML; Wasm, decompression streams and fetch are disabled. A UTF-8 BOM also survives deliberately incorrect HTTP charset metadata. This is structural validation, not data integrity or authentication.\n\n` +
+  `Both browsers additionally pass ${compat.browsers[0].unicodeComparisons.toLocaleString("en-US")} exhaustive UTF-16-unit output/error comparisons and ${compat.browsers[0].randomMutationComparisons.toLocaleString("en-US")} bounded random-mutation comparisons with the independent decoder.\n\n` +
   `This is one unpinned Linux aarch64 host, not a cross-device guarantee. Raw samples, process ranges, versions, module hashes, input hashes and timing policy are preserved. Malformed inputs run in separate processes from timing.\n\n` +
-  `- [Six-row summary CSV](summary.csv): random 1 MiB, selected decoder and two Base122 baselines.\n- [All aggregated decode comparisons](decode.csv): every selected candidate, dataset and browser, with process ranges.\n- [Every measured batch](final.json).\n- [Offline compatibility and exact file sizes](compatibility.json).\n- [Protocol, limitations and reproduction](../../../docs/utf8-raw.md).\n\n` +
+  `- [Compact summary CSV](summary.csv): random 1 MiB, selected decoder and two Base122 baselines.\n- [All aggregated decode comparisons](decode.csv): every selected candidate, dataset and browser, with process ranges.\n- [Every measured batch](final.json).\n- [Offline compatibility and exact file sizes](compatibility.json).\n- [Protocol, limitations and reproduction](../../../docs/utf8-raw.md).\n\n` +
   `Earlier screen/groups/stores/split/bounded JSON files preserve the candidate search; they are separate campaigns and must not be pooled with the final timing.\n`;
 fs.writeFileSync(path.join(dir, "report.md"), report);
 console.log(report);
