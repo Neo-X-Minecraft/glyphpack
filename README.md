@@ -2,11 +2,12 @@
 
 Dense binary payloads for standalone HTML, by **NeoX**, under **0BSD**.
 Rust handles encoding, adaptive XOR mask selection, HTML insertion, builds and
-benchmark preparation. A specialized Rust/Wasm decoder runs in the browser.
+benchmark preparation. The dense UTF-16 codecs use a specialized Rust/Wasm
+decoder; the separate raw UTF-8 transport uses a small JavaScript decoder.
 
-Every distribution module embeds its Wasm as **native gzip level 9 + base64**.
+The pair/ANS/Windows modules embed their Wasm as **native gzip level 9 + base64**.
 The browser's `DecompressionStream('gzip')` inflates it once during module import.
-There is one production backend, with small JS glue for options and memory I/O.
+These profiles use small JS glue for options and memory I/O.
 Target: **Chrome 109+**. BLAKE3 uses standard Wasm SIMD128 for full chunks.
 
 Open [dist/standalone.html](dist/standalone.html) directly under `file://` for an
@@ -20,7 +21,17 @@ and 15,980 B (complete full). `build --compact-hash` produces smaller BLAKE3 cod
 with identical verification, at a throughput tradeoff on some inputs.
 [Current size and initialization measurements](docs/decoder-optimization.md).
 
-A separate [fast UTF-8 transport experiment](docs/utf8-prefix.md) offers a small
+**For conventional UTF-8 HTML**, use [`glyphpack/utf8-raw`](docs/utf8-raw.md):
+13.56% expected random-data overhead versus Base122's 14.29%, a 2,342-byte plain
+JavaScript decoder, and direct offline `file://` support. On the measured 1 MiB
+random fixture its complete HTML is 5,555 bytes smaller than the smallest tested
+Base122 HTML, with decode time about 3–4% above the fastest tested Base122 loop.
+[Repeated benchmarks and CSV](benchmarks/results/utf8-rival/report.md).
+It checks the encoding
+structure without a digest, like Base122; existing BLAKE3 defaults are unchanged.
+Try the small [offline UTF-8 example](dist/utf8-raw-standalone.html).
+
+The earlier [UTF-8 transport experiment](docs/utf8-prefix.md) offers a small
 plain-JS decoder and native Rust encoder for conventional UTF-8 HTML. It leaves
 the standard builds and verification defaults unchanged.
 Its [19-variant optimization study](docs/utf8-speed.md) provides a 1,777-byte

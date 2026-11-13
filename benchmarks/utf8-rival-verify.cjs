@@ -61,6 +61,13 @@ const root = path.resolve(__dirname, ".."),
       hex: undefined,
     });
   const large = fs.readFileSync(path.join(dir, "large.bin"));
+  const hello = Buffer.from("Hello from GlyphPack. ✓");
+  pages.push({
+    name: "distribution-demo",
+    file: path.join(root, "dist/utf8-raw-standalone.html"),
+    bytes: hello.length,
+    sha256: sha(hello),
+  });
   pages.push({
     name: "native-10MiB",
     file: path.join(dir, "large.html"),

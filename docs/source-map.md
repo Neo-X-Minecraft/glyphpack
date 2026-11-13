@@ -3,6 +3,10 @@
 | Area | Authoritative source |
 | --- | --- |
 | Alphabet, mask scoring and encoding | `src/encoder.rs` |
+| Raw UTF-8 encoding, masks and script-literal escaping | `src/utf8_raw.rs` |
+| Raw UTF-8 header, table, padding and constant-shift decoding | `src/utf8-raw/model.mjs`, `decoder.mjs` |
+| Frozen NFC-stable UTF-8 alphabet | `src/utf8-raw/alphabet.rs` |
+| Raw UTF-8 standalone HTML CLI | `examples/utf8_raw.rs` |
 | Payload indicators, Unicode ranges and Windows character mapping | `src/packing.rs` |
 | Four-state ANS/Windows encoders | `src/encoder/ans.rs` |
 | Optional scoped native mask search | `src/encoder/parallel.rs` |
@@ -57,3 +61,9 @@ measured; the active Rust hash omits that unused operation.
 Native Rust users can disable the default `tools` feature. Encoding, hashes,
 injection and transport then compile without third-party Rust dependencies;
 the CLI and source/build/report modules are omitted. CI tests both feature sets.
+
+The separate `utf8-raw` package entry uses JavaScript only, a 4 KiB table and
+mandatory structural checks, without a digest. It embeds bytes in ordinary UTF-8
+HTML and leaves the existing integrity-checked builds unchanged. Its comparison
+drivers and candidate loops live under `benchmarks/utf8-rival*` and
+`benchmarks/experiments/utf8-rival/`; delivered code lives under `src/`.

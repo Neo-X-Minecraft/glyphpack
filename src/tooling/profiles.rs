@@ -140,6 +140,10 @@ pub fn build_all(root: &Path) -> Result<Value, String> {
     let decoder = fs::read_to_string(out.join("default.mjs")).map_err(|e| e.to_string())?;
     let html=format!("<!doctype html><meta charset=\"utf-8\"><title>GlyphPack standalone</title><output>Loading…</output>{payload}<script type=\"module\">{decoder}\ndocument.querySelector('output').textContent=new TextDecoder().decode(binary(document.getElementById('payload').textContent));</script>\n");
     fs::write(out.join("standalone.html"), html).map_err(|e| e.to_string())?;
+    let raw = crate::utf8_raw::encode("Hello from GlyphPack. ✓".as_bytes(), 0)?;
+    let raw_decoder = crate::utf8_raw::build_decoder(root, true, true)?;
+    let raw_html = format!("\u{feff}<!doctype html><meta charset=utf-8><title>GlyphPack UTF-8 standalone</title><output>Loading…</output><script>{raw_decoder}globalThis.unpacked=GlyphUTF8.decode(\"{}\");document.querySelector('output').textContent=new TextDecoder().decode(unpacked);</script>\n", crate::utf8_raw::script_literal(&raw));
+    fs::write(out.join("utf8-raw-standalone.html"), raw_html).map_err(|e| e.to_string())?;
     fs::write(
         out.join("profiles.json"),
         serde_json::to_string_pretty(&manifest).unwrap() + "\n",
