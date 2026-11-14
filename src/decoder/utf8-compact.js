@@ -1,20 +1,17 @@
-/* 0BSD, NeoX. SO + integrity digit + ~c1; shared existing hash policy. */
-import {
-  prepareCompact,
-  unpackCompact,
-  warmCompact as warmEnumerator,
-  protect,
-} from "./compact-core.mjs";
+/* 0BSD, NeoX. SO + integrity digit + compact transport; old ~c1 still reads. */
+import { runAns } from "./compact-ans.mjs";
+import { prepareCompact, unpackCompact, protect } from "./compact-core.mjs";
 import { prepare, warmup as warmFast } from "./utf8-model.mjs";
 import { unpack } from "./utf8-unpack.mjs";
 import { trailerLength, verifyStored } from "./stored.js";
 import { failure } from "./wasm-runtime.js";
 export function warmCompact() {
-  warmEnumerator();
   warmFast();
 }
 export function runCompact(api, text, verifyFormat, dataKind) {
   if (text.length < 8) throw failure(2);
+  if (text.slice(2, 5) === "~c2")
+    return runAns(api, text, verifyFormat, dataKind);
   const kind = text.charCodeAt(1) - 48,
     payload = text.slice(2),
     fast = payload.startsWith("~u2"),

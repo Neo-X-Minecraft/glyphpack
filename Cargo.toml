@@ -117,3 +117,7 @@ required-features = ["tools"]
 [[example]]
 name = "integration"
 required-features = ["tools"]
+
+[[example]]
+name = "compact_speed"
+required-features = ["tools"]

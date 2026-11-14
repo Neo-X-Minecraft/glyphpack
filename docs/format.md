@@ -5,13 +5,13 @@
 The first code unit is a separate codec indicator, outside the older pair
 alphabet. It is included in `encode_units`, `encode_text`, and binary outputs.
 
-| Code unit    | Codec          | Source representation                   |
-| ------------ | -------------- | --------------------------------------- |
-| U+0009 (TAB) | `pair`         | UTF-16LE; two source bytes              |
-| U+000A (LF)  | `ans`          | UTF-16LE; two source bytes              |
-| U+000B (VT)  | `utf8`         | UTF-8, fast fixed-phase symbols         |
-| U+000E (SO)  | `utf8-compact` | UTF-8, enumerative/guarded fast symbols |
-| U+000C (FF)  | `windows`      | Windows-1252; one source byte           |
+| Code unit    | Codec          | Source representation                                   |
+| ------------ | -------------- | ------------------------------------------------------- |
+| U+0009 (TAB) | `pair`         | UTF-16LE; two source bytes                              |
+| U+000A (LF)  | `ans`          | UTF-16LE; two source bytes                              |
+| U+000B (VT)  | `utf8`         | UTF-8, fast fixed-phase symbols                         |
+| U+000E (SO)  | `utf8-compact` | UTF-8, finite-state ANS / legacy / guarded fast symbols |
+| U+000C (FF)  | `windows`      | Windows-1252; one source byte                           |
 
 The original three indicators survive inert script raw-text parsing. UTF-8
 uses the specialized safe embedding described in [integration.md](integration.md).

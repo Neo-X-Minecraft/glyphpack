@@ -41,8 +41,8 @@ const text = `# Local five-codec integration measurements
 
 Recorded ${meta.recordedAt} on ${records[0].browser}, ${meta.architecture}.
 Three fresh Chromium processes; ${meta.rounds} rotated measured rounds per
-ordinary variant, two calls per batch. Compact uses three single-call rounds per
-process because each call takes about two seconds. Values below are medians of
+ordinary variant, two calls per batch. New compact ANS uses the same ordinary timing batches. Legacy BigInt packets,
+when present, use three single-call rounds; see the paired replacement study. Values below are medians of
 the per-process medians. The CSV retains each process's median range; the JSON
 retains all samples, artifact hashes, input hash and timing scope. No CPU pinning
 or cross-device performance guarantee is implied.
@@ -87,8 +87,9 @@ ${codecs
 Fast UTF-8 saves ${f(meta.base122Bytes - payload("utf8").nativeBytes)} payload bytes
 against Base122 on this input. Compact UTF-8 saves
 ${f(payload("utf8").nativeBytes - payload("utf8-compact").nativeBytes)} more bytes,
-but is hundreds of times slower. Its fixed 4 KiB block enumeration is a
-size-first choice, not a suggested default. These are binary-to-text transports;
+using the new finite-state ANS path. The previous 4 KiB BigInt enumeration
+was much slower; [the paired replacement study](../compact-speed/report.md)
+compares both representations of the same input. These are binary-to-text transports;
 compress redundant input separately when useful.
 
 ## Fast UTF-8 integration cost

@@ -1,9 +1,9 @@
 # Local five-codec integration measurements
 
-Recorded 2026-11-13T20:34:48.356Z on 156.0.8078.79, arm64.
+Recorded 2026-11-14T05:27:13.401Z on 156.0.8078.79, arm64.
 Three fresh Chromium processes; 9 rotated measured rounds per
-ordinary variant, two calls per batch. Compact uses three single-call rounds per
-process because each call takes about two seconds. Values below are medians of
+ordinary variant, two calls per batch. New compact ANS uses the same ordinary timing batches. Legacy BigInt packets,
+when present, use three single-call rounds; see the paired replacement study. Values below are medians of
 the per-process medians. The CSV retains each process's median range; the JSON
 retains all samples, artifact hashes, input hash and timing scope. No CPU pinning
 or cross-device performance guarantee is implied.
@@ -25,33 +25,34 @@ BLAKE3 timing uses separately encoded secure packets, including their trailer.
 
 | Codec | Native payload bytes (none) | Expansion | Full, none (ms) | Full, BLAKE3 (ms) |
 | --- | ---: | ---: | ---: | ---: |
-| pair | 1,052,854 | 0.408% | 2.287 | 3.503 |
-| ans | 1,051,766 | 0.304% | 2.067 | 3.358 |
-| windows | 1,050,083 | 0.144% | 3.472 | 4.708 |
-| utf8 | 1,190,792 | 13.563% | 3.345 | 4.620 |
-| utf8-compact | 1,171,980 | 11.769% | 2071.335 | 2076.595 |
-| Tuned Base122 (UTF-8) | 1,198,373 | 14.286% | 3.465 | — |
+| pair | 1,052,854 | 0.408% | 2.320 | 3.552 |
+| ans | 1,051,766 | 0.304% | 2.115 | 3.358 |
+| windows | 1,050,083 | 0.144% | 3.465 | 4.710 |
+| utf8 | 1,190,792 | 13.563% | 3.405 | 4.693 |
+| utf8-compact | 1,172,468 | 11.815% | 10.323 | 11.428 |
+| Tuned Base122 (UTF-8) | 1,198,373 | 14.286% | 3.500 | — |
 
 Fast UTF-8 saves 7,581 payload bytes
 against Base122 on this input. Compact UTF-8 saves
-18,812 more bytes,
-but is hundreds of times slower. Its fixed 4 KiB block enumeration is a
-size-first choice, not a suggested default. These are binary-to-text transports;
+18,324 more bytes,
+using the new finite-state ANS path. The previous 4 KiB BigInt enumeration
+was much slower; [the paired replacement study](../compact-speed/report.md)
+compares both representations of the same input. These are binary-to-text transports;
 compress redundant input separately when useful.
 
 ## Fast UTF-8 integration cost
 
 | Call | Median ms |
 | --- | ---: |
-| previous-raw | 3.392 |
-| current-raw | 3.400 |
-| utf8-core | 3.240 |
-| utf8-strict-js | 3.400 |
-| utf8-secure-fixed | 4.948 |
-| utf8-none | 3.345 |
-| utf8-secure | 4.620 |
-| utf8-unchecked | 3.367 |
-| base122-tuned | 3.465 |
+| previous-raw | 3.385 |
+| current-raw | 3.398 |
+| utf8-core | 3.280 |
+| utf8-strict-js | 3.442 |
+| utf8-secure-fixed | 4.983 |
+| utf8-none | 3.405 |
+| utf8-secure | 4.693 |
+| utf8-unchecked | 3.382 |
+| base122-tuned | 3.500 |
 
 The original 2,319-byte selected decoder is frozen under experiments, rather
 than reconstructed from later sources. Current raw and fixed strict adapters
@@ -67,17 +68,17 @@ beat it. Integrity verification shares the existing Rust/Wasm implementation.
 
 | Module | Bytes |
 | --- | ---: |
-| default.min.mjs | 9,725 |
+| default.min.mjs | 9,721 |
 | recommended-full.min.mjs | 10,625 |
 | utf8.min.mjs | 10,155 |
-| utf8-compact.min.mjs | 12,312 |
+| utf8-compact.min.mjs | 14,507 |
 | utf8-raw.min.mjs | 2,365 |
-| full.min.mjs | 21,794 |
+| full.min.mjs | 24,172 |
 
-The full ESM embeds 28,789 Wasm bytes compressed
-to 10,355 gzip bytes and
-13,808 base64 characters. These are already
-included in its 21,794-byte module size.
+The full ESM embeds 31,131 Wasm bytes compressed
+to 11,207 gzip bytes and
+14,944 base64 characters. These are already
+included in its 24,172-byte module size.
 It supports all five transports, three integrity policies, both format policies,
 and both pair lookup policies. Defaults remain strict BLAKE3, memory false.
 Compact BLAKE3 scalar code is a separate build flag, not the compact UTF-8 codec.

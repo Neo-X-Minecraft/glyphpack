@@ -30,7 +30,7 @@ jobs:
       - name: Lint SIMD implementation
         env:
           CARGO_ENCODED_RUSTFLAGS: -Ctarget-feature=+simd128
-        run: cargo clippy --locked --target wasm32v1-none -p glyphpack-decoder-wasm --no-default-features --features full,utf8 -- -D warnings
+        run: cargo clippy --locked --target wasm32v1-none -p glyphpack-decoder-wasm --no-default-features --features full,utf8,utf8-compact -- -D warnings
       - name: Lint browser encoder
         run: cargo clippy --locked --target wasm32-unknown-unknown -p glyphpack-encoder-wasm --all-features -- -D warnings
       - run: npm test

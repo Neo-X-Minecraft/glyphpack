@@ -26,17 +26,23 @@ function program(ids, mode) {
   return `<script type="module">try{const u=URL.createObjectURL(new Blob([${literal(source)}],{type:'text/javascript'}));const m=await import(u);URL.revokeObjectURL(u);globalThis.result=[];for(const id of ${JSON.stringify(ids)}){const text=document.getElementById(id).textContent;const b=m.binary(text,{verifyData:${JSON.stringify(mode)}});result.push({id,text,hex:Array.from(b,v=>v.toString(16).padStart(2,'0')).join('')});}}catch(e){globalThis.result={error:e.message};}</script>`;
 }
 function buildPages() {
+  const htmlDir = path.join(dir, "html-" + process.pid);
+  fs.mkdirSync(htmlDir, { recursive: true });
   const sample = v.rows.find(
-      (r) => r.mode === "secure" && r.mask === 0 && r.hex.length === 514,
+      (r) =>
+        r.mode === "secure" &&
+        r.mask === 0 &&
+        r.hex.length === 2048 &&
+        r.packets["utf8-compact"].slice(2, 5) === "~c2",
     ),
-    input = path.join(dir, "html-input.bin");
+    input = path.join(htmlDir, "html-input.bin");
   fs.writeFileSync(input, Buffer.from(sample.hex, "hex"));
   const pages = [],
     fragments = [];
   for (const name of names) {
-    const packet = path.join(dir, `html-${name}.gp`),
-      template = path.join(dir, `html-${name}.template.html`),
-      file = path.join(dir, `html-${name}.html`);
+    const packet = path.join(htmlDir, `html-${name}.gp`),
+      template = path.join(htmlDir, `html-${name}.template.html`),
+      file = path.join(htmlDir, `html-${name}.html`);
     execFileSync(cli, [
       "encode",
       input,
@@ -74,7 +80,7 @@ function buildPages() {
     assert(match, "Missing data element " + name);
     fragments.push(match[0].replace('id="payload"', `id="${name}"`));
   }
-  const mixed = path.join(dir, "mixed.html");
+  const mixed = path.join(htmlDir, "mixed.html");
   fs.writeFileSync(
     mixed,
     "\ufeff<!doctype html><meta charset=utf-8>" +

@@ -4,6 +4,9 @@ This backend campaign predates the five-codec integration. Its frozen 2,319-byte
 selected decoder and measurements are retained for comparison. Current sizes
 and matched complete-call timings are in [integration.md](integration.md).
 
+These measurements concern fast `~u2`. Compact `~c2` instead uses the measured
+faster native ANS path; see [its paired report](../benchmarks/results/compact-speed/report.md).
+
 The `utf8-raw` module contains **one JavaScript decoder**, selected on
 Chromium 156.0.8078.79. Wasm is used only if it makes the complete decode faster;
 none of the successful Wasm/hybrid candidates won here. Chrome 109 remains a

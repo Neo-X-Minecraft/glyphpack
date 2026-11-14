@@ -8,7 +8,8 @@
     "rejections": 441,
     "nativeDispatch": {
       "decode": 1,
-      "verify": 2,
+      "compact": 2,
+      "verify": 1,
       "warm": [
         [
           1,
@@ -51,5 +52,15 @@
     ],
     "pagesPerBrowser": 3,
     "network": 0
+  },
+  "compactAns": {
+    "nativeUnitCases": 3,
+    "oracleComparisons": 44,
+    "rejections": 23,
+    "canonicalStopping": true,
+    "legacyReading": true,
+    "allocationSafety": true,
+    "emptyAndOwnedOutput": true,
+    "actualHtmlInner": "~c2"
   }
 }

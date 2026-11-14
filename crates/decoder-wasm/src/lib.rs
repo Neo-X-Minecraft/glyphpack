@@ -15,6 +15,8 @@ mod hash;
 mod packing;
 #[cfg(feature = "pair")]
 mod unpack;
+#[cfg(feature = "utf8-compact")]
+mod utf8_compact;
 #[cfg(feature = "windows")]
 mod windows;
 
@@ -560,4 +562,99 @@ pub extern "C" fn verify_bytes(length: u32, kind: u32) -> u32 {
         return if different == 0 { 0 } else { DIGEST };
     }
     MODE
+}
+
+/// Decode a prepared ~c2 body, then use the same integrity kernels as every
+/// other codec. Direct ABI callers get independent bounds and policy checks.
+#[cfg(feature = "utf8-compact")]
+#[no_mangle]
+pub extern "C" fn decode_compact(
+    length: u32,
+    low: u32,
+    high: u32,
+    mask: u32,
+    kind: u32,
+    data: u32,
+    format: u32,
+) -> u32 {
+    let state = unsafe { &mut *STATE.0.get() };
+    let length = length as usize;
+    let x = (u64::from(high) << 32) | u64::from(low);
+    let trailer = match kind {
+        0 => 0,
+        1 => 4,
+        2 => 32,
+        _ => return HEADER,
+    };
+    if mask > 255 || x >= 1 << 38 {
+        return HEADER;
+    }
+    if length > 0x40000000 || length < trailer || length > state.input_len.saturating_mul(3) {
+        return LENGTH;
+    }
+    let verify = if cfg!(feature = "none")
+        && (!cfg!(feature = "fast") && !cfg!(feature = "secure") || data == 0)
+    {
+        0
+    } else if cfg!(feature = "fast") && (!cfg!(feature = "secure") || data == 1) {
+        1
+    } else if cfg!(feature = "secure") {
+        2
+    } else {
+        0
+    };
+    if verify != 0 && kind != verify {
+        return MODE;
+    }
+    if length > state.output_cap {
+        let capacity = length.checked_next_power_of_two().unwrap_or(length);
+        let Some(pointer) = state.allocate(capacity) else {
+            return ALLOCATION;
+        };
+        state.output_ptr = pointer;
+        state.output_cap = capacity;
+    }
+    state.output_len = length;
+    state.payload_length = length - trailer;
+    let input = if state.input_len == 0 {
+        &[]
+    } else {
+        unsafe { core::slice::from_raw_parts(state.input_ptr as *const u16, state.input_len) }
+    };
+    let output = if length == 0 {
+        &mut []
+    } else {
+        unsafe { core::slice::from_raw_parts_mut(state.output_ptr as *mut u8, length) }
+    };
+    let checked = cfg!(feature = "format") && (!cfg!(feature = "format-runtime") || format != 0);
+    let status = if checked {
+        utf8_compact::unpack::<true>(input, output, x, mask as u8)
+    } else {
+        utf8_compact::unpack::<false>(input, output, x, mask as u8)
+    };
+    if status != 0 {
+        return status;
+    }
+    #[cfg(feature = "fast")]
+    if verify == 1
+        && hash::xxhash32(&output[..state.payload_length])
+            != u32::from_le_bytes(output[state.payload_length..].try_into().unwrap())
+    {
+        return CHECKSUM;
+    }
+    #[cfg(feature = "secure")]
+    if verify == 2 {
+        #[cfg(feature = "compact-hash")]
+        let digest = hash::blake3_compact(&output[..state.payload_length]);
+        #[cfg(not(feature = "compact-hash"))]
+        let digest = hash::blake3(&output[..state.payload_length]);
+        let mut different = 0u8;
+        for i in 0..32 {
+            different |= digest[i] ^ output[state.payload_length + i];
+        }
+        if different != 0 {
+            return DIGEST;
+        }
+    }
+    0
 }

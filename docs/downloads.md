@@ -23,7 +23,8 @@ loading rules.
 - `full.min.mjs`: all five codecs and all 12 verification/lookup combinations.
 - `core.min.mjs`: mandatory allocation bounds, without optional verification.
 - The web ZIP includes every readable/minified profile, examples and docs.
-- `glyphpack-full.wasm` contains native codecs and shared hashes for custom host integration; UTF-8 unpacking is JavaScript in the full ES module.
+- `glyphpack-full.wasm` contains native codecs and shared hashes for custom host integration; the prepared compact ANS kernel is also native, while fast/legacy UTF-8
+  unpacking stays in the full ES module’s JavaScript.
   Most users should import an ES module instead.
 
 ```js

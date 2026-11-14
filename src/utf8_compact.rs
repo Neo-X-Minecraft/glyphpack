@@ -1,6 +1,8 @@
-//! 0BSD, NeoX. Exact enumerative coding by UTF-8 byte cost. Four KiB blocks
-//! approach the counting bound without external bigint dependencies. This is
-//! deliberately a size-oriented alternative to the fast fixed-phase codec.
+//! 0BSD, NeoX. Compact UTF-8 transport. New packets use finite-state rANS;
+//! the previous 4 KiB enumerative encoder remains available for compatibility.
+#[path = "utf8-compact/ans.rs"]
+mod ans;
+pub use ans::encode;
 use std::{cmp::Ordering, sync::OnceLock};
 const COUNTS: [u32; 4] = [126, 1920, 61406, 1048544];
 const BLOCK: usize = 4096;
@@ -219,7 +221,7 @@ pub fn protect(text: &str) -> String {
 }
 /// Raw compact packet. NUL, CR, surrogates and Unicode noncharacters are
 /// excluded. Normalization/sanitization is outside this binary-text contract.
-pub fn encode(data: &[u8], mask: Option<u8>) -> Result<String, String> {
+pub fn encode_enumerative(data: &[u8], mask: Option<u8>) -> Result<String, String> {
     if data.len() > 0x40000000 {
         return Err("Payload too large".into());
     }
@@ -298,6 +300,7 @@ mod tests {
                 assert!(cp & 65535 < 65534);
             }
         }
-        assert_eq!(encode(&[], None).unwrap(), "~c1AAA");
+        assert_eq!(encode_enumerative(&[], None).unwrap(), "~c1AAA");
+        assert!(encode(&[], None).unwrap().starts_with("~c2"));
     }
 }

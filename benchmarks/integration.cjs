@@ -111,7 +111,9 @@ sources.push({
         method: "binary",
         text: packets[packing + "-" + mode],
         options: { verifyFormat: true, verifyData: mode, memoryHeavy: false },
-        compact: packing === "utf8-compact",
+        compact:
+          packing === "utf8-compact" &&
+          packets[packing + "-" + mode].slice(2, 5) === "~c1",
       });
   jobs.push({
     name: "utf8-unchecked",
@@ -223,7 +225,7 @@ sources.push({
     cpu: os.cpus()[0]?.model,
     runs,
     rounds,
-    scope: `Resident string to fresh owned bytes; includes requested integrity, JS/Wasm staging and copying. Compact uses up to three measured single-call batches; other variants use ${rounds} two-call batches. Encoding, imports, warmup and SHA-256 output checks are excluded.`,
+    scope: `Resident string to fresh owned bytes; includes requested integrity, JS/Wasm staging and copying. Legacy BigInt compact packets use up to three measured single-call batches; other variants use ${rounds} two-call batches. Encoding, imports, warmup and SHA-256 output checks are excluded.`,
     sources: sources.map(({ url, ...r }) => r),
     payloads: v.large.map(({ file, ...r }) => r),
     base122Bytes: Buffer.byteLength(base122),

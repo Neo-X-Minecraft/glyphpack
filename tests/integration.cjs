@@ -62,10 +62,11 @@ const url = (s) =>
           rejections++;
         }
     if (b.name.endsWith("core")) {
-      assert(
-        !code.includes("WebAssembly"),
-        "Raw-only build contains Wasm loading",
-      );
+      if (!b.packings.includes("utf8-compact"))
+        assert(
+          !code.includes("WebAssembly"),
+          "Raw-only build contains Wasm loading",
+        );
       assert(!code.includes("Payload digest mismatch"));
       assert(!code.includes("Invalid payload character"));
     }
@@ -124,7 +125,9 @@ const url = (s) =>
     full.binary(sample.packets.pair);
     assert.equal(hex(held), sample.hex);
   }
-  for (const b of v.builds.filter((b) => b.name.endsWith("core"))) {
+  for (const b of v.builds.filter(
+    (b) => b.name.endsWith("core") && !b.packings.includes("utf8-compact"),
+  )) {
     const wasm = global.WebAssembly,
       ds = global.DecompressionStream;
     try {
@@ -140,7 +143,7 @@ const url = (s) =>
   }
   // Observe actual native calls without adding diagnostic overhead to the build.
   const instantiate = WebAssembly.instantiate,
-    calls = { decode: 0, verify: 0, warm: [] };
+    calls = { decode: 0, compact: 0, verify: 0, warm: [] };
   let api;
   WebAssembly.instantiate = async (...args) => {
     const r = await instantiate(...args);
@@ -153,6 +156,10 @@ const url = (s) =>
           decode(...a) {
             calls.decode++;
             return api.decode(...a);
+          },
+          decode_compact(...a) {
+            calls.compact++;
+            return api.decode_compact(...a);
           },
           verify_bytes(...a) {
             calls.verify++;
@@ -175,16 +182,29 @@ const url = (s) =>
     assert.deepEqual(calls.warm[0], [1, 0]);
     observed.warmup(["utf8", "utf8-compact"], [true, true]);
     assert.deepEqual(calls.warm.at(-1), [0, 0]);
-    for (const name of ["utf8", "utf8-compact"]) {
-      observed.binary(none.packets[name], { verifyData: "none" });
-      assert.equal(calls.decode, 0);
-      assert.equal(calls.verify, 0);
-    }
+    observed.binary(none.packets.utf8, { verifyData: "none" });
+    assert.equal(calls.decode, 0);
+    assert.equal(calls.verify, 0);
+    const c2none = v.rows.find(
+      (r) =>
+        r.mode === "none" &&
+        r.mask === 0 &&
+        r.packets["utf8-compact"].slice(2, 5) === "~c2",
+    );
+    const c2secure = v.rows.find(
+      (r) =>
+        r.mode === "secure" &&
+        r.mask === 0 &&
+        r.packets["utf8-compact"].slice(2, 5) === "~c2",
+    );
+    observed.binary(c2none.packets["utf8-compact"], { verifyData: "none" });
+    assert.equal(calls.compact, 1);
+    assert.equal(calls.verify, 0);
     observed.binary(sample.packets.utf8);
     assert.equal(calls.verify, 1);
-    assert.equal(calls.decode, 0);
-    observed.binary(sample.packets["utf8-compact"]);
-    assert.equal(calls.verify, 2);
+    observed.binary(c2secure.packets["utf8-compact"]);
+    assert.equal(calls.compact, 2);
+    assert.equal(calls.verify, 1);
     assert.equal(calls.decode, 0);
     observed.binary(sample.packets.pair);
     assert.equal(calls.decode, 1);

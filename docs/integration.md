@@ -8,33 +8,38 @@ adapters and tests remain separate; the distribution is bundled for embedding.
 
 ## Selected transports
 
-| Builder name   | Physical source encoding | Implementation    | Intended tradeoff                                                                     |
-| -------------- | ------------------------ | ----------------- | ------------------------------------------------------------------------------------- |
-| `pair`         | UTF-16LE                 | Rust/Wasm         | Small framing, fast decoding                                                          |
-| `ans`          | UTF-16LE                 | Rust/Wasm         | Denser than pair for larger payloads                                                  |
-| `windows`      | Windows-1252             | Rust/Wasm         | Highest source density, single-byte container constraints                             |
-| `utf8`         | UTF-8                    | JavaScript        | Fast Base122 rival; 13.56% expected random-byte expansion                             |
-| `utf8-compact` | UTF-8                    | JavaScript BigInt | Size-first enumerative packing; about 11.77% expansion on the measured random fixture |
+| Builder name   | Physical source encoding | Implementation | Intended tradeoff                                         |
+| -------------- | ------------------------ | -------------- | --------------------------------------------------------- |
+| `pair`         | UTF-16LE                 | Rust/Wasm      | Small framing, fast decoding                              |
+| `ans`          | UTF-16LE                 | Rust/Wasm      | Denser than pair for larger payloads                      |
+| `windows`      | Windows-1252             | Rust/Wasm      | Highest source density, single-byte container constraints |
+| `utf8`         | UTF-8                    | JavaScript     | Fast Base122 rival; 13.56% expected random-byte expansion |
+| `utf8-compact` | UTF-8                    | Rust/Wasm      | Finite-state ANS; about 11.81% expansion                  |
 
 Windows-1252 is a single-byte charset, not UTF-16 or a Windows-only requirement.
 One document has one charset. A mixed decoder accepts all five logical strings;
 that does not preserve a payload's native byte density after transcoding it.
 Compress compressible data before packing when appropriate.
 
-The compact codec enumerates strings by actual UTF-8 byte cost in fixed 4 KiB
-input blocks. Its counting model uses 126 one-byte, 1,920 two-byte, 61,406
-three-byte and 1,048,544 four-byte symbols. It excludes NUL, CR, surrogates and
-Unicode noncharacters. It can contain controls, combining marks and unassigned
-characters. Ordinary UTF-8 HTML and Chrome 109+ support these; Unicode
-normalization, text sanitizers, URLs and JSON require their own handling.
-It is not a compression algorithm for redundant input. The encoder compares
-its enumerative representation with a guarded fast representation and emits the
-smaller actual UTF-8 string. Both are supported by the compact decoder.
+The compact codec now uses a finite-state UTF-8 ANS channel. Frequencies for
+126 one-byte, 1,920 two-byte and 61,406 three-byte scalars approximate the
+capacity-achieving distribution by byte cost. New `~c2` packets use a 38-bit
+state and integer arithmetic, with no large rank or dynamic-programming table.
+The measured native winner specializes constant 32-bit quotients after
+renormalization; JS and alternative Wasm quotient/staging paths were compared.
 
-The compact dynamic-programming model grows lazily to the largest needed block,
-using roughly 9 MiB of BigInt digit storage at the full 4 KiB block size, plus
-engine object overhead. Its multi-second-per-MiB decoding is an explicit
-size-first tradeoff. Fast UTF-8 needs only a 4 KiB lookup table.
+NUL, CR, surrogates and Unicode noncharacters are excluded. Other controls,
+combining marks and unassigned BMP characters remain. Ordinary UTF-8 HTML and
+Chrome 109+ support these; normalization, sanitizers, URLs and JSON need their
+own handling. The encoder still compares guarded compact and fast strings and
+emits the smaller actual UTF-8 representation. This is transport, not input
+compression. Both inner choices share one builder codec.
+
+Old `~c1` 4 KiB enumerative packets remain readable. Only that legacy path
+lazily creates the roughly 9 MiB BigInt model. Explicit compact warm-up prepares
+the 4 KiB fast fallback lookup; the new native ANS path needs no table. It no
+longer warms the old enumerative model. [Replacement measurements and candidate
+comparisons](../benchmarks/results/compact-speed/report.md).
 
 ## Public API and verification
 
@@ -60,8 +65,10 @@ Full builds include all 12 format/data/memory combinations per codec:
 
 Defaults remain **format true, BLAKE3, memory false**. BLAKE3/XXH32 trailers
 cover the original bytes before XOR masking, exactly as for the established
-codecs. UTF-8 unpacking produces stored bytes in JS; checked calls copy those
-bytes once into the existing Wasm input arena and call the shared hash verifier.
+codecs. Fast and legacy UTF-8 unpack in JS; checked calls copy their stored bytes once
+to the shared Wasm verifier. New compact ANS stages UTF-16 input, decodes directly
+into the existing native output arena, and verifies there before returning an
+owned JS copy. It avoids the additional JS-to-Wasm verification copy.
 No hash code is duplicated in JavaScript. No-check calls skip that copy and
 verifier. Returned bytes have an owned buffer and survive later calls.
 
@@ -80,7 +87,7 @@ trailer without checking it. Incorrect checksums/digests throw the existing
 selects exactly one available codec in `pair > ans > windows > utf8 >
 utf8-compact` order, always memory false. Supplied flags correspond by position;
 omitted flags are false. Decode auto-initializes its selected path. Compact
-warm-up prepares both its enumerative table and its fast internal alternative.
+warm-up prepares its fast internal alternative; the new ANS kernel is tableless.
 
 ## Wire dispatch and existing packets
 
@@ -88,11 +95,20 @@ Existing indicators and pair/ANS/Windows packets are unchanged. New frames are:
 
 ```text
 U+000B + ASCII integrity digit 0/1/2 + bare ~u2 packet     (utf8)
-U+000E + ASCII integrity digit 0/1/2 + ~c1 or guarded ~u2  (utf8-compact)
+U+000E + ASCII integrity digit 0/1/2 + ~c2, old ~c1 or guarded ~u2 (utf8-compact)
 ```
 
-The inner headers retain their mask byte and declared stored length. Compact
-`~c1` blocks are enumerative ranks, with zero-based base-32 varint length and
+The inner headers retain their mask byte and declared stored length. New
+`~c2` uses the same base-32 length varint, then seven little-endian base64
+digits for its 38-bit terminal state. Q=2^23, L=2^30; frequencies are 58,821
+for the first 110 ASCII digits, 58,820 for the other 16, 413 for each two-byte
+digit and 3 for each three-byte digit. These sum to Q. Decoding walks characters
+backwards and emits bytes backwards. Exact output coverage, state bounds and
+the final L state are mandatory even with format checks disabled. Strict format
+checking also requires the last encoded symbol to consume an input byte,
+rejecting redundant zero-output terminal symbols.
+
+Legacy `~c1` blocks are enumerative ranks, with zero-based base-32 varint length and
 bytewise XOR. Three U+0001 guards are inserted after `<` before critical script
 transitions, and before naturally occurring guard runs, then reversibly removed
 by the decoder. Strict mode checks their spelling. This prevents `</script>`,
@@ -130,9 +146,11 @@ codec` before decoding, regardless of verification flags. Unselected code,
 lookup tables, hash kernels and option handlers are removed. Secure defaults
 remain pair-only for `default`/`recommended` and pair+ANS for `recommended-full`.
 Secure single-codec `utf8` and `utf8-compact` package exports are also provided.
+Fast UTF-8 with data verification omitted stays pure JS. Selecting compact UTF-8
+now includes its faster native kernel even for a no-hash build.
 
-The full module contains one embedded gzip-9/base64 Wasm member for the three
-native codecs and shared hashes, JS UTF-8 unpackers, selected option dispatch,
+The full module contains one embedded gzip-9/base64 Wasm member for the native
+codecs, compact UTF-8 ANS and shared hashes, JS fast/legacy UTF-8 paths, selected dispatch,
 and warm-up. It uses the faster expanded BLAKE3 implementation by default.
 `--compact-hash` is a separate scalar-hash size tradeoff, unrelated to the
 `utf8-compact` transport; it produces identical BLAKE3 digests.
@@ -149,19 +167,19 @@ matching native file downloads, file imports and self-contained HTML exports.
 
 | Module                     | File bytes |
 | -------------------------- | ---------: |
-| `default.min.mjs`          |      9,725 |
+| `default.min.mjs`          |      9,721 |
 | `recommended-full.min.mjs` |     10,625 |
 | `utf8.min.mjs`             |     10,155 |
-| `utf8-compact.min.mjs`     |     12,312 |
+| `utf8-compact.min.mjs`     |     14,507 |
 | `utf8-raw.min.mjs`         |      2,365 |
-| `full.min.mjs`             |     21,794 |
+| `full.min.mjs`             |     24,172 |
 
-The full module is 21.28 KiB as an ES-module file. Its embedded native kernel is
-28,789 bytes before compression, 10,355 bytes as gzip-9, and 13,808 base64
-characters inside the module. Those embedded bytes are already included in the
-module size, not an additional download. The table measures UTF-8 module files;
-embedding their ASCII code in a UTF-16LE document doubles that code's source
-bytes. Specializing to fewer codecs/policies reduces code size.
+The full module is 23.61 KiB as an ES-module file. Its embedded native kernel is
+31,131 bytes before compression, 11,207 gzip-9 bytes, and 14,944 base64
+characters already included in that size. Embedding ASCII module code in a
+UTF-16LE document doubles its source bytes. Specializing codecs/policies reduces
+code size. The previous BigInt-only compact module and full module were 12,312
+and 21,794 bytes; the new native path adds a small amount of decoder code.
 
 ## Local validation and measurements
 

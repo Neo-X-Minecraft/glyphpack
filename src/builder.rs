@@ -1,5 +1,5 @@
 //! Specialize codec and verification choices into one self-contained ESM.
-//! JS handles UTF-8 unpacking; Rust/Wasm handles pair/ANS/Windows and hashes.
+//! JS handles fast/legacy UTF-8; Rust/Wasm handles compact ANS and hashes.
 //! Required Wasm loads once via gzip/base64; binary() is then synchronous.
 use crate::{
     encoder::Integrity, hash::blake3, packing::Packing, tooling::fixtures::hex, transport,
@@ -17,6 +17,7 @@ const FILES: &[(&str, &str)] = &[
     ("stored.js", include_str!("decoder/stored.js")),
     ("utf8-compact.js", include_str!("decoder/utf8-compact.js")),
     ("compact-core.mjs", include_str!("utf8-compact/decoder.mjs")),
+    ("compact-ans.mjs", include_str!("utf8-compact/ans.mjs")),
     ("utf8-model.mjs", include_str!("utf8-raw/model.mjs")),
     ("utf8-unpack.mjs", include_str!("utf8-raw/unpack.mjs")),
     ("wasm-runtime.js", include_str!("decoder/wasm-runtime.js")),
@@ -146,12 +147,14 @@ fn features(options: &BuildOptions) -> Vec<&'static str> {
             Packing::Pair => Some("pair"),
             Packing::Ans => Some("ans"),
             Packing::Windows => Some("windows"),
-            Packing::Utf8 | Packing::Utf8Compact if options.data != [Integrity::None] => {
-                Some("utf8")
-            }
-            Packing::Utf8 | Packing::Utf8Compact => None,
+            Packing::Utf8Compact => Some("utf8-compact"),
+            Packing::Utf8 if options.data != [Integrity::None] => Some("utf8"),
+            Packing::Utf8 => None,
         })
         .collect::<Vec<_>>();
+    if options.packings.contains(&Packing::Utf8Compact) && options.data != [Integrity::None] {
+        out.push("utf8");
+    }
     if options.compact_hash {
         out.push("compact-hash");
     }
@@ -219,14 +222,17 @@ fn version(executable: &Path) -> Result<Vec<u8>, String> {
 /// between readable/minified adapters and repeated builds of the same profile.
 pub fn build_wasm(options: &BuildOptions) -> Result<PathBuf, String> {
     let mut options = canonical(options)?;
-    if options.packings.iter().all(|p| p.is_utf8()) && options.data == [Integrity::None] {
+    if options.packings == [Packing::Utf8] && options.data == [Integrity::None] {
         return Err("This profile needs no Wasm kernel".into());
     }
-    // Both JS codecs share one hash-only ABI. Cache by native capabilities,
+    // Fast/legacy JS paths share the hash ABI; compact also needs its native
+    // finite-state kernel. Cache by native capabilities,
     // rather than recompiling identical Wasm for every JS codec subset.
     let js_hash = options.packings.iter().any(|p| p.is_utf8()) && options.data != [Integrity::None];
-    options.packings.retain(|p| !p.is_utf8());
-    if js_hash {
+    options
+        .packings
+        .retain(|p| !p.is_utf8() || *p == Packing::Utf8Compact);
+    if js_hash && !options.packings.contains(&Packing::Utf8Compact) {
         options.packings.push(Packing::Utf8);
     }
     let root = crate::project::root()?;
@@ -278,6 +284,7 @@ pub fn build_wasm(options: &BuildOptions) -> Result<PathBuf, String> {
         "crates/decoder-wasm/src/unpack.rs",
         "crates/decoder-wasm/src/ans.rs",
         "crates/decoder-wasm/src/windows.rs",
+        "crates/decoder-wasm/src/utf8_compact.rs",
         "src/packing.rs",
         "src/hash.rs",
         "src/hash/simd.rs",
@@ -381,7 +388,7 @@ impl Drop for Scratch {
 
 pub fn build_decoder(options: &BuildOptions) -> Result<String, String> {
     let options = canonical(options)?;
-    if options.packings.iter().all(|p| p.is_utf8()) && options.data == [Integrity::None] {
+    if options.packings == [Packing::Utf8] && options.data == [Integrity::None] {
         return build_adapter(&options, &[]);
     }
     let wasm = io(fs::read(build_wasm(&options)?))?;
@@ -394,7 +401,7 @@ pub fn build_adapter(options: &BuildOptions, wasm: &[u8]) -> Result<String, Stri
     let options = canonical(options)?;
     let has_utf8 = options.packings.contains(&Packing::Utf8);
     let has_wasm =
-        options.packings.iter().any(|p| !p.is_utf8()) || options.data != [Integrity::None];
+        options.packings.iter().any(|p| *p != Packing::Utf8) || options.data != [Integrity::None];
     let has_compact = options.packings.contains(&Packing::Utf8Compact);
     let payload = if has_wasm {
         transport::base64(&transport::gzip9(wasm)?)

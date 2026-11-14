@@ -3,8 +3,8 @@
 Dense binary payloads for standalone HTML, by **NeoX**, under **0BSD**.
 Rust handles encoding, adaptive XOR mask selection, HTML insertion, builds and
 benchmark preparation. The dense UTF-16 codecs use a specialized Rust/Wasm
-decoder; the two UTF-8 codecs use JavaScript unpacking and share the same
-Rust/Wasm verification routines.
+decoder. Fast UTF-8 uses JavaScript; compact UTF-8 uses the measured faster
+finite-state Rust/Wasm path. All share the same verification routines.
 
 The pair/ANS/Windows modules embed their Wasm as **native gzip level 9 + base64**.
 The browser's `DecompressionStream('gzip')` inflates it once during module import.
@@ -24,11 +24,13 @@ on, BLAKE3 on, and heavy memory off. [Exact integration and current measurements
 For ordinary **UTF-8 HTML**, choose `utf8` for speed or `utf8-compact` for
 size. Both use the established `binary()` API and verification options. Fast
 UTF-8 has 13.56% expected random-data overhead versus Base122's 14.29%; compact
-UTF-8 measured 11.77% on the new 1 MiB fixture, with much slower decoding.
+UTF-8 uses finite-state ANS, retaining about 11.81% overhead with millisecond
+decoding instead of the original BigInt decoder’s two seconds per MiB.
+[Fresh replacement measurements](benchmarks/results/compact-speed/report.md).
 The separate [`glyphpack/utf8-raw`](docs/utf8-raw.md) entry remains a tiny,
 strict, digest-free decoder for the original bare `~u2` transport.
-[The JS/Wasm backend study](docs/utf8-backends.md) explains why UTF-8 unpacking
-uses JavaScript; hashes still use the shared Wasm implementation.
+[The JS/Wasm backend study](docs/utf8-backends.md) explains why fast UTF-8 unpacking
+uses JavaScript. Compact ANS wins in Wasm, and hashes share that same instance.
 Try the small [offline UTF-8 example](dist/utf8-raw-standalone.html).
 
 The earlier [UTF-8 transport experiment](docs/utf8-prefix.md) offers a small
@@ -122,7 +124,7 @@ glyphpack build --packing pair ans --memory-heavy off on -o recommended-adaptive
 | `ans`            | UTF-16LE     | Larger payloads; denser packing with four ANS states        |
 | `windows`        | Windows-1252 | Highest source density when you control document encoding   |
 | `utf8`           | UTF-8        | Fast Base122 alternative with the same verification options |
-| `utf8-compact`   | UTF-8        | Denser enumerative packing; substantially slower            |
+| `utf8-compact`   | UTF-8        | Denser finite-state ANS packing; a measured Wasm path       |
 
 Windows-1252 is a document encoding, supported on Chrome 109+ across operating
 systems. It is not a Windows requirement. It restricts the document shell to
@@ -244,7 +246,7 @@ are secure profiles for those individual codecs. `core.*` and `none.*` are ident
 minimal profiles. `fast-none.*`, `high-memory.*`, and `full.*` show other selections.
 Sizes, digests and embedded Wasm/gzip sizes are recorded in `dist/profiles.json`.
 Profiles containing Wasm require it and `DecompressionStream` during import.
-UTF-8-only builds with `--data none` omit both the kernel and its loader.
+Fast-UTF-8-only builds with `--data none` omit both the kernel and its loader.
 
 ## HTML insertion
 
