@@ -65,8 +65,12 @@
   },
   "meta": {
     "version": "1.0.0",
-    "recordedAt": "2026-11-16T13:14:43.795Z",
-    "fullModuleSha256": "13c85f19a63b5756208b3b09dfe848cb05e9033b479486fc8d982334eed8d981",
+    "recordedAt": "2026-11-16T15:36:44.931Z",
+    "fullModuleSha256": "56b803d9fba2424be5e3b363d80692184996eac9395ee02ffcedbf2fd2a2f194",
     "scope": "Current formats only; Node round trips, 39 browser builds, offline serializers and independent compact arithmetic."
+  },
+  "guards": {
+    "cases": 23375,
+    "policies": 2
   }
 }

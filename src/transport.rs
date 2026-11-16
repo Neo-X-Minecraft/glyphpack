@@ -1,9 +1,5 @@
 //! Native transport helpers for build output. The browser reverses gzip with
 //! its built-in DecompressionStream and base64 with its built-in byte decoder.
-use std::{
-    io::Write,
-    process::{Command, Stdio},
-};
 
 pub fn base64(data: &[u8]) -> String {
     const A: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -28,27 +24,36 @@ pub fn base64(data: &[u8]) -> String {
     out
 }
 
-/// Invoke native gzip at its maximum standard level. -n removes the filename
-/// and timestamp, making the same Wasm input produce a reproducible gzip member.
-pub fn gzip9(data: &[u8]) -> Result<Vec<u8>, String> {
-    let mut child = Command::new("gzip")
-        .args(["-9", "-n", "-c"])
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .map_err(|e| format!("Native gzip is required: {e}"))?;
-    let mut input = child.stdin.take().unwrap();
-    // Drain output while feeding input, so larger/incompressible inputs cannot
-    // fill both process pipes and deadlock. The scoped writer borrows data.
-    std::thread::scope(|scope| {
-        let writer = scope.spawn(move || input.write_all(data));
-        let output = child.wait_with_output().map_err(|e| e.to_string())?;
-        let written = writer.join().map_err(|_| "gzip input thread failed")?;
-        if !output.status.success() {
-            return Err(String::from_utf8_lossy(&output.stderr).into());
+/// Optimize static build assets as reproducible standard gzip. This is a native
+/// build dependency only; browsers still use their built-in decompressor.
+#[cfg(feature = "tools")]
+pub fn gzip(data: &[u8]) -> Result<Vec<u8>, String> {
+    use std::{cell::RefCell, num::NonZeroU64};
+    // Readable/minified adapters and their manifest reuse the same small Wasm.
+    // Keep only the most recent small input, bounding retained memory without
+    // hashes, persistent cache files or repeated expensive compression work.
+    thread_local! {
+        static LAST: RefCell<Option<(Vec<u8>, Vec<u8>)>> = const { RefCell::new(None) };
+    }
+    const CACHE_LIMIT: usize = 128 * 1024;
+    if data.len() <= CACHE_LIMIT {
+        if let Some(hit) = LAST.with_borrow(|last| {
+            last.as_ref()
+                .filter(|(input, _)| input == data)
+                .map(|(_, output)| output.clone())
+        }) {
+            return Ok(hit);
         }
-        written.map_err(|e| e.to_string())?;
-        Ok(output.stdout)
-    })
+    }
+    let options = zopfli::Options {
+        iteration_count: NonZeroU64::new(100).unwrap(),
+        ..zopfli::Options::default()
+    };
+    let mut output = Vec::new();
+    zopfli::compress(options, zopfli::Format::Gzip, data, &mut output)
+        .map_err(|error| error.to_string())?;
+    if data.len() <= CACHE_LIMIT {
+        LAST.with_borrow_mut(|last| *last = Some((data.to_vec(), output.clone())));
+    }
+    Ok(output)
 }

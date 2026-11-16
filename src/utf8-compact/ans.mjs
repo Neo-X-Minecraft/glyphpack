@@ -2,13 +2,11 @@
  * directly in the shared Wasm instance. No decoding tables are needed. */
 import { failure } from "./wasm-runtime.js";
 import { trailerLength } from "./stored.js";
-import { protect } from "./compact-guards.mjs";
+import { unprotect } from "./compact-guards.mjs";
 const digits =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 export function runAns(api, text, verifyFormat, dataKind) {
-  const check = UTF8_FORMAT_RUNTIME ? verifyFormat : UTF8_VERIFY_FORMAT,
-    raw = text.replace(/<\x01\x01\x01/g, "<");
-  if (check && protect(raw) !== text) throw Error("Invalid payload padding");
+  const raw = unprotect(text, verifyFormat);
   if (raw.length < 15 || raw.slice(2, 5) !== "~c2")
     throw Error("Invalid UTF-8 header");
   const a = digits.indexOf(raw[5]),

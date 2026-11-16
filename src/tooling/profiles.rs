@@ -105,7 +105,7 @@ pub fn build_all(root: &Path) -> Result<Value, String> {
                 .map_err(|e| e.to_string())?;
         }
         let wasm = fs::read(wasm_path).map_err(|e| e.to_string())?;
-        let gzip_bytes = crate::transport::gzip9(&wasm)?.len();
+        let gzip_bytes = crate::transport::gzip(&wasm)?.len();
         for minify in [false, true] {
             let file = format!("{name}{}.mjs", if minify { ".min" } else { "" });
             let source = build_decoder(&BuildOptions {
@@ -122,7 +122,7 @@ pub fn build_all(root: &Path) -> Result<Value, String> {
                     "compactHash":options.compact_hash,
                     "packings":options.packings.iter().map(|p|p.name()).collect::<Vec<_>>(),
                     "verifyFormat":options.formats,"verifyData":options.data.iter().map(|m|m.name()).collect::<Vec<_>>(),"memoryHeavy":options.memory,
-                    "wasmBytes":wasm.len(), "gzip9Bytes":gzip_bytes,
+                    "wasmBytes":wasm.len(), "gzipBytes":gzip_bytes, "gzipEncoder":"zopfli-100",
                     "base64Bytes":gzip_bytes.div_ceil(3)*4
                 }),
             );

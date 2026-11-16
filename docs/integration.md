@@ -11,7 +11,7 @@ directly; fast transport copies stored bytes to the shared verifier when needed.
 There are no predecessor readers or compatibility exports. Full exposes only
 binary and warmup. The current standalone utf8-raw leaf exposes decode/warmup.
 
-Required Wasm uses gzip-9/base64 with native DecompressionStream, once at import.
+Required Wasm uses Zopfli-optimized gzip/base64 with native DecompressionStream, once at import.
 Decode is synchronous afterward. Fast-UTF-8-only hashless builds omit Wasm.
 Compact ANS needs no model table; adaptive fast transport shares a 4 KiB table.
 

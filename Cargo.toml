@@ -15,11 +15,12 @@ categories = ["encoding", "command-line-utilities", "web-programming"]
 
 [features]
 default = ["tools"]
-tools = ["dep:serde_json"]
+tools = ["dep:serde_json", "dep:zopfli"]
 parallel-encoder = []
 
 [dependencies]
 serde_json = { version = "=1.0.154", optional = true }
+zopfli = { version = "=0.8.3", default-features = false, features = ["gzip", "std"], optional = true }
 
 [[bin]]
 name = "glyphpack"

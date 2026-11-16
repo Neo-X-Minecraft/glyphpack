@@ -32,7 +32,7 @@ fn xxhash_known_answers() {
 }
 
 #[test]
-fn gzip_handles_input_larger_than_process_pipes() {
+fn gzip_round_trip_for_large_incompressible_input() {
     use std::{
         io::Write,
         process::{Command, Stdio},
@@ -44,7 +44,7 @@ fn gzip_handles_input_larger_than_process_pipes() {
             (seed >> 24) as u8
         })
         .collect();
-    let compressed = glyphpack::transport::gzip9(&input).unwrap();
+    let compressed = glyphpack::transport::gzip(&input).unwrap();
     let mut child = Command::new("gzip")
         .args(["-d", "-c"])
         .stdin(Stdio::piped())

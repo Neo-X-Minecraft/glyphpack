@@ -12,6 +12,9 @@ frozen executable copies. Historical measurements remain as data only.
 - Strict format and BLAKE3 defaults; optional XXH32 or no integrity verification.
 - Selectable build subsets, lazy warm-up and optional pair lookup optimization.
 - Owned output, unconditional allocation/state bounds, Chrome 109+ and file:// HTML.
+- Compact guard checks avoid string rewrites for ordinary packets. Native Zopfli
+  shrinks embedded Wasm without adding browser code; repeated build probes and
+  small-asset compression are cached.
 - Rust native tools, JS/Wasm browser paths, TypeScript declarations, 0BSD licensing.
 
 Future compatibility considers released formats only. Unreleased experiments

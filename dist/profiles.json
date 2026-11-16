@@ -1,13 +1,14 @@
 {
   "ans.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7640,
-    "blake3": "d3b560f2aaf26120309302d74d71778468f25cdf58702a79737c90c2c5b341b5",
+    "base64Bytes": 7340,
+    "blake3": "7e89d8c52f96eff7b4ab672475988c6f5e52c003088fad75a2f7dc3b7d291120",
     "browserTarget": "chrome109",
-    "bytes": 9802,
+    "bytes": 9502,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 5730,
+    "gzipBytes": 5505,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false
     ],
@@ -24,13 +25,14 @@
   },
   "ans.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7640,
-    "blake3": "66562f06e7b39dd9b11081a645bf396cc26e07a8a4f4edbd266bfa75bab68f52",
+    "base64Bytes": 7340,
+    "blake3": "74cd3845846e5c4e6c2af8752fbc4c9549d4296cf2b34b8d912479df088f916a",
     "browserTarget": "chrome109",
-    "bytes": 11004,
+    "bytes": 10704,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 5730,
+    "gzipBytes": 5505,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false
     ],
@@ -47,13 +49,14 @@
   },
   "core.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 1904,
-    "blake3": "f8d8822c687cdf60dd35b8de7f950fd50157c66ca71c855deb4426ed7c2a6640",
+    "base64Bytes": 1848,
+    "blake3": "8b2fc3462be2fcebaddceab951b2ab6f9e63181ddcb90d2e292ac7437f0369ae",
     "browserTarget": "chrome109",
-    "bytes": 3914,
+    "bytes": 3858,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 1426,
+    "gzipBytes": 1384,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false
     ],
@@ -70,13 +73,14 @@
   },
   "core.mjs": {
     "backend": "wasm",
-    "base64Bytes": 1904,
-    "blake3": "a3cbd46c8d28346c0e5caf2fb52359c85c27668131fb5e1f7f8a83e303902f5a",
+    "base64Bytes": 1848,
+    "blake3": "a09400a4401631886f5e134f1ab2e38a6746eb91521ec19f19905f4837472513",
     "browserTarget": "chrome109",
-    "bytes": 5091,
+    "bytes": 5035,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 1426,
+    "gzipBytes": 1384,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false
     ],
@@ -93,13 +97,14 @@
   },
   "default.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7284,
-    "blake3": "d596b37e69e583f42a7b125d7f4f413b7622cad5056159893cb867fe90389e2f",
+    "base64Bytes": 7016,
+    "blake3": "f6703db48f5293e30af10e265ecb22ed9ad20354ddc73e9690f34740440e7f01",
     "browserTarget": "chrome109",
-    "bytes": 9471,
+    "bytes": 9203,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 5463,
+    "gzipBytes": 5262,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false
     ],
@@ -116,13 +121,14 @@
   },
   "default.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7284,
-    "blake3": "bc26abd6a1ae3f2dd0005a6c17537a8775c427de83bef23e3510e0160a5ace09",
+    "base64Bytes": 7016,
+    "blake3": "870acb93b680b2e1b270b393577c64320acc707a19bfce87c0af84611bdf4e17",
     "browserTarget": "chrome109",
-    "bytes": 10703,
+    "bytes": 10435,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 5463,
+    "gzipBytes": 5262,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false
     ],
@@ -139,13 +145,14 @@
   },
   "fast-none.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 3496,
-    "blake3": "eec316ab2deac03c360c81f93b8274555d76723bfcc0ff5d6224ecd708081c5e",
+    "base64Bytes": 3392,
+    "blake3": "baaa551da79d82cd4ef7ccfddca3e763941998e6be39e39070e29f4873a76daa",
     "browserTarget": "chrome109",
-    "bytes": 5954,
+    "bytes": 5850,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 2620,
+    "gzipBytes": 2544,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false
     ],
@@ -164,13 +171,14 @@
   },
   "fast-none.mjs": {
     "backend": "wasm",
-    "base64Bytes": 3496,
-    "blake3": "f737db71cdf507551a2fc1edbc44abe5060f551baff14795b10852729e6265ac",
+    "base64Bytes": 3392,
+    "blake3": "2a42da1b86d693284b88373ee8e6fdc9326f98efefce23daba7fde0c92316005",
     "browserTarget": "chrome109",
-    "bytes": 7385,
+    "bytes": 7281,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 2620,
+    "gzipBytes": 2544,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false
     ],
@@ -189,13 +197,14 @@
   },
   "full.min.mjs": {
     "backend": "js+wasm",
-    "base64Bytes": 14800,
-    "blake3": "28437ac003513bb5ce01b5d563a72e149823d518435600b9027d18f44e19f056",
+    "base64Bytes": 14140,
+    "blake3": "9fcda3a67a760d7776bfbc9c0799f9803a1ff0d8856f748893e9bdf533f7dc4b",
     "browserTarget": "chrome109",
-    "bytes": 22038,
+    "bytes": 21390,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 11099,
+    "gzipBytes": 10603,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false,
       true
@@ -220,13 +229,14 @@
   },
   "full.mjs": {
     "backend": "js+wasm",
-    "base64Bytes": 14800,
-    "blake3": "e82a599e13f2e6e2fbbd7189ed0a625d71bafa3465ee968d7134450697bb52e5",
+    "base64Bytes": 14140,
+    "blake3": "69d344302809010e884f838e290f64d36a55757000ef1441852a77b117bdfff9",
     "browserTarget": "chrome109",
-    "bytes": 27619,
+    "bytes": 26980,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 11099,
+    "gzipBytes": 10603,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false,
       true
@@ -251,13 +261,14 @@
   },
   "high-memory.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7664,
-    "blake3": "52cdc48342032433fe8e86ac5672ec80a05c658808e95a21b366b8b741ed3ff0",
+    "base64Bytes": 7368,
+    "blake3": "e05c6a0a056788cfa7af2e8ea8c59e9fdab6cde01ff297aab064b4c8f3e26cf3",
     "browserTarget": "chrome109",
-    "bytes": 9851,
+    "bytes": 9555,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 5746,
+    "gzipBytes": 5524,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       true
     ],
@@ -274,13 +285,14 @@
   },
   "high-memory.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7664,
-    "blake3": "4f4bd6b1e62f56101d41e5968d967389d5b01c45bc1db5b002d9018923aad44d",
+    "base64Bytes": 7368,
+    "blake3": "cef45de01573f3ba91a77566e297f3ecfe7bb69eae74de9262cdf46290e8158a",
     "browserTarget": "chrome109",
-    "bytes": 11083,
+    "bytes": 10787,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 5746,
+    "gzipBytes": 5524,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       true
     ],
@@ -297,13 +309,14 @@
   },
   "none.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 1904,
-    "blake3": "f8d8822c687cdf60dd35b8de7f950fd50157c66ca71c855deb4426ed7c2a6640",
+    "base64Bytes": 1848,
+    "blake3": "8b2fc3462be2fcebaddceab951b2ab6f9e63181ddcb90d2e292ac7437f0369ae",
     "browserTarget": "chrome109",
-    "bytes": 3914,
+    "bytes": 3858,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 1426,
+    "gzipBytes": 1384,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false
     ],
@@ -320,13 +333,14 @@
   },
   "none.mjs": {
     "backend": "wasm",
-    "base64Bytes": 1904,
-    "blake3": "a3cbd46c8d28346c0e5caf2fb52359c85c27668131fb5e1f7f8a83e303902f5a",
+    "base64Bytes": 1848,
+    "blake3": "a09400a4401631886f5e134f1ab2e38a6746eb91521ec19f19905f4837472513",
     "browserTarget": "chrome109",
-    "bytes": 5091,
+    "bytes": 5035,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 1426,
+    "gzipBytes": 1384,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false
     ],
@@ -343,13 +357,14 @@
   },
   "recommended-full.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 8396,
-    "blake3": "621f1de272b171ffa6ac8f87ccf1b027dee47a0b23707ed8b30332b25ea6e0f0",
+    "base64Bytes": 8080,
+    "blake3": "acaf3250d63258f754aa94a17c92a6a258d5f9a154fde36e0a3b509bd8694db6",
     "browserTarget": "chrome109",
-    "bytes": 10614,
+    "bytes": 10298,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 6297,
+    "gzipBytes": 6060,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false
     ],
@@ -367,13 +382,14 @@
   },
   "recommended-full.mjs": {
     "backend": "wasm",
-    "base64Bytes": 8396,
-    "blake3": "bafe6ffbdce5d8e64f60c01234ff85259c803bf203d8c9dd0bf839c60042877f",
+    "base64Bytes": 8080,
+    "blake3": "7e5681b39d881e71f4fa2d3df9de14b828f9f5d7bd715b2814eae5b6ad0abef8",
     "browserTarget": "chrome109",
-    "bytes": 11877,
+    "bytes": 11561,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 6297,
+    "gzipBytes": 6060,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false
     ],
@@ -391,13 +407,14 @@
   },
   "recommended.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7284,
-    "blake3": "d596b37e69e583f42a7b125d7f4f413b7622cad5056159893cb867fe90389e2f",
+    "base64Bytes": 7016,
+    "blake3": "f6703db48f5293e30af10e265ecb22ed9ad20354ddc73e9690f34740440e7f01",
     "browserTarget": "chrome109",
-    "bytes": 9471,
+    "bytes": 9203,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 5463,
+    "gzipBytes": 5262,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false
     ],
@@ -414,13 +431,14 @@
   },
   "recommended.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7284,
-    "blake3": "bc26abd6a1ae3f2dd0005a6c17537a8775c427de83bef23e3510e0160a5ace09",
+    "base64Bytes": 7016,
+    "blake3": "870acb93b680b2e1b270b393577c64320acc707a19bfce87c0af84611bdf4e17",
     "browserTarget": "chrome109",
-    "bytes": 10703,
+    "bytes": 10435,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 5463,
+    "gzipBytes": 5262,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false
     ],
@@ -437,13 +455,14 @@
   },
   "utf8-compact.min.mjs": {
     "backend": "js+wasm",
-    "base64Bytes": 6724,
-    "blake3": "febede63b8868e2d9a7e12f63f3f59c2065b18dd5810cd19e2ca1852ba00f981",
+    "base64Bytes": 6488,
+    "blake3": "579d618cd239ecb07eea1cf7debebe7ff08ec355145f5723b76e4317071bb089",
     "browserTarget": "chrome109",
-    "bytes": 12672,
+    "bytes": 12448,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 5041,
+    "gzipBytes": 4865,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false
     ],
@@ -460,13 +479,14 @@
   },
   "utf8-compact.mjs": {
     "backend": "js+wasm",
-    "base64Bytes": 6724,
-    "blake3": "c443f68ecbec0d00a00a35ae38100ad25a8f13019209ddffee1cfdaee5896b6d",
+    "base64Bytes": 6488,
+    "blake3": "976250b73be7d5f2df9f139e71a304e5c66902b9b0191f6c0b07b71d17e5252e",
     "browserTarget": "chrome109",
-    "bytes": 16985,
+    "bytes": 16779,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 5041,
+    "gzipBytes": 4865,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false
     ],
@@ -505,13 +525,14 @@
   },
   "utf8.min.mjs": {
     "backend": "js+wasm",
-    "base64Bytes": 5760,
-    "blake3": "3854e8eb00aac191e2fc77e08e681e2c5c93444c38f24f07b956e57590ab3073",
+    "base64Bytes": 5516,
+    "blake3": "a11a20e04a3110f719334a819807d381b6595301af512d74dde88092658c6a46",
     "browserTarget": "chrome109",
-    "bytes": 10155,
+    "bytes": 9911,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 4318,
+    "gzipBytes": 4137,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false
     ],
@@ -528,13 +549,14 @@
   },
   "utf8.mjs": {
     "backend": "js+wasm",
-    "base64Bytes": 5760,
-    "blake3": "21b8e4ce1a758955b8280415482b2774f4b561264f19d7c60e3e184a7c9f5107",
+    "base64Bytes": 5516,
+    "blake3": "f7d5c8996ee48b565b606471dd8a96e4c23b3c8a30d872df5a4408840ad47d02",
     "browserTarget": "chrome109",
-    "bytes": 13434,
+    "bytes": 13190,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 4318,
+    "gzipBytes": 4137,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false
     ],
@@ -551,13 +573,14 @@
   },
   "windows.min.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7408,
-    "blake3": "bcf7fdd076b80036289f117f7ef1d1cdbf3f9e036f7cc5588176eb353694fd7b",
+    "base64Bytes": 7160,
+    "blake3": "ad8d6241bb873bea4dcc255c55fb110081817b710cf07de805c4dff44820f45b",
     "browserTarget": "chrome109",
-    "bytes": 9578,
+    "bytes": 9330,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 5554,
+    "gzipBytes": 5368,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false
     ],
@@ -574,13 +597,14 @@
   },
   "windows.mjs": {
     "backend": "wasm",
-    "base64Bytes": 7408,
-    "blake3": "6eedea28bc3f1bafca3c7914f82124ad202463e528f722782142909b3b8199a1",
+    "base64Bytes": 7160,
+    "blake3": "30d830ea8ca416556b4c206d5402b477709080a80ef214b32f73a9edfda6c67f",
     "browserTarget": "chrome109",
-    "bytes": 10780,
+    "bytes": 10532,
     "compactHash": false,
     "formatVersion": 1,
-    "gzip9Bytes": 5554,
+    "gzipBytes": 5368,
+    "gzipEncoder": "zopfli-100",
     "memoryHeavy": [
       false
     ],

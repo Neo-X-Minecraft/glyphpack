@@ -5,11 +5,18 @@ use crate::{
     encoder::Integrity, hash::blake3, packing::Packing, tooling::fixtures::hex, transport,
 };
 use std::{
-    env, fs,
+    collections::BTreeMap,
+    env,
+    ffi::OsString,
+    fs,
     io::Write,
     path::{Path, PathBuf},
     process::{Command, Stdio},
-    sync::atomic::{AtomicUsize, Ordering},
+    sync::{
+        atomic::{AtomicUsize, Ordering},
+        Mutex, OnceLock,
+    },
+    time::SystemTime,
 };
 
 const FILES: &[(&str, &str)] = &[
@@ -195,11 +202,50 @@ pub fn profile_key(options: &BuildOptions) -> String {
         if options.compact_hash { "-compact" } else { "" }
     )
 }
+// Binaryen's JS distribution starts a Wasm VM even for --version. Probe each
+// tool once per file/environment identity instead of once per build profile.
+type VersionKey = (
+    PathBuf,
+    PathBuf,
+    [Option<OsString>; 5],
+    Option<(u64, Option<SystemTime>)>,
+);
 fn version(executable: &Path) -> Result<Vec<u8>, String> {
+    static VERSIONS: OnceLock<Mutex<BTreeMap<VersionKey, Vec<u8>>>> = OnceLock::new();
+    let directory = io(env::current_dir())?;
+    let resolved = if executable.components().count() == 1 {
+        env::split_paths(&env::var_os("PATH").unwrap_or_default())
+            .map(|part| part.join(executable))
+            .find(|path| path.is_file())
+            .unwrap_or_else(|| executable.to_path_buf())
+    } else {
+        executable.to_path_buf()
+    };
+    let resolved = directory.join(resolved);
+    let metadata = fs::metadata(&resolved)
+        .ok()
+        .map(|m| (m.len(), m.modified().ok()));
+    let environment = [
+        "PATH",
+        "CARGO_HOME",
+        "RUSTUP_HOME",
+        "RUSTUP_TOOLCHAIN",
+        "LD_LIBRARY_PATH",
+    ]
+    .map(env::var_os);
+    let key = (resolved, directory, environment, metadata);
+    let mut cache = VERSIONS
+        .get_or_init(Default::default)
+        .lock()
+        .unwrap_or_else(|e| e.into_inner());
+    if let Some(value) = cache.get(&key) {
+        return Ok(value.clone());
+    }
     let result = io(Command::new(executable).arg("--version").output())?;
     if !result.status.success() {
         return Err(String::from_utf8_lossy(&result.stderr).into());
     }
+    cache.insert(key, result.stdout.clone());
     Ok(result.stdout)
 }
 
@@ -390,7 +436,7 @@ pub fn build_adapter(options: &BuildOptions, wasm: &[u8]) -> Result<String, Stri
         options.packings.iter().any(|p| *p != Packing::Utf8) || options.data != [Integrity::None];
     let has_compact = options.packings.contains(&Packing::Utf8Compact);
     let payload = if has_wasm {
-        transport::base64(&transport::gzip9(wasm)?)
+        transport::base64(&transport::gzip(wasm)?)
     } else {
         String::new()
     };
@@ -632,4 +678,37 @@ pub fn type_declaration(options: &BuildOptions) -> Result<String, String> {
         .join(" | ");
     declaration.push_str(&format!("export declare function warmup(codecs?: readonly ({names})[], memoryHeavy?: readonly boolean[]): void;\n"));
     Ok(declaration)
+}
+
+#[cfg(all(test, unix))]
+mod tests {
+    use super::*;
+    use std::os::unix::fs::PermissionsExt;
+    #[test]
+    fn version_probes_are_reused_and_replaced_tools_are_reprobed() {
+        let folder = env::temp_dir().join(format!(
+            "glyphpack-version-{}-{}",
+            std::process::id(),
+            NEXT.fetch_add(1, Ordering::Relaxed)
+        ));
+        fs::create_dir_all(&folder).unwrap();
+        let executable = folder.join("probe");
+        fs::write(
+            &executable,
+            "#!/bin/sh\nprintf x >> \"$0.calls\"\nprintf one\n",
+        )
+        .unwrap();
+        fs::set_permissions(&executable, fs::Permissions::from_mode(0o700)).unwrap();
+        assert_eq!(version(&executable).unwrap(), b"one");
+        assert_eq!(version(&executable).unwrap(), b"one");
+        assert_eq!(fs::read(folder.join("probe.calls")).unwrap(), b"x");
+        fs::write(
+            &executable,
+            "#!/bin/sh\nprintf x >> \"$0.calls\"\nprintf replacement\n",
+        )
+        .unwrap();
+        assert_eq!(version(&executable).unwrap(), b"replacement");
+        assert_eq!(fs::read(folder.join("probe.calls")).unwrap(), b"xx");
+        fs::remove_dir_all(folder).unwrap();
+    }
 }

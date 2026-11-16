@@ -2,7 +2,8 @@
 
 GlyphPack's own code is copyright 2026 **NeoX**, licensed **0BSD**. That license
 does not replace licenses on the following independent reference implementations.
-They are used only by tests and benchmarks, not by the production JS decoder.
+Reference implementations are used only by tests and benchmarks. Zopfli is a
+native build dependency; its code is absent from the browser decoder.
 
 | Reference | License | Local notice |
 | --- | --- | --- |
@@ -12,6 +13,7 @@ They are used only by tests and benchmarks, not by the production JS decoder.
 | AlttiRi/base85 | MIT | `benchmarks/vendor/encoding-bench/AlttiRi-base85-license` |
 | Noble hashes 2.4.0 BLAKE3 reference bundle | MIT | `tests/vendor/hashes/noble-LICENSE` |
 | hash-wasm 4.13.0 BLAKE3 reference bundle | MIT and its embedded implementation notices | `tests/vendor/hashes/hash-wasm-LICENSE` |
+| [zopfli-rs/zopfli 0.8.3](https://github.com/zopfli-rs/zopfli) | Apache-2.0 | Cargo.lock; native package dependency notices |
 | Official BLAKE3 vectors | CC0 option | `tests/vendor/hashes/blake3-CC0` |
 
 BLAKE3 vectors originate from

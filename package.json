@@ -37,7 +37,7 @@
     "test:site": "node tests/site.cjs",
     "test:types": "tsc --noEmit --strict --module nodenext --target es2022 tests/types.mts",
     "test:package": "node tests/package.cjs",
-    "test:integration": "cargo run --release --locked --example integration && node tests/integration.cjs && node tests/integration-browser.cjs && node tests/integration-html.cjs && node tests/compact.cjs"
+    "test:integration": "node tests/guards.cjs && cargo run --release --locked --example integration && node tests/integration.cjs && node tests/integration-browser.cjs && node tests/integration-html.cjs && node tests/compact.cjs"
   },
   "engines": {
     "node": ">=20"

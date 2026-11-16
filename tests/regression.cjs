@@ -4,17 +4,17 @@ const fs = require("node:fs"),
   path = require("node:path"),
   assert = require("node:assert/strict"),
   esbuild = require("esbuild");
+const { Worker, isMainThread, parentPort, workerData } = require("node:worker_threads");
 const root = path.resolve(__dirname, ".."),
-  v = JSON.parse(
+  v = isMainThread ? JSON.parse(
     fs.readFileSync(
       process.argv[2] || path.join(root, "generated/test-vectors.json"),
     ),
-  ),
+  ) : workerData.v,
   uri = (s) =>
     "data:text/javascript;base64," + Buffer.from(s).toString("base64");
 (async () => {
-  const oracle = await import(
-    uri(
+  const oracleSource = isMainThread ? uri(
       esbuild.buildSync({
         entryPoints: [path.join(root, "tests/reference/pair.mjs")],
         bundle: true,
@@ -22,11 +22,30 @@ const root = path.resolve(__dirname, ".."),
         format: "esm",
         target: "chrome109",
       }).outputFiles[0].text,
-    )
-  );
+    ) : workerData.oracle;
+  const oracle = await import(oracleSource);
   let roundTrips = 0,
     rejections = 0;
   for (const p of v.profiles) {
+    if (isMainThread) {
+      // ESM registries retain Wasm instances. Dispose a worker per profile,
+      // bounding reserved Wasm address space independently of V8's GC policy.
+      const stats = await new Promise((resolve, reject) => {
+        const worker = new Worker(__filename, { workerData: {
+          oracle: oracleSource, v: { profiles: [p], rows: v.rows, zero: v.zero },
+        } });
+        let result;
+        worker.once("message", value => { result = value; });
+        worker.once("error", reject);
+        worker.once("exit", code => {
+          if (code === 0 && result) resolve(result);
+          else reject(Error("Profile worker failed: " + code));
+        });
+      });
+      roundTrips += stats.roundTrips;
+      rejections += stats.rejections;
+      continue;
+    }
     const { binary } = await import(uri(p.source)),
       defaultMode = p.modes.at(-1);
     for (const row of v.rows)
@@ -75,6 +94,10 @@ const root = path.resolve(__dirname, ".."),
         () => binary(v.zero[defaultMode], { verifyData: "unknown" }),
         /Unsupported data verification mode/,
       );
+  }
+  if (!isMainThread) {
+    parentPort.postMessage({ roundTrips, rejections });
+    return;
   }
   const profile = v.profiles.find(
       (p) =>

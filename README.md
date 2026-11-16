@@ -51,7 +51,7 @@ cargo run --release --locked -- encode input.bin --packing utf8-compact -o paylo
 cargo run --release --locked -- inject template.html payload.gp8 standalone.html
 ```
 
-Required Wasm is embedded as gzip-9/base64 and loaded once through native
+Required Wasm is embedded as Zopfli-optimized gzip/base64 and loaded once through native
 DecompressionStream. Decode is synchronous after import. Fast-UTF-8-only hashless
 builds omit Wasm. The current standalone `glyphpack/utf8-raw` leaf exposes
 `decode`/`warmup` for bare fast transport; full builds expose only `binary`/`warmup`.
@@ -64,7 +64,7 @@ local files and uploads nothing. Its existing hosted version is separate from
 this unpublished preparation.
 
 Build prerequisites: Rust 1.85+, wasm32v1-none and wasm32-unknown-unknown, Node 20+,
-native gzip and npm ci. CI pins Rust 1.99.1.
+npm ci. CI pins Rust 1.99.1.
 
 ```sh
 npm test
@@ -77,4 +77,5 @@ npm run test:site
 
 [Format](docs/format.md) · [CLI](docs/cli.md) · [Source map](docs/source-map.md) ·
 [Measurements](benchmarks/results/integration/report.md) ·
-[History](docs/history.md) · [Release notes](CHANGELOG.md).
+[History](docs/history.md) · [Refinement results](benchmarks/results/refinement/report.md) ·
+[Release notes](CHANGELOG.md).

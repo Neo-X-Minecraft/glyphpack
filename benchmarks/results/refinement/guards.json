@@ -1,0 +1,91 @@
+{
+  "browser": "156.0.8078.79",
+  "scope": "Guard-only stress test; 1 MiB synthetic strings, seven two-call batches, single process. Includes string materialization; no Wasm or integrity. Not complete binary() timing.",
+  "sourceSha256": "c4df8e9dc6aff6b7cc4eb7c344bb8ab0db4499a02e7cdfd0c7927d76064e9ca0",
+  "rows": [
+    {
+      "input": "plain",
+      "variant": "baseline",
+      "samples": [
+        0.25,
+        0.25,
+        0.25,
+        0.25,
+        0.25,
+        0.25,
+        0.30000001192092896
+      ],
+      "median": 0.25
+    },
+    {
+      "input": "plain",
+      "variant": "current",
+      "samples": [
+        0.19999998807907104,
+        0.25,
+        0.25,
+        0.30000001192092896,
+        0.3500000238418579,
+        0.3500000238418579,
+        0.3999999761581421
+      ],
+      "median": 0.30000001192092896
+    },
+    {
+      "input": "guarded-script",
+      "variant": "baseline",
+      "samples": [
+        9.099999964237213,
+        9.800000011920929,
+        9.850000023841858,
+        12.949999988079071,
+        14.350000023841858,
+        14.449999988079071,
+        16.850000023841858
+      ],
+      "median": 12.949999988079071
+    },
+    {
+      "input": "guarded-script",
+      "variant": "current",
+      "samples": [
+        5.849999964237213,
+        5.900000035762787,
+        6.200000047683716,
+        6.25,
+        7.450000047683716,
+        9.299999952316284,
+        9.949999988079071
+      ],
+      "median": 6.25
+    },
+    {
+      "input": "guarded-run",
+      "variant": "baseline",
+      "samples": [
+        18.149999976158142,
+        18.75,
+        20.69999998807907,
+        20.75,
+        21,
+        24,
+        25.75
+      ],
+      "median": 20.75
+    },
+    {
+      "input": "guarded-run",
+      "variant": "current",
+      "samples": [
+        9.200000047683716,
+        9.550000011920929,
+        9.550000011920929,
+        14.75,
+        14.799999952316284,
+        15.099999964237213,
+        31.30000001192093
+      ],
+      "median": 14.75
+    }
+  ]
+}

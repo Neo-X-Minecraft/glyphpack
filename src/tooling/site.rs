@@ -3,7 +3,7 @@
 use crate::{
     builder::esbuild_path,
     encoder::{encode_text, EncodeOptions, Integrity},
-    transport::{base64, gzip9},
+    transport::{base64, gzip},
 };
 use serde_json::json;
 use std::{
@@ -84,7 +84,7 @@ pub fn build(root: &Path, out: &Path) -> Result<(), String> {
     }
     run(&mut validate)?;
     let wasm = io(fs::read(validated))?;
-    let compressed = gzip9(&wasm)?;
+    let compressed = gzip(&wasm)?;
     let source = format!(
         "{}\nexport const api=await loadWasm({:?});\n",
         include_str!("../decoder/loader.js"),
@@ -189,7 +189,7 @@ pub fn build(root: &Path, out: &Path) -> Result<(), String> {
             "A compressed asset: decode first, then inflate.",
             "events.jsonl.gz",
             "application/gzip",
-            gzip9(log.as_bytes())?,
+            gzip(log.as_bytes())?,
         ),
         (
             "empty",
