@@ -1,63 +1,22 @@
-# Start with GlyphPack
+# Start with GlyphPack 1.0.0
 
-By NeoX · 0BSD · https://github.com/Neo-X-Minecraft/glyphpack
+Prepared locally; unpublished. By NeoX, under 0BSD.
 
-Try the local-file workbench at https://neo-x-minecraft.github.io/glyphpack/.
-It encodes files, previews bytes, and exports self-contained HTML viewers.
+Open dist/standalone.html directly for an offline example. The workbench's HTML
+exports also run under file:// without companion fetches. Separate ES modules
+follow normal browser origin rules; inline Blob imports are used in exports.
 
-## Open directly from disk
+- default/recommended: pair, strict BLAKE3, memory false.
+- recommended-full: pair+ANS with the same fixed policies.
+- full: all five current codecs and all selected verification/memory options.
+- ans/windows/utf8/utf8-compact: secure single-codec profiles.
+- core/none: pair without optional verification, retaining mandatory safety bounds.
+- utf8-raw: current bare fast transport, structural checks and no digest.
 
-Download `standalone.html`, or open `dist/standalone.html` from the web ZIP.
-It is a complete offline HTML example with inline code and embedded Wasm. It
-works under `file://` with no server, headers, or file-access exceptions.
-For your own local-file viewer, embed the module as that example does, or use
-the workbench's standalone HTML export; separate ESM files follow browser module
-loading rules.
+Full exports binary and warmup only. Defaults are strict BLAKE3 and memory false.
+Required Wasm is embedded as gzip/base64. Sizes and policies are in profiles.json.
+Chrome 109+ is the browser target. Retired payload formats are unsupported.
 
-## Browser modules
-
-- `default.min.mjs`: pair codec, fixed BLAKE3 integrity and format checks.
-- `recommended.min.mjs`: identical to default; pair only, both checks fixed on.
-- `recommended-full.min.mjs`: pair + ANS, both checks fixed on.
-- `ans.min.mjs`, `windows.min.mjs`, `utf8.min.mjs`, `utf8-compact.min.mjs`: secure single-codec alternatives.
-- `full.min.mjs`: all five codecs and all 12 verification/lookup combinations.
-- `core.min.mjs`: mandatory allocation bounds, without optional verification.
-- The web ZIP includes every readable/minified profile, examples and docs.
-- `glyphpack-full.wasm` contains native codecs and shared hashes for custom host integration; the prepared compact ANS kernel is also native, while fast/legacy UTF-8
-  unpacking stays in the full ES module’s JavaScript.
-  Most users should import an ES module instead.
-
-```js
-import { binary } from "./full.min.mjs";
-const bytes = binary(payload);
-```
-
-Import initializes embedded gzip/base64 Wasm once. `binary()` is synchronous
-afterward. No companion Wasm fetch is needed. Target: Chrome 109+.
-Default options: format on, BLAKE3 on, heavy lookup off. New encodings carry a
-codec indicator; modern pair-capable decoders also accept unmarked format-3 data.
-
-Recommended profiles omit heavy lookup. Use a custom build with
-`--memory-heavy off on` to include it. Every module exports `warmup()` (first
-available codec in pair > ANS > Windows > UTF-8 > compact UTF-8 order, memory false), or
-`warmup(['ans','pair'],[true,false])` for explicit aligned lists. Only pair uses
-the memory flag; the other codecs ignore it.
-
-The npm tarball can be installed directly with `npm install ./glyphpack-0.2.2.tgz`;
-it contains the same modules and specialized TypeScript declarations.
-
-## Native tools and results
-
-Linux x86_64 and aarch64 musl archives contain a static native CLI, its commit,
-and licenses. Encoding and injection work from any directory. Other build
-commands need a matching checkout. See the archive README.
-
-The benchmark archive contains actual measurements, environment details,
-methodology and compact CSV/SVG reports. Results describe specific hosts and
-browser versions; they are not universal performance guarantees.
-
-Verify downloads with `sha256sum -c SHA256SUMS`. Use GitHub's source archive
-for the Rust encoder, injector, specialized decoder, tests and build tooling.
-
-See [the five-codec integration](integration.md) for framing, raw helpers and
-UTF-8-only builds that omit Wasm when verification is disabled.
+A local npm archive can be installed with npm install ./glyphpack-1.0.0.tgz.
+The native CLI's encode/inject commands work independently of the checkout.
+See cli.md, format.md and the root README for current commands and contracts.

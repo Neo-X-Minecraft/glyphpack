@@ -105,7 +105,6 @@ fn main_impl() -> Result<()> {
                             _ => return Err("effort must be full or fast".into()),
                         }
                     }
-                    "--legacy" => options.legacy = true,
                     "--text" => text = true,
                     "-o" | "--output" => output = Some(next(args, &mut at)?),
                     "-" => input = "-",
@@ -157,11 +156,9 @@ fn main_impl() -> Result<()> {
                         options.formats = vec![false];
                         selected = true;
                     }
-                    "--legacy" => options.legacy = true,
                     "--full" => full = true,
                     "--all" => all = true,
                     "--readable" => options.minify = false,
-                    "--module" => options.module = true,
                     "--esbuild" => options.esbuild = Some(next(args, &mut at)?.into()),
                     "-o" | "--output" => output = Some(next(args, &mut at)?),
                     s => return Err(format!("Unknown build option: {s}")),
@@ -316,7 +313,6 @@ fn main_impl() -> Result<()> {
             let path = tooling::fixtures::write_vectors(&root()?)?;
             for file in [
                 "tests/regression.cjs",
-                "tests/payload_decoder_test.js",
                 "tests/blake3_test.js",
                 "tests/wasm.cjs",
             ] {
@@ -354,7 +350,6 @@ fn main_impl() -> Result<()> {
             }
             tooling::benchmark::run(&root()?, args)
         }
-        "history-report" => tooling::history_report::write(&root()?),
         "test-codecs" => {
             let path = tooling::codecs::prepare(&root()?)?;
             let status = Command::new("node")
@@ -387,7 +382,7 @@ fn main_impl() -> Result<()> {
             _ => Err("Usage: glyphpack summary [--input CSV --output directory]".into()),
         },
         "help" | "--help" | "-h" => {
-            println!("GlyphPack\n\n  encode [input|-] [--packing pair|ans|windows|utf8|utf8-compact] [--checksum secure|fast|none] [--mask N] [--text] [-o path]\n  build [--full|--all] [--packing pair ans windows utf8 utf8-compact] [--format on off] [--data none fast secure]\n        [--memory-heavy off on] [--compact-hash] [--module] [--readable] [--types path] [-o path]\n  inject template.html payload output.html [--encoding utf8|utf16le|windows1252]\n  demo [output.html]\n  fixtures\n  test-js\n  test-codecs\n  bench prepare|run|smoke|history [--quick]\n  history-report\n  site [--output directory]\n  summary");
+            println!("GlyphPack\n\n  encode [input|-] [--packing pair|ans|windows|utf8|utf8-compact] [--checksum secure|fast|none] [--mask N] [--text] [-o path]\n  build [--full|--all] [--packing pair ans windows utf8 utf8-compact] [--format on off] [--data none fast secure]\n        [--memory-heavy off on] [--compact-hash] [--readable] [--types path] [-o path]\n  inject template.html payload output.html [--encoding utf8|utf16le|windows1252]\n  demo [output.html]\n  fixtures\n  test-js\n  test-codecs\n  bench prepare|run|smoke [--quick]\n  site [--output directory]\n  summary");
             Ok(())
         }
         s => Err(format!("Unknown command: {s}")),

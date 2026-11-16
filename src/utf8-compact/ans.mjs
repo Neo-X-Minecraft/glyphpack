@@ -1,8 +1,8 @@
 /* 0BSD, NeoX. Small ~c2 header adapter; the measured winner unpacks and verifies
- * directly in the shared Wasm instance. Legacy BigInt tables are not warmed. */
+ * directly in the shared Wasm instance. No decoding tables are needed. */
 import { failure } from "./wasm-runtime.js";
 import { trailerLength } from "./stored.js";
-import { protect } from "./compact-core.mjs";
+import { protect } from "./compact-guards.mjs";
 const digits =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 export function runAns(api, text, verifyFormat, dataKind) {

@@ -15,7 +15,7 @@ const fields=['record_type','stage','timestamp_utc','browser','v8','architecture
 const hashes=Object.fromEntries([['codec_sha256','dist/full.min.mjs'],['competitors_sha256','generated/encoding-comparison/competitors.mjs'],['verifier_sha256','generated/encoding-comparison/checks.mjs']].map(([k,p])=>[k,crypto.createHash('sha256').update(fs.readFileSync(path.join(root,p))).digest('hex')]));
 const csv=value=>{const s=value==null?'':String(value);return /[",\r\n]/.test(s)?'"'+s.replaceAll('"','""')+'"':s;};
 const rows=[],median=a=>{a=a.slice().sort((a,b)=>a-b);return(a[(a.length-1)>>1]+a[a.length>>1])/2;};
-const report={schema:1,startedAt:new Date().toISOString(),commit:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),environment:{os:os.platform(),release:os.release(),node:process.version,cpuModels:[...new Set(os.cpus().map(c=>c.model))],logicalCpus:os.cpus().length,totalMemoryBytes:os.totalmem()},pass:false,mode:smoke?'smoke':'comparison',targetVersion:version,architecture:os.arch(),runs:[],methodology:{timed:'resident JS string -> freshly allocated bytes, including selected verification',excluded:'encoding, I/O, module/text parsing, SHA-256 correctness checks',statistics:'3 fresh browser processes; 3 warm-up rounds excluded; 9 measured batches; rotated order',cache:'one shared full-module instance per browser; heavy table lazy and then warm',selection:'fastest correct tested candidate by geometric mean of two screening datasets; no global fastest claim',base121:'local Base122 extension excluding <; not a published standard',format:'all timed inputs valid; peer structural checks differ',backend:'Rust/Wasm; gzip decompression, base64 decoding and Wasm compilation/instantiation finish before timers; peer verifiers use the historical JS reference',fixtures:'deterministic synthetic data plus caller-supplied binaries; historical asset inputs are not bundled'},hashes};
+const report={schema:1,startedAt:new Date().toISOString(),commit:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),worktreeDirty:!!execFileSync('git',['status','--porcelain'],{cwd:root,encoding:'utf8'}).trim(),environment:{os:os.platform(),release:os.release(),node:process.version,cpuModels:[...new Set(os.cpus().map(c=>c.model))],logicalCpus:os.cpus().length,totalMemoryBytes:os.totalmem()},pass:false,mode:smoke?'smoke':'comparison',targetVersion:version,architecture:os.arch(),runs:[],methodology:{timed:'resident JS string -> freshly allocated bytes, including selected verification',excluded:'encoding, I/O, module/text parsing, SHA-256 correctness checks',statistics:'3 fresh browser processes; 3 warm-up rounds excluded; 9 measured batches; rotated order',cache:'one shared full-module instance per browser; heavy table lazy and then warm',selection:'fastest correct tested candidate by geometric mean of two screening datasets; no global fastest claim',base121:'local Base122 extension excluding <; not a published standard',format:'all timed inputs valid; peer structural checks differ',backend:'Rust/Wasm; gzip decompression, base64 decoding and Wasm compilation/instantiation finish before timers; peer verifiers use independent JS hash references',fixtures:'deterministic synthetic data plus caller-supplied binaries'},hashes};
 const record=(context,stage,sample,result)=>{
  for(const m of result.measurements)rows.push({...context,...hashes,record_type:'sample',stage,timestamp_utc:new Date().toISOString(),dataset:sample.label,decoded_bytes:sample.bytes,family:m.family,implementation:m.implementation,variant_id:m.id,integrity_mode:m.tier,verification_algorithm:{none:'none',fast:'XXH32',secure:'BLAKE3-256'}[m.tier],verify_format:m.verifyFormat,memory_heavy:m.memoryHeavy,input_format:m.input,phase:m.phase,sample_index:m.round,execution_order:m.order,iterations:m.batch,total_decode_ms:m.totalMs,decode_ms:m.decodeMs,throughput_MB_per_s:sample.bytes/1000/m.decodeMs,correct:true,source:m.source,expected_decoded_sha256:sample.sha256,notes:'Output SHA-256 checked outside timer; decimal MB/s'});
 };
@@ -52,12 +52,40 @@ const record=(context,stage,sample,result)=>{
    const doc=await browser.newPage();await doc.context().setOffline(true);await doc.goto(require('node:url').pathToFileURL(demo).href);await doc.waitForFunction(()=>document.querySelector('output')?.textContent==='Hello from GlyphPack. ✓');report.utf16HtmlRoundTrip=true;
    if(smoke){
     const fixture=read('generated/test-vectors.json');
-    report.profileMatrix=await page.evaluate(async v=>{
-     let roundTrips=0;
-     for(const p of v.profiles){const {binary}=await import('data:text/javascript;base64,'+btoa(p.source));for(const row of v.rows.slice(0,6))for(const verifyFormat of p.formats)for(const verifyData of p.modes)for(const memoryHeavy of p.memories){const b=binary(row.packets[verifyData],{verifyFormat,verifyData,memoryHeavy});if(Array.from(b,x=>x.toString(16).padStart(2,'0')).join('')!==row.rawHex)throw Error('Profile matrix mismatch');roundTrips++;}}
-     for(const file of ['full.mjs','full.min.mjs']){const {binary}=await import('/dist/'+file);for(const verifyFormat of [false,true])for(const verifyData of ['none','fast','secure'])for(const memoryHeavy of [false,true]){const row=v.rows.at(-1),b=binary(row.packets[verifyData],{verifyFormat,verifyData,memoryHeavy});if(Array.from(b,x=>x.toString(16).padStart(2,'0')).join('')!==row.rawHex)throw Error('ESM mismatch');roundTrips++;}}
-     return{profiles:v.profiles.length,roundTrips,esmCombinations:24};
-    },fixture);
+    // ESM registries retain instantiated Wasm memories. A separate context per
+    // build releases those roots instead of exhausting the browser's reserved
+    // Wasm address space while checking all 63 independently usable profiles.
+    let roundTrips=0;
+    for(const profile of fixture.profiles){
+     const isolated=await browser.newContext();
+     try{
+      const probe=await isolated.newPage();
+      await probe.goto(origin+'/benchmarks/blank.html');
+      roundTrips+=await probe.evaluate(async ({profile:p,rows})=>{
+       const {binary}=await import('data:text/javascript;base64,'+btoa(p.source));
+       let checked=0;
+       for(const row of rows)for(const verifyFormat of p.formats)for(const verifyData of p.modes)for(const memoryHeavy of p.memories){
+        const b=binary(row.packets[verifyData],{verifyFormat,verifyData,memoryHeavy});
+        if(Array.from(b,x=>x.toString(16).padStart(2,'0')).join('')!==row.rawHex)throw Error('Profile matrix mismatch');
+        checked++;
+       }
+       return checked;
+      },{profile,rows:fixture.rows.slice(0,6)});
+     }finally{await isolated.close();}
+    }
+    const esmCombinations=await page.evaluate(async row=>{
+     let checked=0;
+     for(const file of ['full.mjs','full.min.mjs']){
+      const {binary}=await import('/dist/'+file);
+      for(const verifyFormat of [false,true])for(const verifyData of ['none','fast','secure'])for(const memoryHeavy of [false,true]){
+       const b=binary(row.packets[verifyData],{verifyFormat,verifyData,memoryHeavy});
+       if(Array.from(b,x=>x.toString(16).padStart(2,'0')).join('')!==row.rawHex)throw Error('ESM mismatch');
+       checked++;
+      }
+     }
+     return checked;
+    },fixture.rows.at(-1));
+    report.profileMatrix={profiles:fixture.profiles.length,roundTrips:roundTrips+esmCombinations,esmCombinations};
 
    }
   }finally{await browser.close();}

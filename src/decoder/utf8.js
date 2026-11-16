@@ -1,4 +1,4 @@
-/* 0BSD, NeoX. Format-4 UTF-8: VT, integrity digit, unchanged raw ~u2 packet.
+/* 0BSD, NeoX. Current fast UTF-8: VT, integrity digit and raw ~u2 packet.
  * JS unpacks; selected Rust/Wasm hashes verify decoded stored bytes. Raw-only
  * builds erase this verifier and need neither Wasm nor a decompression loader. */
 import { prepare, warmup } from "./utf8-model.mjs";

@@ -1,6 +1,6 @@
-/* 0BSD, NeoX. SO + integrity digit + compact transport; old ~c1 still reads. */
+/* 0BSD, NeoX. Current compact ANS or adaptive fast representation only. */
 import { runAns } from "./compact-ans.mjs";
-import { prepareCompact, unpackCompact, protect } from "./compact-core.mjs";
+import { protect } from "./compact-guards.mjs";
 import { prepare, warmup as warmFast } from "./utf8-model.mjs";
 import { unpack } from "./utf8-unpack.mjs";
 import { trailerLength, verifyStored } from "./stored.js";
@@ -24,13 +24,12 @@ export function runCompact(api, text, verifyFormat, dataKind) {
           : UTF8_VERIFY_FORMAT;
   if (fast && check && protect(raw) !== payload)
     throw Error("Invalid payload padding");
-  const header = fast ? prepare(raw) : prepareCompact(raw),
+  if (!fast) throw Error("Unsupported payload format");
+  const header = prepare(raw),
     trailer = trailerLength(kind, header.length, dataKind);
   return verifyStored(
     api,
-    fast
-      ? unpack(raw, header, verifyFormat)
-      : unpackCompact(raw, header, verifyFormat),
+    unpack(raw, header, verifyFormat),
     trailer,
     dataKind,
   );

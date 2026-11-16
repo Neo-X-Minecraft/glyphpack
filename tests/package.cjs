@@ -57,11 +57,11 @@ const fs = require("node:fs/promises"),
     const script = `import assert from 'node:assert/strict';
 const fixture=${JSON.stringify(fixture)};
 const check=bytes=>assert.equal(Buffer.from(bytes).toString('hex'),fixture.rawHex);
-for(const name of ['glyphpack','glyphpack/high-memory']){const m=await import(name);m.warmup();check(m.binary(fixture.packets.secure));}
-for(const name of ['glyphpack/core','glyphpack/none']){const m=await import(name);m.warmup();check(m.binary(fixture.packets.none));}
+for(const name of ['glyphpack','glyphpack/high-memory']){const m=await import(name);m.warmup();check(m.binary(fixture.tagged.pair.secure));}
+for(const name of ['glyphpack/core','glyphpack/none']){const m=await import(name);m.warmup();check(m.binary(fixture.tagged.pair.none));}
 const {binary,warmup}=await import('glyphpack/full');warmup(['pair','ans','windows']);warmup([]);let cases=4;
-for(const verifyData of ['none','fast','secure'])for(const verifyFormat of [false,true])for(const memoryHeavy of [false,true]){check(binary(fixture.packets[verifyData],{verifyData,verifyFormat,memoryHeavy}));cases++;}
-const {binary:fast,warmup:warmFast}=await import('glyphpack/fast-none');warmFast();for(const verifyData of ['none','fast'])for(const verifyFormat of [false,true]){check(fast(fixture.packets[verifyData],{verifyData,verifyFormat}));cases++;}
+for(const verifyData of ['none','fast','secure'])for(const verifyFormat of [false,true])for(const memoryHeavy of [false,true]){check(binary(fixture.tagged.pair[verifyData],{verifyData,verifyFormat,memoryHeavy}));cases++;}
+const {binary:fast,warmup:warmFast}=await import('glyphpack/fast-none');warmFast();for(const verifyData of ['none','fast'])for(const verifyFormat of [false,true]){check(fast(fixture.tagged.pair[verifyData],{verifyData,verifyFormat}));cases++;}
 for(const packing of ['pair','ans','windows','utf8','utf8-compact']){
  const name=packing==='pair'?'glyphpack':'glyphpack/'+packing, mod=await import(name), selected=mod.binary;
  assert.equal(mod.warmup.length,2);assert.equal(mod.warmup(),undefined);mod.warmup([packing],[false]);

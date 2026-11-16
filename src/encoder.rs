@@ -9,7 +9,7 @@ mod ans;
 #[path = "encoder/parallel.rs"]
 mod parallel;
 
-pub const FORMAT_VERSION: u8 = 4;
+pub const FORMAT_VERSION: u8 = 1;
 pub const RADIX: u64 = 63385;
 pub const THRESHOLD: u64 = RADIX * RADIX - 2147483649;
 static ALPHABET: OnceLock<Vec<u16>> = OnceLock::new();
@@ -67,7 +67,6 @@ pub struct EncodeOptions {
     pub integrity: Integrity,
     pub mask: Option<u8>,
     pub effort: Effort,
-    pub legacy: bool,
 }
 impl Default for EncodeOptions {
     fn default() -> Self {
@@ -76,7 +75,6 @@ impl Default for EncodeOptions {
             integrity: Integrity::Secure,
             mask: None,
             effort: Effort::Full,
-            legacy: false,
         }
     }
 }
@@ -402,9 +400,6 @@ impl Output for Text<'_> {
 }
 
 fn utf8_text(data: &[u8], options: &EncodeOptions) -> Result<String, String> {
-    if options.legacy {
-        return Err("Legacy packets support only pair packing".into());
-    }
     let trailer = match options.integrity {
         Integrity::None => Vec::new(),
         Integrity::Fast => xxhash32(data).to_le_bytes().to_vec(),
@@ -456,9 +451,6 @@ fn utf8_text(data: &[u8], options: &EncodeOptions) -> Result<String, String> {
 }
 
 fn encode<O: Output>(data: &[u8], options: &EncodeOptions, out: &mut O) -> Result<(), String> {
-    if options.legacy && options.packing != Packing::Pair {
-        return Err("Legacy packets support only pair packing".into());
-    }
     if options.packing.is_utf8() {
         let text = utf8_text(data, options)?;
         out.reset(text.len());
@@ -469,11 +461,6 @@ fn encode<O: Output>(data: &[u8], options: &EncodeOptions, out: &mut O) -> Resul
     }
     if options.packing != Packing::Pair {
         return ans::encode(data, options, out);
-    }
-    if options.legacy
-        && (options.integrity != Integrity::None || options.mask.is_some_and(|m| m != 0))
-    {
-        return Err("Legacy packets do not support masks or checksums".into());
     }
     let trailer = match options.integrity {
         Integrity::None => 0,
@@ -497,9 +484,7 @@ fn encode<O: Output>(data: &[u8], options: &EncodeOptions, out: &mut O) -> Resul
     // Reuse the exact pair count already obtained by automatic mask search.
     // Explicit masks reserve a conservative 31-bit bound instead of adding an
     // entire counting pass. Both strategies avoid output-buffer growth/copies.
-    let (mask, pairs) = if options.legacy {
-        (0, (length as u64 * 8).div_ceil(31) as usize)
-    } else if let Some(mask) = options.mask {
+    let (mask, pairs) = if let Some(mask) = options.mask {
         (mask, (length as u64 * 8).div_ceil(31) as usize)
     } else {
         let choice = choose_mask_in(&stored, options.effort);
@@ -510,12 +495,8 @@ fn encode<O: Output>(data: &[u8], options: &EncodeOptions, out: &mut O) -> Resul
     let a = alphabet();
     debug_assert_eq!(a.len() as u64, RADIX);
     out.reset(pairs * 2 + 4);
-    if !options.legacy {
-        out.unit(options.packing.tag());
-    }
-    if options.legacy {
-        out.pair(a[(n % RADIX) as usize], a[(n / RADIX) as usize]);
-    } else if n < 32 * RADIX {
+    out.unit(options.packing.tag());
+    if n < 32 * RADIX {
         out.pair(
             a[mode as usize + 1024 * (n / RADIX) as usize],
             a[(n % RADIX) as usize],
@@ -562,7 +543,7 @@ fn encode<O: Output>(data: &[u8], options: &EncodeOptions, out: &mut O) -> Resul
     Ok(())
 }
 
-/// Logical UTF-16 code units, including the format-4 codec indicator, without
+/// Logical UTF-16 code units, including the current codec indicator, without
 /// a document BOM. The stored length always includes the optional digest.
 pub fn encode_units(data: &[u8], options: &EncodeOptions) -> Result<Vec<u16>, String> {
     let mut out = Vec::new();
@@ -694,7 +675,7 @@ mod tests {
         }
     }
     #[test]
-    fn reusable_outputs_keep_capacity_and_preserve_failed_results() {
+    fn reusable_outputs_keep_capacity() {
         let options = EncodeOptions::default();
         let large: Vec<_> = (0..4097).map(|i| i as u8).collect();
         let mut units = encode_units(&large, &options).unwrap();
@@ -710,15 +691,6 @@ mod tests {
             assert_eq!(text, encode_text(data, &options).unwrap());
             assert_eq!(pointers, (units.as_ptr(), bytes.as_ptr(), text.as_ptr()));
         }
-        let before = (units.clone(), bytes.clone(), text.clone());
-        let bad = EncodeOptions {
-            legacy: true,
-            ..options
-        };
-        assert!(encode_units_into(b"bad", &bad, &mut units).is_err());
-        assert!(dense16_into(b"bad", &bad, &mut bytes).is_err());
-        assert!(encode_text_into(b"bad", &bad, &mut text).is_err());
-        assert_eq!((units, bytes, text), before);
     }
     #[test]
     fn parallel_scores_match_scalar_for_every_mask_and_short_tail() {

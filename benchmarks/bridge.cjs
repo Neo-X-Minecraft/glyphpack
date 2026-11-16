@@ -6,9 +6,7 @@ const root = path.resolve(__dirname, ".."),
   dir = path.join(root, "generated/optimization");
 const runtime = fs
   .readFileSync(path.join(root, "src/decoder/wasm-runtime.js"), "utf8")
-  .replace(/PAYLOAD_[A-Z_]+/g, (c) =>
-    c === "PAYLOAD_LEGACY" ? "false" : "true",
-  );
+  .replace(/PAYLOAD_[A-Z_]+/g, (c) => "true");
 const start = runtime.indexOf("  if (littleEndian) {"),
   end = runtime.indexOf("  const status = api.decode", start);
 if (start < 0 || end < 0) throw Error("Bridge anchors changed");

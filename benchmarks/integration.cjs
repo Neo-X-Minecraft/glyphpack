@@ -26,10 +26,6 @@ const source = (name, file) => {
   };
 };
 const sources = [
-  source(
-    "previous",
-    "benchmarks/experiments/utf8-rival/selected-before-integration.min.mjs",
-  ),
   source("raw", "dist/utf8-raw.min.mjs"),
   source("full", "dist/full.min.mjs"),
   source("core", "generated/integration/utf8-core.mjs"),
@@ -66,12 +62,6 @@ sources.push({
       ]),
     );
   const jobs = [
-    {
-      name: "previous-raw",
-      module: "previous",
-      method: "decode",
-      text: packets["utf8-none"].slice(2),
-    },
     {
       name: "current-raw",
       module: "raw",
@@ -111,9 +101,6 @@ sources.push({
         method: "binary",
         text: packets[packing + "-" + mode],
         options: { verifyFormat: true, verifyData: mode, memoryHeavy: false },
-        compact:
-          packing === "utf8-compact" &&
-          packets[packing + "-" + mode].slice(2, 5) === "~c1",
       });
   jobs.push({
     name: "utf8-unchecked",
@@ -132,7 +119,7 @@ sources.push({
   try {
     for (let run = 1; run <= runs; run++) {
       const browser = await chromium.launch({
-        executablePath: "/usr/bin/chromium",
+        executablePath: process.env.CHROMIUM_BIN || "/usr/bin/chromium",
         headless: true,
         args: ["--no-sandbox"],
       });
@@ -156,7 +143,6 @@ sources.push({
               "utf8-compact",
             ]);
             modules.raw.warmup();
-            modules.previous.warmup();
             modules.core.warmup();
             modules.strict.warmup();
             modules.secure.warmup();
@@ -179,13 +165,12 @@ sources.push({
                 ).join("");
               if (actual !== expected || bytes.length !== 1048576)
                 throw Error("Benchmark bytes " + j.name);
-              measure(j, j.compact ? 1 : 16);
+              measure(j, 16);
             }
             for (let r = 0; r < rounds; r++)
               for (let k = 0; k < rows.length; k++) {
                 const j = rows[(k + r * 7 + run) % rows.length];
-                if (j.compact && r >= 3) continue;
-                j.samples.push(measure(j, j.compact ? 1 : 2));
+                j.samples.push(measure(j, 2));
               }
             globalThis.sink = sink;
             return rows.map((j) => ({
@@ -194,7 +179,7 @@ sources.push({
               medianMs: [...j.samples].sort((a, b) => a - b)[
                 j.samples.length >> 1
               ],
-              callsPerBatch: j.compact ? 1 : 2,
+              callsPerBatch: 2,
             }));
           },
           { sources, jobs, expected, rounds, run },
@@ -223,9 +208,11 @@ sources.push({
     recordedAt: new Date().toISOString(),
     architecture: process.arch,
     cpu: os.cpus()[0]?.model,
+    platform: process.platform,
+    kernel: os.release(),
     runs,
     rounds,
-    scope: `Resident string to fresh owned bytes; includes requested integrity, JS/Wasm staging and copying. Legacy BigInt compact packets use up to three measured single-call batches; other variants use ${rounds} two-call batches. Encoding, imports, warmup and SHA-256 output checks are excluded.`,
+    scope: `Resident string to fresh owned bytes; includes requested integrity, JS/Wasm staging and copying. All variants use ${rounds} two-call batches. Encoding, imports, warmup and SHA-256 output checks are excluded.`,
     sources: sources.map(({ url, ...r }) => r),
     payloads: v.large.map(({ file, ...r }) => r),
     base122Bytes: Buffer.byteLength(base122),

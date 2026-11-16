@@ -1,5 +1,5 @@
 //! Specialize codec and verification choices into one self-contained ESM.
-//! JS handles fast/legacy UTF-8; Rust/Wasm handles compact ANS and hashes.
+//! JS handles fast UTF-8; Rust/Wasm handles compact ANS and hashes.
 //! Required Wasm loads once via gzip/base64; binary() is then synchronous.
 use crate::{
     encoder::Integrity, hash::blake3, packing::Packing, tooling::fixtures::hex, transport,
@@ -16,7 +16,10 @@ const FILES: &[(&str, &str)] = &[
     ("utf8.js", include_str!("decoder/utf8.js")),
     ("stored.js", include_str!("decoder/stored.js")),
     ("utf8-compact.js", include_str!("decoder/utf8-compact.js")),
-    ("compact-core.mjs", include_str!("utf8-compact/decoder.mjs")),
+    (
+        "compact-guards.mjs",
+        include_str!("utf8-compact/guards.mjs"),
+    ),
     ("compact-ans.mjs", include_str!("utf8-compact/ans.mjs")),
     ("utf8-model.mjs", include_str!("utf8-raw/model.mjs")),
     ("utf8-unpack.mjs", include_str!("utf8-raw/unpack.mjs")),
@@ -36,9 +39,7 @@ pub struct BuildOptions {
     pub formats: Vec<bool>,
     pub data: Vec<Integrity>,
     pub memory: Vec<bool>,
-    pub legacy: bool,
     pub minify: bool,
-    pub module: bool,
     pub esbuild: Option<PathBuf>,
 }
 impl Default for BuildOptions {
@@ -49,9 +50,7 @@ impl Default for BuildOptions {
             formats: vec![true],
             data: vec![Integrity::Secure],
             memory: vec![false],
-            legacy: false,
             minify: true,
-            module: true,
             esbuild: None,
         }
     }
@@ -122,20 +121,11 @@ fn canonical(options: &BuildOptions) -> Result<BuildOptions, String> {
     {
         return Err("Every build axis must select at least one choice".into());
     }
-    if options.legacy && options.data != [Integrity::None] {
-        return Err("Legacy format has no digest; select data=none explicitly".into());
-    }
-    if options.legacy && options.packings != [Packing::Pair] {
-        return Err("Legacy format supports only pair packing".into());
-    }
     if !options.packings.contains(&Packing::Pair) {
         options.memory = vec![false]
     }
     if !options.data.contains(&Integrity::Secure) {
         options.compact_hash = false;
-    }
-    if !options.module {
-        return Err("The Wasm decoder is an ES module; import it before calling binary()".into());
     }
     Ok(options)
 }
@@ -171,9 +161,6 @@ fn features(options: &BuildOptions) -> Vec<&'static str> {
     } else if options.memory[0] {
         out.push("memory-heavy");
     }
-    if options.legacy {
-        out.push("legacy");
-    }
     out.sort_unstable();
     out.dedup();
     out
@@ -186,7 +173,7 @@ pub fn profile_key(options: &BuildOptions) -> String {
             .collect::<String>()
     };
     format!(
-        "p{}-f{}-d{}-m{}-{}{}",
+        "p{}-f{}-d{}-m{}{}",
         options
             .packings
             .iter()
@@ -205,7 +192,6 @@ pub fn profile_key(options: &BuildOptions) -> String {
             .map(|v| char::from(b'0' + v.kind() as u8))
             .collect::<String>(),
         flags(&options.memory),
-        if options.legacy { "legacy" } else { "modern" },
         if options.compact_hash { "-compact" } else { "" }
     )
 }
@@ -225,7 +211,7 @@ pub fn build_wasm(options: &BuildOptions) -> Result<PathBuf, String> {
     if options.packings == [Packing::Utf8] && options.data == [Integrity::None] {
         return Err("This profile needs no Wasm kernel".into());
     }
-    // Fast/legacy JS paths share the hash ABI; compact also needs its native
+    // Fast JS paths share the hash ABI; compact also needs its native
     // finite-state kernel. Cache by native capabilities,
     // rather than recompiling identical Wasm for every JS codec subset.
     let js_hash = options.packings.iter().any(|p| p.is_utf8()) && options.data != [Integrity::None];
@@ -521,18 +507,7 @@ pub fn build_adapter(options: &BuildOptions, wasm: &[u8]) -> Result<String, Stri
     } else {
         "throw failure(9);".into()
     };
-    let mut raw_exports = String::new();
-    if options.formats.contains(&true) && options.data.contains(&Integrity::None) {
-        if has_utf8 {
-            raw_exports.push_str(
-                "export function decodeRawUtf8(text){return runUtf8(api,String.fromCharCode(11,48)+text,true,0);}\n",
-            );
-        }
-        if has_compact {
-            raw_exports.push_str("export function decodeRawUtf8Compact(text){return runCompact(api,String.fromCharCode(14,48)+text,true,0);}\n");
-        }
-    }
-    let entry=format!("{imports}\n{initialization}\n{warmup}{raw_exports}export function binary({parameters}){{\n{}\nif(text.length<2)throw failure(2);\n{dispatch}{rest}\n}}\n",statements.join("\n"));
+    let entry=format!("{imports}\n{initialization}\n{warmup}export function binary({parameters}){{\n{}\nif(text.length<2)throw failure(2);\n{dispatch}{rest}\n}}\n",statements.join("\n"));
     let scratch = Scratch::new()?;
     for &(name, contents) in FILES {
         let contents = contents.replace("\"./model.mjs\"", "\"./utf8-model.mjs\"");
@@ -559,7 +534,6 @@ pub fn build_adapter(options: &BuildOptions, wasm: &[u8]) -> Result<String, Stri
             "PAYLOAD_ALLOW_WINDOWS",
             options.packings.contains(&Packing::Windows).to_string(),
         ),
-        ("PAYLOAD_LEGACY", options.legacy.to_string()),
         (
             "PAYLOAD_VERIFY_FORMAT",
             options.formats.contains(&true).to_string(),
@@ -657,15 +631,5 @@ pub fn type_declaration(options: &BuildOptions) -> Result<String, String> {
         .collect::<Vec<_>>()
         .join(" | ");
     declaration.push_str(&format!("export declare function warmup(codecs?: readonly ({names})[], memoryHeavy?: readonly boolean[]): void;\n"));
-    if options.formats.contains(&true) && options.data.contains(&Integrity::None) {
-        for (p, name) in [
-            (Packing::Utf8, "decodeRawUtf8"),
-            (Packing::Utf8Compact, "decodeRawUtf8Compact"),
-        ] {
-            if options.packings.contains(&p) {
-                declaration.push_str(&format!("/** Strict raw transport, without integrity verification. */\nexport declare function {name}(text: string): Uint8Array;\n"));
-            }
-        }
-    }
     Ok(declaration)
 }

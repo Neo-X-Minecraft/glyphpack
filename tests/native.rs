@@ -1,5 +1,4 @@
-//! Wire-format and build compatibility fixtures were captured before the Rust
-//! extraction. They are data, so this suite needs no copy of the old tooling.
+//! Current wire-format vectors, build choices and independent hash answers.
 use glyphpack::{
     builder::{build_decoder, BuildOptions},
     encoder::{self, Effort, EncodeOptions, Integrity},
@@ -63,7 +62,7 @@ fn gzip_handles_input_larger_than_process_pipes() {
     assert_eq!(decoded, input);
 }
 #[test]
-fn original_wire_format() {
+fn pair_golden_vectors() {
     let rows: Value = serde_json::from_str(
         &fs::read_to_string(root().join("tests/fixtures/encoder-golden.json")).unwrap(),
     )
@@ -78,8 +77,7 @@ fn original_wire_format() {
         };
         let encoded = encoder::dense16(&data, &options).unwrap();
         assert_eq!(&encoded[..2], &glyphpack::packing::PAIR_TAG.to_le_bytes());
-        // The explicit format-4 codec field is new; the established pair
-        // header and body still match the original immutable format-3 fixtures.
+        // Check the current codec tag and independently recorded body hashes.
         let encoded = &encoded[2..];
         assert_eq!(
             encoded.len(),
@@ -155,11 +153,6 @@ fn injector_preserves_raw_text_and_replaces_once() {
 fn invalid_build_choices_and_minimal_code() {
     assert!(build_decoder(&BuildOptions {
         data: vec![],
-        ..BuildOptions::default()
-    })
-    .is_err());
-    assert!(build_decoder(&BuildOptions {
-        legacy: true,
         ..BuildOptions::default()
     })
     .is_err());

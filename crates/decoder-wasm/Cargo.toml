@@ -1,6 +1,6 @@
 [package]
 name = "glyphpack-decoder-wasm"
-version = "0.2.2"
+version = "1.0.0"
 edition = "2021"
 rust-version = "1.85"
 license = "0BSD"
@@ -25,5 +25,4 @@ secure = []
 compact-hash = []
 memory-heavy = []
 memory-runtime = ["memory-heavy"]
-legacy = []
 full = ["pair", "ans", "windows", "format-runtime", "none", "fast", "secure", "memory-runtime"]

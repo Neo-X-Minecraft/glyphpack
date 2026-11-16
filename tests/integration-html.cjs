@@ -26,18 +26,6 @@ function varint(n) {
   } while (n);
   return out;
 }
-function compactLength(n) {
-  const ways = [1n],
-    counts = [126n, 1920n, 61406n, 1048544n],
-    goal = 1n << BigInt(8 * n);
-  while (ways.at(-1) < goal) {
-    let v = 0n,
-      r = ways.length;
-    for (let w = 1; w <= 4 && w <= r; w++) v += counts[w - 1] * ways[r - w];
-    ways.push(v);
-  }
-  return ways.length - 1;
-}
 (async () => {
   fs.mkdirSync(dir, { recursive: true });
   const m = await import(url),
@@ -46,7 +34,7 @@ function compactLength(n) {
   let body = target;
   while (body.length % 8) body += "A";
   const raw = "~u2AA" + varint((body.length * 7) / 8) + body,
-    bytes = m.decodeRawUtf8(raw),
+    bytes = m.binary("\x0b0" + raw, { verifyData: "none" }),
     input = path.join(dir, "fast.bin"),
     packet = path.join(dir, "fast.gp8");
   fs.writeFileSync(input, bytes);
@@ -72,24 +60,6 @@ function compactLength(n) {
     packet,
     text: "\x0b0" + raw,
     hex: Buffer.from(bytes).toString("hex"),
-  });
-  // Enumeration begins with two zero digits, ensuring its rank fits 128 bytes.
-  // Include a natural guard run, legacy comments and mixed-case script tokens.
-  let compactBody = "\x01\x01" + target + "<\x01\x01\x01";
-  compactBody = compactBody.padEnd(compactLength(128), "\x01");
-  const protectedBody = compactBody.replace(
-      /<(?=\/?script|!--|\x01\x01\x01)/gi,
-      "<\x01\x01\x01",
-    ),
-    compactRaw = "~c1AA" + varint(128) + protectedBody,
-    compactBytes = m.decodeRawUtf8Compact(compactRaw),
-    compactPacket = path.join(dir, "compact.gp8");
-  fs.writeFileSync(compactPacket, "\x0e0" + compactRaw);
-  pages.push({
-    name: "compact",
-    packet: compactPacket,
-    text: "\x0e0" + compactRaw,
-    hex: Buffer.from(compactBytes).toString("hex"),
   });
   // Compact's adaptive fast representation carries the same script guards.
   const adaptiveRaw = raw.replace(

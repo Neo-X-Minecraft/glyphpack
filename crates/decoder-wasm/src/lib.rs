@@ -232,21 +232,20 @@ impl State {
         if input.len() < 2 {
             return LENGTH;
         }
-        let (codec, tagged) = match input[0] {
-            packing::UTF8_TAG | packing::UTF8_COMPACT_TAG => return CODEC, // UTF-8 unpackers run in JS.
-            packing::PAIR_TAG => (1, true),
-            packing::ANS_TAG => (2, true),
-            packing::WINDOWS_TAG => (3, true),
-            _ => (1, false),
+        let codec = match input[0] {
+            packing::UTF8_TAG | packing::UTF8_COMPACT_TAG => return CODEC, // UTF-8 adapters use separate entry points.
+            packing::PAIR_TAG => 1,
+            packing::ANS_TAG => 2,
+            packing::WINDOWS_TAG => 3,
+            _ => return CODEC,
         };
         if (codec == 1 && !cfg!(feature = "pair"))
             || (codec == 2 && !cfg!(feature = "ans"))
             || (codec == 3 && !cfg!(feature = "windows"))
-            || (tagged && cfg!(feature = "legacy"))
         {
             return CODEC;
         }
-        let input = if tagged { &input[1..] } else { input };
+        let input = &input[1..];
         self.initialize(codec == 3);
         let table = lookup_table(codec == 3);
 
@@ -279,7 +278,7 @@ impl State {
         }
         let first = i64::from(a) - 1;
         let mut start = 2;
-        let mut mode = 0;
+        let mode: u32;
         let length: i64;
         if codec == 3 {
             if input.len() < 6 {
@@ -309,8 +308,6 @@ impl State {
                 power *= 254;
             }
             length = n;
-        } else if cfg!(feature = "legacy") {
-            length = first + RADIX as i64 * (i64::from(b) - 1);
         } else {
             mode = (first as u32) & 1023;
             if first < 32768 {
@@ -380,7 +377,11 @@ impl State {
         }
         self.output_len = length;
         self.payload_length = length - trailer;
-        let output = unsafe { core::slice::from_raw_parts_mut(self.output_ptr as *mut u8, length) };
+        let output = if length == 0 {
+            &mut []
+        } else {
+            unsafe { core::slice::from_raw_parts_mut(self.output_ptr as *mut u8, length) }
+        };
         let high = if heavy {
             unsafe { core::slice::from_raw_parts(self.high_ptr as *const u32, 65536) }
         } else {

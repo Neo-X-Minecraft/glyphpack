@@ -1,5 +1,5 @@
 /* 0BSD, NeoX. Five tagged codecs, all subsets, all selected verification axes,
- * hash ABI, old raw compatibility, and exact native source representations. */
+ * hash ABI, and exact native source representations. */
 const fs = require("node:fs"),
   path = require("node:path"),
   assert = require("node:assert/strict"),
@@ -80,6 +80,17 @@ const url = (s) =>
     none = v.rows.find(
       (r) => r.mode === "none" && r.hex.length === 514 && r.mask === 0,
     );
+  assert.deepEqual(Object.keys(full).sort(), ["binary", "warmup"]);
+  // Codec indicators are mandatory even when both optional checks are off.
+  for (const text of Object.values(sample.packets))
+    for (const verifyFormat of [false, true])
+      for (const verifyData of ["none", "secure"]) {
+        assert.throws(
+          () => full.binary(text.slice(1), { verifyFormat, verifyData }),
+          /Unsupported payload codec/,
+        );
+        rejections++;
+      }
   for (const name of ["utf8", "utf8-compact"]) {
     assert.throws(
       () => full.binary(none.packets[name]),
@@ -106,11 +117,11 @@ const url = (s) =>
         sample.packets[name].slice(0, -2),
         String.fromCharCode(name === "utf8" ? 11 : 14) +
           "2" +
-          (name === "utf8" ? "~u2" : "~c1") +
+          (name === "utf8" ? "~u2" : "~c2") +
           "AAA",
         String.fromCharCode(name === "utf8" ? 11 : 14) +
           "0" +
-          (name === "utf8" ? "~u2" : "~c1") +
+          (name === "utf8" ? "~u2" : "~c2") +
           "AAggggB",
       ]) {
         assert.throws(() =>
@@ -118,9 +129,6 @@ const url = (s) =>
         );
         rejections++;
       }
-    const helper =
-      name === "utf8" ? full.decodeRawUtf8 : full.decodeRawUtf8Compact;
-    assert.equal(hex(helper(none.packets[name].slice(2))), none.hex);
     const held = full.binary(sample.packets[name]);
     full.binary(sample.packets.pair);
     assert.equal(hex(held), sample.hex);

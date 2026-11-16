@@ -1,9 +1,10 @@
-/* 0BSD, NeoX. Paired before/after complete calls on recorded Chromium 156.
+/* 0BSD, NeoX. Current-format complete calls on recorded Chromium 156.
  * Public/synthetic inputs; owned bytes, selected integrity and all staging count. */
 const fs = require("node:fs"),
   path = require("node:path"),
   crypto = require("node:crypto"),
   http = require("node:http"),
+  os = require("node:os"),
   { execFileSync } = require("node:child_process"),
   { chromium } = require("playwright");
 const root = path.resolve(__dirname, ".."),
@@ -15,8 +16,7 @@ const root = path.resolve(__dirname, ".."),
   runs = +(process.env.COMPACT_RUNS || 3),
   rounds = +(process.env.COMPACT_ROUNDS || 7);
 const files = {
-    before: "benchmarks/experiments/compact-speed/before-full.min.mjs",
-    after: "dist/full.min.mjs",
+    current: "dist/full.min.mjs",
   },
   sources = Object.fromEntries(
     Object.entries(files).map(([k, f]) => {
@@ -27,18 +27,7 @@ const files = {
 (async () => {
   const jobs = [];
   for (const v of vectors) {
-    const input = fs.readFileSync(v.input),
-      legacy = v.variants.find((r) => r.name === "legacy");
-    jobs.push({
-      input: v.name,
-      size: v.bytes,
-      mode: "none",
-      name: "before",
-      module: "before",
-      text: fs.readFileSync(legacy.file, "utf8"),
-      expected: sha(input),
-      slow: true,
-    });
+    const input = fs.readFileSync(v.input);
     for (const mode of ["none", "fast", "secure"]) {
       const text = execFileSync(
         path.join(root, "target/release/glyphpack"),
@@ -58,8 +47,8 @@ const files = {
         input: v.name,
         size: v.bytes,
         mode,
-        name: "after-" + mode,
-        module: "after",
+        name: "compact-" + mode,
+        module: "current",
         text,
         expected: sha(input),
       });
@@ -70,7 +59,7 @@ const files = {
       size: v.bytes,
       mode: "none",
       name: "fast-utf8",
-      module: "after",
+      module: "current",
       text: fs.readFileSync(fast.file, "utf8"),
       expected: sha(input),
     });
@@ -85,7 +74,7 @@ const files = {
   try {
     for (let run = 1; run <= runs; run++) {
       const browser = await chromium.launch({
-        executablePath: "/usr/bin/chromium",
+        executablePath: process.env.CHROMIUM_BIN || "/usr/bin/chromium",
         headless: true,
         args: ["--no-sandbox"],
       });
@@ -117,12 +106,6 @@ const files = {
               sink ^= out[0] || 0;
               return out;
             };
-            // Both full modules must see the same fast-path string shapes.
-            // Otherwise only the new module sees the regular UTF-8 jobs and
-            // gets different V8 feedback on its shared fast unpacker.
-            for (const j of rows.filter((j) => j.name === "fast-utf8"))
-              for (const module of ["before", "after"])
-                for (let n = 0; n < 4; n++) call({ ...j, module });
             for (const j of rows) {
               const b = call(j),
                 digest = Array.from(
@@ -131,13 +114,12 @@ const files = {
                 ).join("");
               if (digest !== j.expected || b.length !== j.size)
                 throw Error("Output " + j.name + " " + j.input);
-              for (let n = 0; n < (j.slow ? 0 : 8); n++) call(j);
+              for (let n = 0; n < 8; n++) call(j);
             }
             for (let k = 0; k < rounds; k++)
               for (let i = 0; i < rows.length; i++) {
                 const j = rows[(i + run * 3 + k * 7) % rows.length];
-                if (j.slow && k >= 3) continue;
-                const batch = j.slow ? 1 : j.size < 2048 ? 64 : 2,
+                const batch = j.size < 2048 ? 64 : 2,
                   t = performance.now();
                 for (let n = 0; n < batch; n++) call(j);
                 j.samples.push((performance.now() - t) / batch);
@@ -171,10 +153,13 @@ const files = {
     recordedAt: new Date().toISOString(),
     browser: require("./chromium.json").version,
     arch: process.arch,
+    cpu: os.cpus()[0]?.model,
+    platform: process.platform,
+    kernel: os.release(),
     runs,
     rounds,
     scope:
-      "Resident string to fresh owned bytes. Includes requested integrity, staging, allocation, output copy; excludes encoding/import/warmup/SHA256. Rotated order, separate fresh processes. Before: 3 single-call samples; after: 7 two-call samples (1KiB:64).",
+      `Resident string to fresh owned bytes. Includes requested integrity, staging, allocation, output copy; excludes encoding/import/warmup/SHA256. Rotated order, separate fresh processes. ${rounds} two-call samples (1KiB:64).`,
     sources: Object.fromEntries(
       Object.entries(sources).map(([k, { url, ...v }]) => [k, v]),
     ),

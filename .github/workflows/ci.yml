@@ -44,32 +44,15 @@ jobs:
           version=$("$browser" --version | sed -E 's/.* ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
           CHROMIUM_BIN="$browser" CHROMIUM_VERSION="$version" npm run test:browser
           CHROMIUM_BIN="$browser" target/release/glyphpack test-codecs
-      - name: Archived candidate compatibility smoke
-        run: |
-          browser=$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')
-          version=$("$browser" --version | sed -E 's/.* ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
-          CHROMIUM_BIN="$browser" CHROMIUM_VERSION="$version" target/release/glyphpack bench history --quick
       - name: Five-codec subsets, verification and offline HTML
         run: |
           browser=$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')
           CHROMIUM_BIN="$browser" npm run test:integration
-      - name: Raw UTF-8 native vectors and offline HTML
-        run: |
-          cargo run --release --locked --example utf8_raw_fixtures
-          cargo build --release --locked --example utf8_raw
-          browser=$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')
-          CHROMIUM_BIN="$browser" node benchmarks/utf8-rival-verify.cjs
       - name: Offline file protocol
         run: |
           browser=$(node -e 'process.stdout.write(require("playwright").chromium.executablePath())')
           version=$("$browser" --version | sed -E 's/.* ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
           CHROMIUM_BIN="$browser" CHROMIUM_VERSION="$version" npm run test:file
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: historical-candidate-smoke
-          path: generated/results/history/
-          retention-days: 14
   native:
     name: native (${{ matrix.runner }}, Rust ${{ matrix.rust }})
     strategy:

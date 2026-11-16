@@ -1,6 +1,6 @@
 [package]
 name = "glyphpack"
-version = "0.2.2"
+version = "1.0.0"
 edition = "2021"
 rust-version = "1.85"
 description = "Dense UTF-8/UTF-16 HTML payloads with JavaScript and Rust/Wasm decoders"
@@ -9,7 +9,7 @@ readme = "README.md"
 authors = ["NeoX"]
 repository = "https://github.com/Neo-X-Minecraft/glyphpack"
 homepage = "https://neo-x-minecraft.github.io/glyphpack/"
-exclude = ["benchmarks/results/*", "benchmarks/experiments/snapshots/*", "tests/vendor/*", ".github/*"]
+exclude = ["benchmarks/results/*", "tests/vendor/*", ".github/*"]
 keywords = ["encoding", "utf16", "html", "payload", "javascript"]
 categories = ["encoding", "command-line-utilities", "web-programming"]
 
@@ -55,55 +55,7 @@ lto = "fat"
 panic = "abort"
 
 [[example]]
-name = "adapter_prototype"
-required-features = ["tools"]
-
-[[example]]
-name = "hybrid_prototype"
-required-features = ["tools"]
-
-[[example]]
-name = "paired_report"
-required-features = ["tools"]
-
-[[example]]
-name = "encoder_compare"
-required-features = ["tools"]
-
-[[example]]
-name = "encoder_report"
-required-features = ["tools"]
-
-[[example]]
-name = "template_literals"
-required-features = ["tools"]
-
-[[example]]
-name = "packing"
-required-features = ["tools"]
-
-[[example]]
-name = "compact"
-required-features = ["tools"]
-
-[[example]]
-name = "transports"
-required-features = ["tools"]
-
-[[example]]
-name = "pair_compactness"
-required-features = ["tools"]
-
-[[example]]
 name = "codec_bench"
-required-features = ["tools"]
-
-[[example]]
-name = "optimize_decoder"
-required-features = ["tools"]
-
-[[example]]
-name = "utf8_prefix"
 required-features = ["tools"]
 
 [[example]]

@@ -1,13 +1,13 @@
 //! Payload codec identifiers, shared by native encoding and the no_std decoder.
-//! These HTML-preserved control units are outside the format-3 alphabet,
-//! so the single-unit field cannot collide with an older pair header.
+//! These HTML-preserved control units are reserved outside the pair alphabet,
+//! so the single-unit field is distinct from a pair header.
 pub const PAIR_TAG: u16 = 9;
 pub const ANS_TAG: u16 = 10;
 pub const WINDOWS_TAG: u16 = 12;
-/// Vertical tab is outside the old pair alphabet and survives HTML text nodes.
+/// Vertical tab is outside the pair alphabet and survives HTML text nodes.
 pub const UTF8_TAG: u16 = 11;
 pub const UTF8_COMPACT_TAG: u16 = 14;
-/// Half-open ranges in the exact established BMP alphabet order. Contiguous
+/// Half-open ranges in the current BMP alphabet order. Contiguous
 /// spans let table initialization avoid a branch for every code point.
 pub const UNICODE_RANGES: [(usize, usize); 7] = [
     (32, 60),

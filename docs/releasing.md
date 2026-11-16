@@ -1,5 +1,9 @@
 # Release process
 
+1.0.0 is prepared locally and remains unpublished. Publishing steps below are
+deferred until the maintainer authorizes publication. Preparation runs no push,
+tag, release, package publication or Pages deployment.
+
 1. Update the root, decoder and demo encoder crate versions and npm metadata.
 2. Run formatting/lint, native/core/CLI tests, all 63 Wasm profiles, byte/error
    comparisons, and browser/demo checks. Rebuild and commit `dist/`.

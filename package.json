@@ -1,6 +1,6 @@
 {
   "name": "glyphpack",
-  "version": "0.2.2",
+  "version": "1.0.0",
   "description": "Dense UTF-8/UTF-16 HTML payloads with JavaScript and Rust/Wasm decoders",
   "license": "0BSD",
   "type": "commonjs",
@@ -37,7 +37,7 @@
     "test:site": "node tests/site.cjs",
     "test:types": "tsc --noEmit --strict --module nodenext --target es2022 tests/types.mts",
     "test:package": "node tests/package.cjs",
-    "test:integration": "cargo run --release --locked --example integration && node tests/integration.cjs && node tests/integration-browser.cjs && node tests/integration-html.cjs && cargo run --release --locked --example compact_speed && node tests/compact.cjs"
+    "test:integration": "cargo run --release --locked --example integration && node tests/integration.cjs && node tests/integration-browser.cjs && node tests/integration-html.cjs && node tests/compact.cjs"
   },
   "engines": {
     "node": ">=20"

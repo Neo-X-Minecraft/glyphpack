@@ -754,15 +754,6 @@ function physicalFiles() {
                         }
                       }
                     }
-                  // Unmarked format 3 remains compatible ONLY with pair.
-                  if (name === "pair" && !b.core && !row.reject) {
-                    const out = modules[bi].binary(text.slice(1), {
-                      verifyData: row.kind,
-                    });
-                    if (out.length !== row.rawHex.length / 2)
-                      throw Error("Format-3 fallback");
-                    positive++;
-                  }
                 }
               }
             return { positive, unsupported, rejected };

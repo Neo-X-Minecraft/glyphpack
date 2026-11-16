@@ -4,18 +4,18 @@ version = 4
 
 [[package]]
 name = "glyphpack"
-version = "0.2.2"
+version = "1.0.0"
 dependencies = [
  "serde_json",
 ]
 
 [[package]]
 name = "glyphpack-decoder-wasm"
-version = "0.2.2"
+version = "1.0.0"
 
 [[package]]
 name = "glyphpack-encoder-wasm"
-version = "0.2.2"
+version = "1.0.0"
 
 [[package]]
 name = "itoa"

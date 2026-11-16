@@ -5,7 +5,7 @@
     "subsets": 31,
     "builds": 39,
     "comparisons": 53613,
-    "rejections": 441,
+    "rejections": 461,
     "nativeDispatch": {
       "decode": 1,
       "compact": 2,
@@ -50,7 +50,7 @@
       "156.0.8078.79",
       "109.0.5414.119"
     ],
-    "pagesPerBrowser": 3,
+    "pagesPerBrowser": 2,
     "network": 0
   },
   "compactAns": {
@@ -58,9 +58,15 @@
     "oracleComparisons": 44,
     "rejections": 23,
     "canonicalStopping": true,
-    "legacyReading": true,
     "allocationSafety": true,
     "emptyAndOwnedOutput": true,
-    "actualHtmlInner": "~c2"
+    "actualHtmlInner": "~c2",
+    "currentFormatsOnly": true
+  },
+  "meta": {
+    "version": "1.0.0",
+    "recordedAt": "2026-11-16T13:14:43.795Z",
+    "fullModuleSha256": "13c85f19a63b5756208b3b09dfe848cb05e9033b479486fc8d982334eed8d981",
+    "scope": "Current formats only; Node round trips, 39 browser builds, offline serializers and independent compact arithmetic."
   }
 }

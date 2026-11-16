@@ -1,67 +1,26 @@
-# GlyphPack native CLI
+# GlyphPack 1.0.0 CLI
 
-By NeoX, 0BSD. This archive contains a statically linked Linux executable,
-its source commit, and third-party notices. Choose the x86_64 or aarch64 archive
-for your CPU. Extract it and run `./glyphpack --version`.
-
-Encoding and HTML insertion require no installation, Node.js, or neighboring
-source files:
+NeoX · 0BSD. Encode/inject need no Node or adjacent sources. Source builds need
+a matching checkout and the documented toolchain.
 
 ```sh
-# UTF-16LE payload, automatic mask selection, BLAKE3 by default.
-./glyphpack encode input.bin -o payload.gp16
-
-# Choose UTF-16 ANS or Windows-1252 source. Default remains pair.
-./glyphpack encode input.bin --packing ans -o payload.gp16
-./glyphpack encode input.bin --packing windows -o payload.gp1252
-
-# Ordinary UTF-8 with the same BLAKE3/format policies.
-./glyphpack encode input.bin --packing utf8 -o payload.gp8
-./glyphpack encode input.bin --packing utf8-compact -o compact.gp8
-./glyphpack inject template.html payload.gp8 standalone.html
-
-# Faster sampled mask search; never larger than the identity-mask body.
-./glyphpack encode input.bin --effort fast -o payload.gp16
-
-# Explicit verification mode or a fixed mask, useful for benchmarks.
-./glyphpack encode input.bin --checksum fast --mask 0 -o payload.gp16
-
-# UTF-8 representation for callers managing their own text container.
-./glyphpack encode input.bin --text -o payload.txt
-
-# Replace __PAYLOAD__ in a UTF-8 template; write a UTF-16LE HTML document.
-./glyphpack inject template.html payload.gp16 standalone.html
-
-# Single-byte document; use <meta charset="__CHARSET__"> in the template.
-./glyphpack inject template.html payload.gp1252 standalone.html --encoding windows1252
+glyphpack encode input.bin --packing utf8-compact -o payload.gp8
+glyphpack encode input.bin --packing pair -o payload.gp16
+glyphpack encode input.bin --packing windows -o payload.gp1252
+glyphpack inject template.html payload.gp8 standalone.html
+glyphpack inject template.html payload.gp1252 standalone.html --encoding windows1252
+glyphpack build --full -o full.mjs
+glyphpack build --packing pair ans -o recommended-full.mjs
+glyphpack build --packing utf8 --format off on --data none -o fast.mjs
+glyphpack build --all
 ```
 
-The template supplies the browser module and calls `binary()` on the inserted
-payload element's `textContent`. Do not trim or escape that text. A digest checks
-bytes; an unkeyed digest does not establish authorship. See the repository's
-format documentation and browser examples.
+Templates supply `__PAYLOAD__`, optionally `__CHARSET__`, and an inline module that
+reads exact data-element textContent. UTF-8 output is detected from current
+indicators; Windows-1252 is explicit. UTF-16LE documents have a BOM.
 
-Build any nonempty codec subset with `build --packing pair ans windows` (space
-or comma separated). The default is pair only; `--full` includes all five.
-`utf8` and `utf8-compact` can be mixed with any of the original codecs.
-The injector auto-selects UTF-8 for their tagged payloads.
-Detection uses the payload's leading code unit, independently of verification.
-
-Commands that compile decoders, build the demo, or run repository tests and
-benchmarks need the matching source checkout. Run them from that checkout or
-set `GLYPHPACK_ROOT=/path/to/glyphpack`. They also require the build tools listed
-in the repository README. `encode` and `inject` are independent of those tools.
-
-`cargo run --release --locked -- build --all` also writes
-`dist/standalone.html`. Open that file directly to exercise the embedded browser
-decoder offline. The default Wasm build uses standard SIMD128, supported by the
-Chrome 109 baseline. For an explicitly scalar kernel, build with
-`RUSTFLAGS="-C target-feature=-simd128"`; this changes the generated artifact,
-not the payload format or JavaScript options.
-
-Decoder source builds can use `--compact-hash` for smaller BLAKE3 scalar code.
-It preserves the digest and verification policy, with a throughput tradeoff on
-some inputs. Use it on an individual build, e.g. `build --full --compact-hash`;
-`build --all` keeps the standard profiles. See `docs/decoder-optimization.md`.
-
-Source and live workbench: https://github.com/Neo-X-Minecraft/glyphpack
+Defaults: pair, strict format, BLAKE3, memory false. Packing/format/data/memory
+axes accept nonempty subsets. Multiple values add runtime handling, one fixes
+that policy. Compact-hash changes scalar BLAKE3 code size independently of the
+compact codec. Builds are ES modules. Compatibility switches are absent.
+No command publishes a release.

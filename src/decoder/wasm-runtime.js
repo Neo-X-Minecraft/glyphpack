@@ -42,17 +42,7 @@ export function runWasm(api, text, verifyFormat, dataKind, memoryHeavy) {
   const length = text.length;
   if (length < 2) throw failure(2);
   const first = text.charCodeAt(0);
-  if (PAYLOAD_LEGACY && (first === 9 || first === 10 || first === 12))
-    throw failure(9);
-  if (
-    !(
-      PAYLOAD_LEGACY ||
-      (PAYLOAD_ALLOW_PAIR && (first === 9 || first >= 32)) ||
-      (PAYLOAD_ALLOW_ANS && first === 10) ||
-      (PAYLOAD_ALLOW_WINDOWS && first === 12)
-    )
-  )
-    throw failure(9);
+  if(!((PAYLOAD_ALLOW_PAIR&&first===9)||(PAYLOAD_ALLOW_ANS&&first===10)||(PAYLOAD_ALLOW_WINDOWS&&first===12)))throw failure(9);
   const pointer = api.input_ptr(length);
   if (pointer === 0 && length) throw failure(8);
   // memory growth invalidates old views, so obtain the input view AFTER reserve

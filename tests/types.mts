@@ -80,7 +80,6 @@ import {
   binary as compactUTF8,
   warmup as warmCompactUTF8,
 } from "glyphpack/utf8-compact";
-import { decodeRawUtf8, decodeRawUtf8Compact } from "glyphpack/full";
 utf8("");
 compactUTF8("");
 warmUTF8Codec(["utf8"], [false]);
@@ -89,8 +88,6 @@ warmup(
   ["utf8", "utf8-compact", "pair", "ans", "windows"],
   [false, false, true, false, false],
 );
-decodeRawUtf8("");
-decodeRawUtf8Compact("");
 // @ts-expect-error UTF-8 codec profile is secure only.
 utf8("", { verifyData: "none" });
 // @ts-expect-error The default pair profile does not include UTF-8.

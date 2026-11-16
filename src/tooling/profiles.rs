@@ -99,12 +99,16 @@ pub fn build_all(root: &Path) -> Result<Value, String> {
     ];
     let mut manifest = serde_json::Map::new();
     for (name, options) in profiles {
-        let wasm = fs::read(build_wasm(&options)?).map_err(|e| e.to_string())?;
+        let wasm_path = build_wasm(&options)?;
+        if name == "full" {
+            fs::copy(&wasm_path, root.join("generated/wasm/full.wasm"))
+                .map_err(|e| e.to_string())?;
+        }
+        let wasm = fs::read(wasm_path).map_err(|e| e.to_string())?;
         let gzip_bytes = crate::transport::gzip9(&wasm)?.len();
         for minify in [false, true] {
             let file = format!("{name}{}.mjs", if minify { ".min" } else { "" });
             let source = build_decoder(&BuildOptions {
-                module: true,
                 minify,
                 ..options.clone()
             })?;

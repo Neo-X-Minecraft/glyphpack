@@ -47,6 +47,9 @@ async function main() {
     headless: true,
     executablePath: process.env.CHROMIUM_BIN || undefined,
     args: ["--no-sandbox"],
+  }).catch((error) => {
+    server.close();
+    throw error;
   });
   const temp = await fs.mkdtemp(path.join(os.tmpdir(), "glyphpack-site-"));
   try {

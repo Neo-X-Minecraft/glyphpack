@@ -1,9 +1,6 @@
-# Decoder optimization archive
+# Historical experiment notes
 
-0BSD, NeoX. The speculative four-state ANS/Windows path was byte/error-compatible
-in 75,852 native differential comparisons, including malformed bodies and tails. It
-was slower on the measured browsers and is not part of the runtime.
-
-`rejected-ans-batching.patch` records that candidate against the sequential
-kernels retained in production. See [the measured optimization report](../../../docs/decoder-optimization.md)
-for retained changes, methodology, raw samples and reproduction commands.
+Executable prototypes from this experiment are removed for the 1.0.0 overhaul.
+Numerical results remain under benchmarks/results/. Current code and protocols
+are documented in the root README and docs/format.md. Archived source names in
+results are provenance, not supported commands or retained implementations.

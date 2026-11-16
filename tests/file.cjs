@@ -25,14 +25,15 @@ const browsers = [
       require("../benchmarks/chromium.json").version,
   },
 ];
-const legacy =
+const baselineBrowser =
   process.env.CHROMIUM109_BIN || path.join(root, ".tools/chromium109/chromium");
-if (fs.existsSync(legacy)) browsers.push({ path: legacy, major: "109" });
+if (fs.existsSync(baselineBrowser))
+  browsers.push({ path: baselineBrowser, major: "109" });
 const report = {
   pass: false,
   module: path.relative(root, moduleFile),
   moduleSha256: crypto.createHash("sha256").update(source).digest("hex"),
-  legacyChecked: browsers.length > 1,
+  baselineBrowserChecked: browsers.length > 1,
   rows: [],
 };
 (async () => {

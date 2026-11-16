@@ -5,7 +5,7 @@ const DIGITS: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123
 const Q: u64 = 1 << 23;
 const L: u64 = 1 << 30;
 /// Write a packet using HTML-preserved Unicode scalars. The scalar gaps and
-/// reversible script guards match the legacy enumerative alphabet.
+/// reversible script guards preserve exact text in an inert HTML data block.
 pub fn encode(data: &[u8], mask: Option<u8>) -> Result<String, String> {
     if data.len() > 0x40000000 {
         return Err("Payload too large".into());

@@ -47,12 +47,10 @@ function parts(text) {
     WebAssembly.instantiate = instantiate;
   }
   const oracle = await import(
-    pathToFileURL(
-      path.join(root, "benchmarks/experiments/compact-speed/decode.mjs"),
-    )
+    pathToFileURL(path.join(root, "tests/reference/compact.mjs"))
   );
   assert.deepEqual(
-    m.decodeRawUtf8Compact("~c2AAA" + "AAAAABA"),
+    m.binary("\x0e0~c2AAA" + "AAAAABA", { verifyData: "none" }),
     new Uint8Array(0),
   );
   // A zero-output terminal symbol is a noncanonical alternative only in unchecked text.
@@ -141,7 +139,7 @@ function parts(text) {
   m.binary(r.packets.pair);
   assert.equal(hex(held), r.hex);
   assert.deepEqual(
-    m.decodeRawUtf8Compact("~c2AAA" + "AAAAABA"),
+    m.binary("\x0e0~c2AAA" + "AAAAABA", { verifyData: "none" }),
     new Uint8Array(0),
   );
   api.input_ptr(0);
@@ -157,20 +155,11 @@ function parts(text) {
     rejections++;
   }
   assert.equal(api.decode_compact(0, 1 << 30, 0, 0, 0, 0), 0);
-  const old = require("../generated/compact-speed/vectors.json").find(
-      (r) => r.name === "random-64KiB",
-    ),
-    packet = old.variants.find((r) => r.name === "legacy");
-  assert.equal(
-    hex(m.binary(fs.readFileSync(packet.file, "utf8"), { verifyData: "none" })),
-    hex(fs.readFileSync(old.input)),
-  );
   console.log(
     JSON.stringify({
       passed: true,
       oracleComparisons: comparisons,
       rejections,
-      legacy: true,
       empty: true,
       ownership: true,
       allocationSafety: true,
