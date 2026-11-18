@@ -20,6 +20,8 @@ artifacts without publishing them.
    the initial release. Later releases can use the manual **npm** workflow and a
    configured npm trusted publisher for this repository's `npm.yml`. It checks
    the GitHub release checksum before publishing, and refuses conflicting versions.
+   Dispatch on the release tag, e.g. `gh workflow run npm.yml --ref v1.0.0 -f tag=v1.0.0`,
+   so the workflow identity and checked-out release commit match for provenance.
    npm credentials stay outside the repository. Trusted publishing uses GitHub
    OIDC rather than a stored long-lived token and adds npm provenance.
 9. Verify the registry version/integrity, install it into a clean consumer, and

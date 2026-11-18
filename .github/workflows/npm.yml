@@ -32,6 +32,9 @@ jobs:
           version=$(node -p 'require("./package.json").version')
           [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
           test "$RELEASE_TAG" = "v$version"
+          # Dispatch on the release tag (or its exact main commit), so npm's
+          # provenance identifies the same source commit as the archive.
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           archive="glyphpack-$version.tgz"
           mkdir -p verified
           gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --dir verified --pattern "$archive" --pattern SHA256SUMS
