@@ -35,7 +35,10 @@ function parts(text) {
   const instantiate = WebAssembly.instantiate;
   WebAssembly.instantiate = async (...a) => {
     const r = await instantiate(...a);
-    api = r.instance.exports;
+    // The Module overload returns an Instance directly. Node may also create
+    // its own HTTP-parser Wasm during import, so capture only this codec's ABI.
+    const exports = (r.instance || r).exports;
+    if (typeof exports.decode_compact === "function") api = exports;
     return r;
   };
   let m;
@@ -46,6 +49,7 @@ function parts(text) {
   } finally {
     WebAssembly.instantiate = instantiate;
   }
+  assert(api, "GlyphPack compact Wasm ABI was not instantiated");
   const oracle = await import(
     pathToFileURL(path.join(root, "tests/reference/compact.mjs"))
   );
