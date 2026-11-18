@@ -1,50 +1,29 @@
-# Start with GlyphPack
+# Start with GlyphPack 1.0.0
 
-By NeoX · 0BSD · https://github.com/Neo-X-Minecraft/glyphpack
+By NeoX, under 0BSD. Install `npm install glyphpack` for prebuilt decoder modules
+and TypeScript declarations. Import `glyphpack` for secure pair or
+`glyphpack/full` for all codecs and runtime options.
 
-Try the local-file workbench at https://neo-x-minecraft.github.io/glyphpack/.
-It encodes files, previews bytes, and exports self-contained HTML viewers.
+Open dist/standalone.html directly for an offline example. The workbench's HTML
+exports also run under file:// without companion fetches. Separate ES modules
+follow normal browser origin rules; inline Blob imports are used in exports.
 
-## Open directly from disk
+- default/recommended: pair, strict BLAKE3, memory false.
+- recommended-full: pair+ANS with the same fixed policies.
+- full: all five current codecs and all selected verification/memory options.
+- ans/windows/utf8/utf8-compact: secure single-codec profiles.
+- core/none: pair without optional verification, retaining mandatory safety bounds.
+- utf8-raw: current bare fast transport, structural checks and no digest.
 
-Download `standalone.html`, or open `dist/standalone.html` from the web ZIP.
-It is a complete offline HTML example with inline code and embedded Wasm. It
-works under `file://` with no server, headers, or file-access exceptions.
-For your own local-file viewer, embed the module as that example does, or use
-the workbench's standalone HTML export; separate ESM files follow browser module
-loading rules.
+Full exports binary and warmup only. Defaults are strict BLAKE3 and memory false.
+Required Wasm is embedded as gzip/base64. Sizes and policies are in profiles.json.
+Chrome 109+ is the browser target. Retired payload formats are unsupported.
 
-## Browser modules
-
-- `default.min.mjs`: fixed BLAKE3 integrity and format checks; recommended.
-- `full.min.mjs`: all 12 combinations of integrity, format and lookup policy.
-- `core.min.mjs`: mandatory allocation bounds, without optional verification.
-- The web ZIP includes every readable/minified profile, examples and docs.
-- `glyphpack-full.wasm` is the raw full decoder for custom host integration.
-  Most users should import an ES module instead.
-
-```js
-import {binary} from './full.min.mjs';
-const bytes = binary(payload);
-```
-
-Import initializes embedded gzip/base64 Wasm once. `binary()` is synchronous
-afterward. No companion Wasm fetch is needed. Target: Chrome 109+.
-Default options: format on, BLAKE3 on, heavy lookup off. The wire format and
-public decoder API are unchanged from v0.1.0.
-
-The npm tarball can be installed directly with `npm install ./glyphpack-0.2.2.tgz`;
-it contains the same modules and specialized TypeScript declarations.
-
-## Native tools and results
-
-Linux x86_64 and aarch64 musl archives contain a static native CLI, its commit,
-and licenses. Encoding and injection work from any directory. Other build
-commands need a matching checkout. See the archive README.
-
-The benchmark archive contains actual measurements, environment details,
-methodology and compact CSV/SVG reports. Results describe specific hosts and
-browser versions; they are not universal performance guarantees.
-
-Verify downloads with `sha256sum -c SHA256SUMS`. Use GitHub's source archive
-for the Rust encoder, injector, specialized decoder, tests and build tooling.
+A local npm archive can be installed with npm install ./glyphpack-1.0.0.tgz.
+The native CLI's encode/inject commands work independently of the checkout.
+Linux CLI archives are static x86_64/aarch64 binaries with third-party notices.
+The web ZIP includes modules, declarations, examples, docs and benchmark results.
+Individual modules and the standalone HTML are also available as release assets.
+`SHA256SUMS` records the published asset checksums. The raw Wasm is an advanced
+ABI artifact; normal users should import a module with its embedded loader.
+See cli.md, configuration.md, format.md and the root README for commands and contracts.

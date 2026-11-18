@@ -5,3 +5,4 @@ export interface DecodeOptions {
   memoryHeavy?: boolean;
 }
 export declare function binary(text: string, options?: DecodeOptions): Uint8Array;
+export declare function warmup(codecs?: readonly ('pair' | 'ans' | 'windows' | 'utf8' | 'utf8-compact')[], memoryHeavy?: readonly boolean[]): void;

@@ -1,18 +1,18 @@
-// All bit packing and decoding stays in Rust/Wasm. This worker owns the engines
+// Rust encodes; selected JS/Wasm decoders share dispatch. This worker owns the engines
 // and keeps whole-input encoding and warmed timing loops off the main thread.
 import { binary } from "./lib/full.min.mjs";
 import { api } from "./encoder.mjs";
 import { encode as encodeWith } from "./encoder-host.mjs";
 const modes = { none: 0, fast: 1, secure: 2 },
   limit = 16 * 1024 * 1024;
-function encode(bytes, mode, exact) {
+function encode(bytes, mode, exact, packing) {
   if (bytes.length > limit)
     throw Error(
       "The playground accepts files up to 16 MiB. Use the Rust CLI for larger files.",
     );
   const requested = modes[mode];
   if (requested === undefined) throw Error("Unknown integrity mode");
-  return encodeWith(api, bytes, requested, exact);
+  return encodeWith(api, bytes, requested, exact, packing);
 }
 async function transform(bytes, kind) {
   const stream = new Blob([bytes])
@@ -50,7 +50,7 @@ self.onmessage = async ({ data: { id, action, ...data } }) => {
       let bytes = new Uint8Array(data.bytes);
       if (data.gzip) bytes = await transform(bytes, "gzip");
       const start = performance.now(),
-        payload = encode(bytes, data.mode, data.exact),
+        payload = encode(bytes, data.mode, data.exact, data.packing),
         encodeMs = performance.now() - start;
       const decoded = binary(payload, { verifyData: data.mode });
       result = { payload, bytes: decoded, encodeMs };

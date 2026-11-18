@@ -1,16 +1,35 @@
-//! Build a specialized Rust/Wasm decoder and an independent, self-contained ESM
-//! adapter. There is one production backend. Gzip/base64 loading happens once at
-//! module evaluation; binary() remains synchronous after import resolves.
-use crate::{encoder::Integrity, hash::blake3, tooling::fixtures::hex, transport};
+//! Specialize codec and verification choices into one self-contained ESM.
+//! JS handles fast UTF-8; Rust/Wasm handles compact ANS and hashes.
+//! Required Wasm loads once via gzip/base64; binary() is then synchronous.
+use crate::{
+    encoder::Integrity, hash::blake3, packing::Packing, tooling::fixtures::hex, transport,
+};
 use std::{
-    env, fs,
+    collections::BTreeMap,
+    env,
+    ffi::OsString,
+    fs,
     io::Write,
     path::{Path, PathBuf},
     process::{Command, Stdio},
-    sync::atomic::{AtomicUsize, Ordering},
+    sync::{
+        atomic::{AtomicUsize, Ordering},
+        Mutex, OnceLock,
+    },
+    time::SystemTime,
 };
 
 const FILES: &[(&str, &str)] = &[
+    ("utf8.js", include_str!("decoder/utf8.js")),
+    ("stored.js", include_str!("decoder/stored.js")),
+    ("utf8-compact.js", include_str!("decoder/utf8-compact.js")),
+    (
+        "compact-guards.mjs",
+        include_str!("utf8-compact/guards.mjs"),
+    ),
+    ("compact-ans.mjs", include_str!("utf8-compact/ans.mjs")),
+    ("utf8-model.mjs", include_str!("utf8-raw/model.mjs")),
+    ("utf8-unpack.mjs", include_str!("utf8-raw/unpack.mjs")),
     ("wasm-runtime.js", include_str!("decoder/wasm-runtime.js")),
     ("loader.js", include_str!("decoder/loader.js")),
     ("options.js", include_str!("decoder/options.js")),
@@ -21,30 +40,46 @@ const FILES: &[(&str, &str)] = &[
 ];
 #[derive(Clone, Debug)]
 pub struct BuildOptions {
+    /// Select smaller BLAKE3 scalar rounds instead of the faster expanded form.
+    pub compact_hash: bool,
+    pub packings: Vec<Packing>,
     pub formats: Vec<bool>,
     pub data: Vec<Integrity>,
     pub memory: Vec<bool>,
-    pub legacy: bool,
     pub minify: bool,
-    pub module: bool,
     pub esbuild: Option<PathBuf>,
 }
 impl Default for BuildOptions {
     fn default() -> Self {
         Self {
+            compact_hash: false,
+            packings: vec![Packing::Pair],
             formats: vec![true],
             data: vec![Integrity::Secure],
             memory: vec![false],
-            legacy: false,
             minify: true,
-            module: true,
             esbuild: None,
         }
     }
 }
 impl BuildOptions {
+    /// Recommended broader codec coverage with verification fixed on. Memory
+    /// overhead stays minimal unless explicitly enabled in a custom build.
+    pub fn recommended_full() -> Self {
+        Self {
+            packings: vec![Packing::Pair, Packing::Ans],
+            ..Self::default()
+        }
+    }
     pub fn full() -> Self {
         Self {
+            packings: vec![
+                Packing::Pair,
+                Packing::Ans,
+                Packing::Windows,
+                Packing::Utf8,
+                Packing::Utf8Compact,
+            ],
             formats: vec![false, true],
             data: vec![Integrity::None, Integrity::Fast, Integrity::Secure],
             memory: vec![false, true],
@@ -78,25 +113,48 @@ pub fn esbuild_path(explicit: Option<&Path>) -> PathBuf {
 }
 fn canonical(options: &BuildOptions) -> Result<BuildOptions, String> {
     let mut options = options.clone();
+    options.packings.sort();
+    options.packings.dedup();
     options.formats.sort();
     options.formats.dedup();
     options.data.sort();
     options.data.dedup();
     options.memory.sort();
     options.memory.dedup();
-    if options.formats.is_empty() || options.data.is_empty() || options.memory.is_empty() {
+    if options.packings.is_empty()
+        || options.formats.is_empty()
+        || options.data.is_empty()
+        || options.memory.is_empty()
+    {
         return Err("Every build axis must select at least one choice".into());
     }
-    if options.legacy && options.data != [Integrity::None] {
-        return Err("Legacy format has no digest; select data=none explicitly".into());
+    if !options.packings.contains(&Packing::Pair) {
+        options.memory = vec![false]
     }
-    if !options.module {
-        return Err("The Wasm decoder is an ES module; import it before calling binary()".into());
+    if !options.data.contains(&Integrity::Secure) {
+        options.compact_hash = false;
     }
     Ok(options)
 }
 fn features(options: &BuildOptions) -> Vec<&'static str> {
-    let mut out = Vec::new();
+    let mut out = options
+        .packings
+        .iter()
+        .filter_map(|p| match p {
+            Packing::Pair => Some("pair"),
+            Packing::Ans => Some("ans"),
+            Packing::Windows => Some("windows"),
+            Packing::Utf8Compact => Some("utf8-compact"),
+            Packing::Utf8 if options.data != [Integrity::None] => Some("utf8"),
+            Packing::Utf8 => None,
+        })
+        .collect::<Vec<_>>();
+    if options.packings.contains(&Packing::Utf8Compact) && options.data != [Integrity::None] {
+        out.push("utf8");
+    }
+    if options.compact_hash {
+        out.push("compact-hash");
+    }
     if options.formats.len() > 1 {
         out.push("format-runtime");
     } else if options.formats[0] {
@@ -110,9 +168,8 @@ fn features(options: &BuildOptions) -> Vec<&'static str> {
     } else if options.memory[0] {
         out.push("memory-heavy");
     }
-    if options.legacy {
-        out.push("legacy");
-    }
+    out.sort_unstable();
+    out.dedup();
     out
 }
 pub fn profile_key(options: &BuildOptions) -> String {
@@ -123,7 +180,18 @@ pub fn profile_key(options: &BuildOptions) -> String {
             .collect::<String>()
     };
     format!(
-        "f{}-d{}-m{}-{}",
+        "p{}-f{}-d{}-m{}{}",
+        options
+            .packings
+            .iter()
+            .map(|p| match p {
+                Packing::Pair => 'p',
+                Packing::Ans => 'a',
+                Packing::Windows => 'w',
+                Packing::Utf8 => 'u',
+                Packing::Utf8Compact => 'c',
+            })
+            .collect::<String>(),
         flags(&options.formats),
         options
             .data
@@ -131,14 +199,53 @@ pub fn profile_key(options: &BuildOptions) -> String {
             .map(|v| char::from(b'0' + v.kind() as u8))
             .collect::<String>(),
         flags(&options.memory),
-        if options.legacy { "legacy" } else { "modern" }
+        if options.compact_hash { "-compact" } else { "" }
     )
 }
+// Binaryen's JS distribution starts a Wasm VM even for --version. Probe each
+// tool once per file/environment identity instead of once per build profile.
+type VersionKey = (
+    PathBuf,
+    PathBuf,
+    [Option<OsString>; 5],
+    Option<(u64, Option<SystemTime>)>,
+);
 fn version(executable: &Path) -> Result<Vec<u8>, String> {
+    static VERSIONS: OnceLock<Mutex<BTreeMap<VersionKey, Vec<u8>>>> = OnceLock::new();
+    let directory = io(env::current_dir())?;
+    let resolved = if executable.components().count() == 1 {
+        env::split_paths(&env::var_os("PATH").unwrap_or_default())
+            .map(|part| part.join(executable))
+            .find(|path| path.is_file())
+            .unwrap_or_else(|| executable.to_path_buf())
+    } else {
+        executable.to_path_buf()
+    };
+    let resolved = directory.join(resolved);
+    let metadata = fs::metadata(&resolved)
+        .ok()
+        .map(|m| (m.len(), m.modified().ok()));
+    let environment = [
+        "PATH",
+        "CARGO_HOME",
+        "RUSTUP_HOME",
+        "RUSTUP_TOOLCHAIN",
+        "LD_LIBRARY_PATH",
+    ]
+    .map(env::var_os);
+    let key = (resolved, directory, environment, metadata);
+    let mut cache = VERSIONS
+        .get_or_init(Default::default)
+        .lock()
+        .unwrap_or_else(|e| e.into_inner());
+    if let Some(value) = cache.get(&key) {
+        return Ok(value.clone());
+    }
     let result = io(Command::new(executable).arg("--version").output())?;
     if !result.status.success() {
         return Err(String::from_utf8_lossy(&result.stderr).into());
     }
+    cache.insert(key, result.stdout.clone());
     Ok(result.stdout)
 }
 
@@ -146,7 +253,20 @@ fn version(executable: &Path) -> Result<Vec<u8>, String> {
 /// format checks and heavy strategies; a cached optimized artifact is reused
 /// between readable/minified adapters and repeated builds of the same profile.
 pub fn build_wasm(options: &BuildOptions) -> Result<PathBuf, String> {
-    let options = canonical(options)?;
+    let mut options = canonical(options)?;
+    if options.packings == [Packing::Utf8] && options.data == [Integrity::None] {
+        return Err("This profile needs no Wasm kernel".into());
+    }
+    // Fast JS paths share the hash ABI; compact also needs its native
+    // finite-state kernel. Cache by native capabilities,
+    // rather than recompiling identical Wasm for every JS codec subset.
+    let js_hash = options.packings.iter().any(|p| p.is_utf8()) && options.data != [Integrity::None];
+    options
+        .packings
+        .retain(|p| !p.is_utf8() || *p == Packing::Utf8Compact);
+    if js_hash && !options.packings.contains(&Packing::Utf8Compact) {
+        options.packings.push(Packing::Utf8);
+    }
     let root = crate::project::root()?;
     let key = profile_key(&options);
     let folder = root.join("generated/wasm/profiles");
@@ -157,6 +277,13 @@ pub fn build_wasm(options: &BuildOptions) -> Result<PathBuf, String> {
         .map(PathBuf::from)
         .unwrap_or_else(|| "cargo".into());
     let optimizer = tool(None, "WASM_OPT", "wasm-opt");
+    // Pair-only modules favor their small-message path. O3 avoids O4's IR
+    // flattening there; broader codec builds retain O4's scheduling/size balance.
+    let optimize_level = if options.packings == [Packing::Pair] {
+        "-O3"
+    } else {
+        "-O4"
+    };
     let mut flags = if let Ok(value) = env::var("CARGO_ENCODED_RUSTFLAGS") {
         value.split('\x1f').map(str::to_string).collect::<Vec<_>>()
     } else {
@@ -179,13 +306,18 @@ pub fn build_wasm(options: &BuildOptions) -> Result<PathBuf, String> {
     flags.extend(["-C".into(), "link-arg=-zstack-size=65536".into()]);
     let flags = flags.join("\x1f");
     let mut source = features(&options).join(",").into_bytes();
-    source.extend_from_slice(b"wasm32v1-none:chrome109:simd128-mutable:-O4:atomic-cache-v3");
+    source.extend_from_slice(b"wasm32v1-none:chrome109:simd128-mutable:atomic-cache-v4");
+    source.extend_from_slice(optimize_level.as_bytes());
     source.extend_from_slice(flags.as_bytes());
     for path in [
         "Cargo.toml",
         "crates/decoder-wasm/Cargo.toml",
         "crates/decoder-wasm/src/lib.rs",
         "crates/decoder-wasm/src/unpack.rs",
+        "crates/decoder-wasm/src/ans.rs",
+        "crates/decoder-wasm/src/windows.rs",
+        "crates/decoder-wasm/src/utf8_compact.rs",
+        "src/packing.rs",
         "src/hash.rs",
         "src/hash/simd.rs",
     ] {
@@ -238,10 +370,10 @@ pub fn build_wasm(options: &BuildOptions) -> Result<PathBuf, String> {
     let mut optimize = Command::new(&optimizer);
     optimize
         .arg(&artifact)
+        .arg(optimize_level)
         .args([
             "--mvp-features",
             "--enable-mutable-globals",
-            "-O4",
             "--converge",
             "--vacuum",
             "--strip-dwarf",
@@ -287,18 +419,40 @@ impl Drop for Scratch {
 }
 
 pub fn build_decoder(options: &BuildOptions) -> Result<String, String> {
-    let wasm = io(fs::read(build_wasm(options)?))?;
-    build_adapter(options, &wasm)
+    let options = canonical(options)?;
+    if options.packings == [Packing::Utf8] && options.data == [Integrity::None] {
+        return build_adapter(&options, &[]);
+    }
+    let wasm = io(fs::read(build_wasm(&options)?))?;
+    build_adapter(&options, &wasm)
 }
 
 /// Bundle a matching kernel into an independent ESM. Separating assembly from
 /// compilation lets experiments compare kernels through the identical adapter.
 pub fn build_adapter(options: &BuildOptions, wasm: &[u8]) -> Result<String, String> {
     let options = canonical(options)?;
-    let payload = transport::base64(&transport::gzip9(wasm)?);
-    let mut imports = String::from(
-        "import {runWasm} from './wasm-runtime.js';\nimport {loadWasm} from './loader.js';\n",
-    );
+    let has_utf8 = options.packings.contains(&Packing::Utf8);
+    let has_wasm =
+        options.packings.iter().any(|p| *p != Packing::Utf8) || options.data != [Integrity::None];
+    let has_compact = options.packings.contains(&Packing::Utf8Compact);
+    let payload = if has_wasm {
+        transport::base64(&transport::gzip(wasm)?)
+    } else {
+        String::new()
+    };
+    let mut imports = if has_wasm {
+        String::from(
+        "import {runWasm,warmWasm,failure} from './wasm-runtime.js';\nimport {loadWasm} from './loader.js';\n",
+    )
+    } else {
+        String::from("import{failure}from './wasm-runtime.js';\n")
+    };
+    if has_utf8 {
+        imports.push_str("import{runUtf8,warmUtf8}from './utf8.js';\n");
+    }
+    if has_compact {
+        imports.push_str("import{runCompact,warmCompact}from './utf8-compact.js';\n");
+    }
     let mut selectors = Vec::new();
     let mut statements = Vec::new();
     let format = if options.formats.len() > 1 {
@@ -339,12 +493,93 @@ pub fn build_adapter(options: &BuildOptions, wasm: &[u8]) -> Result<String, Stri
     } else {
         "text,options={}"
     };
-    let entry=format!("{imports}\nconst api=await loadWasm({payload:?});\nexport function binary({parameters}){{\n{}\nreturn runWasm(api,text,{format},{data},{memory});\n}}\n",statements.join("\n"));
+    // Generate only available names. The canonical ordering gives a no-argument
+    // priority pair > ANS > Windows > UTF-8 > compact UTF-8; never heavy implicitly.
+    let cases = options
+        .packings
+        .iter()
+        .map(|p| format!("codec==={:?}?{}:", p.name(), 1u32 << *p as u32))
+        .collect::<String>();
+    let heavy = if options.packings.contains(&Packing::Pair) {
+        "if(flag&&bit===1)heavy|=1;"
+    } else {
+        ""
+    };
+    let default_codec = options.packings[0].name();
+    let warm_dispatch = format!(
+        "{}{}",
+        if has_wasm {
+            "warmWasm(api,mask&7,heavy);"
+        } else {
+            ""
+        },
+        if has_utf8 {
+            "if(mask&8)warmUtf8();"
+        } else {
+            ""
+        }
+    );
+    let warm_dispatch = format!(
+        "{}{}",
+        warm_dispatch,
+        if has_compact {
+            "if(mask&16)warmCompact();"
+        } else {
+            ""
+        }
+    );
+    let warmup=format!("export function warmup(codecs,memoryHeavy){{\nif(codecs===undefined)codecs=[{default_codec:?}];\nif(!Array.isArray(codecs))throw TypeError('Expected an array of payload codecs');\nif(memoryHeavy!==undefined){{if(!Array.isArray(memoryHeavy))throw TypeError('Expected an array of memory flags');if(memoryHeavy.length!==codecs.length)throw Error('Warm-up lists must have the same length');}}\nlet mask=0,heavy=0;\nfor(let i=0;i<codecs.length;i++){{const codec=codecs[i],bit={cases}0;if(!bit)throw failure(9);\nconst flag=memoryHeavy===undefined?false:memoryHeavy[i];\nif(typeof flag!=='boolean')throw TypeError('Expected boolean memory flags');\nmask|=bit;{heavy}}}\n{warm_dispatch}\n}}\n");
+    let initialization = if has_wasm {
+        format!("const api=await loadWasm({payload:?});")
+    } else {
+        "const api=null;".into()
+    };
+    let dispatch = if has_utf8 {
+        format!("if(text.charCodeAt(0)===11)return runUtf8(api,text,{format},{data});\n")
+    } else {
+        "if(text.charCodeAt(0)===11)throw failure(9);\n".into()
+    };
+    let dispatch = format!(
+        "{}{}",
+        dispatch,
+        if has_compact {
+            format!("if(text.charCodeAt(0)===14)return runCompact(api,text,{format},{data});\n")
+        } else {
+            "if(text.charCodeAt(0)===14)throw failure(9);\n".into()
+        }
+    );
+    let rest = if options.packings.iter().any(|p| !p.is_utf8()) {
+        format!("return runWasm(api,text,{format},{data},{memory});")
+    } else {
+        "throw failure(9);".into()
+    };
+    let entry=format!("{imports}\n{initialization}\n{warmup}export function binary({parameters}){{\n{}\nif(text.length<2)throw failure(2);\n{dispatch}{rest}\n}}\n",statements.join("\n"));
     let scratch = Scratch::new()?;
     for &(name, contents) in FILES {
+        let contents = contents.replace("\"./model.mjs\"", "\"./utf8-model.mjs\"");
         io(fs::write(scratch.0.join(name), contents))?;
     }
     let defines = [
+        (
+            "UTF8_FORMAT_RUNTIME",
+            (options.formats.len() > 1).to_string(),
+        ),
+        (
+            "UTF8_VERIFY_FORMAT",
+            options.formats.contains(&true).to_string(),
+        ),
+        (
+            "PAYLOAD_ALLOW_PAIR",
+            options.packings.contains(&Packing::Pair).to_string(),
+        ),
+        (
+            "PAYLOAD_ALLOW_ANS",
+            options.packings.contains(&Packing::Ans).to_string(),
+        ),
+        (
+            "PAYLOAD_ALLOW_WINDOWS",
+            options.packings.contains(&Packing::Windows).to_string(),
+        ),
         (
             "PAYLOAD_VERIFY_FORMAT",
             options.formats.contains(&true).to_string(),
@@ -430,11 +665,50 @@ pub fn type_declaration(options: &BuildOptions) -> Result<String, String> {
         fields.push("  memoryHeavy?: boolean;".to_string());
     }
     let header = "// Generated GlyphPack declaration; policies match this specialized module.\n";
-    if fields.is_empty() {
-        Ok(format!(
-            "{header}export declare function binary(text: string): Uint8Array;\n"
-        ))
+    let mut declaration = if fields.is_empty() {
+        format!("{header}export declare function binary(text: string): Uint8Array;\n")
     } else {
-        Ok(format!("{header}export interface DecodeOptions {{\n{}\n}}\nexport declare function binary(text: string, options?: DecodeOptions): Uint8Array;\n",fields.join("\n")))
+        format!("{header}export interface DecodeOptions {{\n{}\n}}\nexport declare function binary(text: string, options?: DecodeOptions): Uint8Array;\n",fields.join("\n"))
+    };
+    let names = options
+        .packings
+        .iter()
+        .map(|p| format!("'{}'", p.name()))
+        .collect::<Vec<_>>()
+        .join(" | ");
+    declaration.push_str(&format!("export declare function warmup(codecs?: readonly ({names})[], memoryHeavy?: readonly boolean[]): void;\n"));
+    Ok(declaration)
+}
+
+#[cfg(all(test, unix))]
+mod tests {
+    use super::*;
+    use std::os::unix::fs::PermissionsExt;
+    #[test]
+    fn version_probes_are_reused_and_replaced_tools_are_reprobed() {
+        let folder = env::temp_dir().join(format!(
+            "glyphpack-version-{}-{}",
+            std::process::id(),
+            NEXT.fetch_add(1, Ordering::Relaxed)
+        ));
+        fs::create_dir_all(&folder).unwrap();
+        let executable = folder.join("probe");
+        fs::write(
+            &executable,
+            "#!/bin/sh\nprintf x >> \"$0.calls\"\nprintf one\n",
+        )
+        .unwrap();
+        fs::set_permissions(&executable, fs::Permissions::from_mode(0o700)).unwrap();
+        assert_eq!(version(&executable).unwrap(), b"one");
+        assert_eq!(version(&executable).unwrap(), b"one");
+        assert_eq!(fs::read(folder.join("probe.calls")).unwrap(), b"x");
+        fs::write(
+            &executable,
+            "#!/bin/sh\nprintf x >> \"$0.calls\"\nprintf replacement\n",
+        )
+        .unwrap();
+        assert_eq!(version(&executable).unwrap(), b"replacement");
+        assert_eq!(fs::read(folder.join("probe.calls")).unwrap(), b"xx");
+        fs::remove_dir_all(folder).unwrap();
     }
 }

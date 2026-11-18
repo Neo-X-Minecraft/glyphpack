@@ -1,16 +1,57 @@
-import { binary as fixed } from "glyphpack";
-import { binary as full, type DecodeOptions } from "glyphpack/full";
+import { binary as fixed, warmup as warmFixed } from "glyphpack";
+import { binary as full, warmup, type DecodeOptions } from "glyphpack/full";
 import { binary as core } from "glyphpack/core";
+import { binary as ans, warmup as warmAns } from "glyphpack/ans";
+import { binary as windows, warmup as warmWindows } from "glyphpack/windows";
 import { binary as fast } from "glyphpack/fast-none";
+import {
+  binary as recommended,
+  warmup as warmRecommended,
+} from "glyphpack/recommended";
+import {
+  binary as recommendedFull,
+  warmup as warmRecommendedFull,
+} from "glyphpack/recommended-full";
 const options: DecodeOptions = {
   verifyFormat: true,
   verifyData: "secure",
   memoryHeavy: false,
 };
 const bytes: Uint8Array = full("", options);
+warmFixed();
+warmAns();
+warmWindows();
+warmup(["pair", "ans"]);
+warmup(["windows", "pair", "ans"] as const);
+warmup([]);
+warmFixed(["pair"]);
+warmup();
+warmup(["ans", "pair"], [true, false]);
+warmup(undefined, [false]);
+warmRecommended();
+warmRecommended(["pair"], [false]);
+warmRecommendedFull(["ans", "pair"], [true, false]);
+recommended("");
+recommendedFull("");
+// @ts-expect-error Pair-only builds cannot warm omitted codecs.
+warmFixed(["ans"]);
+// @ts-expect-error Recommended full omits Windows.
+warmRecommendedFull(["windows"]);
+// @ts-expect-error Recommended verification is fixed on.
+recommendedFull("", { verifyData: "none" });
+// @ts-expect-error Memory flags must be booleans.
+warmup(["pair"], [1]);
+// @ts-expect-error Warm-up accepts codec names, not verification policies.
+warmup(["secure"]);
+// @ts-expect-error A single name still goes inside an array.
+warmup("ans");
 full("", { verifyData: true });
 full("", { verifyData: false });
 fixed("");
+ans("");
+windows("");
+// @ts-expect-error Codec selection is encoded in the data, not a runtime option.
+full("", { packing: "ans" });
 core("");
 fast("", { verifyData: "fast", verifyFormat: false });
 // @ts-expect-error Fixed profiles do not expose ignored runtime options.
@@ -27,3 +68,27 @@ full("", { verifyData: "crc32" });
 full("", { verifyFormat: "true" });
 // @ts-expect-error Encoded payloads are strings.
 full(bytes);
+
+import { decode as rawUTF8, warmup as warmUTF8 } from "glyphpack/utf8-raw";
+const rawBytes: Uint8Array = rawUTF8("");
+warmUTF8();
+// @ts-expect-error Raw UTF-8 has no verification options.
+rawUTF8("", { verifyData: "secure" });
+
+import { binary as utf8, warmup as warmUTF8Codec } from "glyphpack/utf8";
+import {
+  binary as compactUTF8,
+  warmup as warmCompactUTF8,
+} from "glyphpack/utf8-compact";
+utf8("");
+compactUTF8("");
+warmUTF8Codec(["utf8"], [false]);
+warmCompactUTF8(["utf8-compact"], [true]);
+warmup(
+  ["utf8", "utf8-compact", "pair", "ans", "windows"],
+  [false, false, true, false, false],
+);
+// @ts-expect-error UTF-8 codec profile is secure only.
+utf8("", { verifyData: "none" });
+// @ts-expect-error The default pair profile does not include UTF-8.
+warmFixed(["utf8"]);

@@ -1,16 +1,21 @@
 // Host the Rust encoder without converting each UTF-16 unit through JS calls.
-// Wasm memory is little-endian. The alphabet excludes surrogates; ignoreBOM
-// preserves every leading unit rather than treating one as a stream marker.
+// Wasm memory is little-endian; encoders emit well-formed UTF-16, including
+// surrogate pairs for supplementary compact symbols. ignoreBOM preserves the
+// leading indicator instead of treating a code unit as a stream marker.
 const utf16 = new TextDecoder("utf-16le", { fatal: true, ignoreBOM: true });
 const utf8 = new TextDecoder();
 
 // Integrity modes: 0=none, 1=XXH32, 2=BLAKE3. Defaults match the Rust encoder.
-export function encode(api, bytes, mode = 2, exact = true) {
+export function encode(api, bytes, mode = 2, exact = true, packing = "pair") {
   if (mode !== 0 && mode !== 1 && mode !== 2)
     throw Error("Unsupported encoder integrity mode");
+  const codec = { pair: 0, ans: 1, windows: 2, utf8: 3, "utf8-compact": 4 }[
+    packing
+  ];
+  if (codec === undefined) throw Error("Unsupported encoder packing");
   const pointer = api.input_ptr(bytes.length);
   new Uint8Array(api.memory.buffer, pointer, bytes.length).set(bytes);
-  if (api.encode(mode, +exact)) {
+  if (api.encode(mode, +exact, codec)) {
     throw Error(
       utf8.decode(
         new Uint8Array(api.memory.buffer, api.error_ptr(), api.error_len()),

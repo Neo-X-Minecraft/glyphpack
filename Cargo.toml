@@ -1,25 +1,26 @@
 [package]
 name = "glyphpack"
-version = "0.2.2"
+version = "1.0.0"
 edition = "2021"
 rust-version = "1.85"
-description = "Dense UTF-16 payload encoding with a specialized Rust/Wasm decoder"
+description = "Dense UTF-8/UTF-16 HTML payloads with JavaScript and Rust/Wasm decoders"
 license = "0BSD"
 readme = "README.md"
 authors = ["NeoX"]
 repository = "https://github.com/Neo-X-Minecraft/glyphpack"
 homepage = "https://neo-x-minecraft.github.io/glyphpack/"
-exclude = ["benchmarks/results/*", "benchmarks/experiments/snapshots/*", "tests/vendor/*", ".github/*"]
+exclude = ["benchmarks/results/*", "tests/vendor/*", ".github/*"]
 keywords = ["encoding", "utf16", "html", "payload", "javascript"]
 categories = ["encoding", "command-line-utilities", "web-programming"]
 
 [features]
 default = ["tools"]
-tools = ["dep:serde_json"]
+tools = ["dep:serde_json", "dep:zopfli"]
 parallel-encoder = []
 
 [dependencies]
 serde_json = { version = "=1.0.154", optional = true }
+zopfli = { version = "=0.8.3", default-features = false, features = ["gzip", "std"], optional = true }
 
 [[bin]]
 name = "glyphpack"
@@ -55,21 +56,21 @@ lto = "fat"
 panic = "abort"
 
 [[example]]
-name = "adapter_prototype"
+name = "codec_bench"
 required-features = ["tools"]
 
 [[example]]
-name = "hybrid_prototype"
+name = "utf8_raw_fixtures"
 required-features = ["tools"]
 
 [[example]]
-name = "paired_report"
+name = "utf8_raw"
 required-features = ["tools"]
 
 [[example]]
-name = "encoder_compare"
+name = "integration"
 required-features = ["tools"]
 
 [[example]]
-name = "encoder_report"
+name = "compact_speed"
 required-features = ["tools"]

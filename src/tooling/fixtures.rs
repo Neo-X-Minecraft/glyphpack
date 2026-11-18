@@ -45,10 +45,10 @@ pub fn packets(data: &[u8], mask: Option<u8>) -> Result<Value, String> {
     Ok(Value::Object(out))
 }
 
-pub fn test_vectors(root: &Path) -> Result<Value, String> {
+pub fn test_vectors(_root: &Path) -> Result<Value, String> {
     let mut profiles = Vec::new();
     for options in super::profiles::matrix() {
-        profiles.push(json!({"formats":options.formats,"modes":options.data.iter().map(|m|m.name()).collect::<Vec<_>>(),"memories":options.memory,"source":build_decoder(&options)?}));
+        profiles.push(json!({"formats":options.formats,"modes":options.data.iter().map(|m|m.name()).collect::<Vec<_>>(),"memories":options.memory,"source":build_decoder(&options)?,"wasm":crate::builder::build_wasm(&options)?}));
     }
     let mut rows = Vec::new();
     let mut state = 0x812331u32;
@@ -66,8 +66,6 @@ pub fn test_vectors(root: &Path) -> Result<Value, String> {
         }
     }
     let raw = vec![0; 256];
-    let baseline =
-        fs::read_to_string(root.join("tests/reference/full.js")).map_err(|e| e.to_string())?;
     let mut extended = Vec::new();
     for size in [
         (32 * encoder::RADIX - 1) as usize,
@@ -89,7 +87,7 @@ pub fn test_vectors(root: &Path) -> Result<Value, String> {
         );
     }
     Ok(
-        json!({"profiles":profiles,"rows":rows,"zero":packets(&raw,Some(0))?,"alphabet":encoder::alphabet(),"baseline":baseline,"extended":extended,"hashes":hash_cases}),
+        json!({"profiles":profiles,"rows":rows,"zero":packets(&raw,Some(0))?,"alphabet":encoder::alphabet(),"extended":extended,"hashes":hash_cases}),
     )
 }
 

@@ -1,273 +1,95 @@
 # GlyphPack
 
-Dense binary payloads for standalone HTML, by **NeoX**, under **0BSD**.
-Rust handles encoding, adaptive XOR mask selection, HTML insertion, builds and
-benchmark preparation. A specialized Rust/Wasm decoder runs in the browser.
+Dense binary payloads for standalone HTML. **NeoX · 0BSD · 1.0.0.**
+Rust encodes and builds; selected JS/Wasm paths decode. Chrome 109+ is the browser
+baseline; performance is measured on Chromium 156.0.8078.79.
 
-Every distribution module embeds its Wasm as **native gzip level 9 + base64**.
-The browser's `DecompressionStream('gzip')` inflates it once during module import.
-There is one production backend, with small JS glue for options and memory I/O.
-Target: **Chrome 109+**. BLAKE3 uses standard Wasm SIMD128 for full chunks.
+Try the [offline-capable workbench](https://neo-x-minecraft.github.io/glyphpack/),
+install the [npm decoder package](https://www.npmjs.com/package/glyphpack), or get
+the native CLI and browser archives from [GitHub releases](https://github.com/Neo-X-Minecraft/glyphpack/releases).
+1.0.0 establishes a new format/API baseline; earlier payloads are unsupported.
 
-Open [dist/standalone.html](dist/standalone.html) directly under `file://` for an
-offline example. It embeds the decoder and payload; no server or companion fetch
-is needed. Standalone exports are tested in Chrome 109 and Chromium 156.
-
-[**Open the live workbench →**](https://neo-x-minecraft.github.io/glyphpack/) · [performance measurements](docs/performance.md)
-
-Try JSON, multilingual text, SVG, arbitrary bytes, gzip logs, and empty files.
-The page encodes local files with Rust/Wasm, explains verification failures,
-compares actual transport sizes, and exports offline HTML viewers. Nothing is
-uploaded.
-
-## Use a ready-built module
-
-```js
-import {binary} from './dist/full.min.mjs';
-
-const bytes = binary(encodedText);
+```sh
+npm install glyphpack
 ```
 
-Import waits for decompression and Wasm instantiation. After import resolves,
-`binary()` is synchronous, and the same instance, arenas and lookup tables are
-reused. Returned bytes own a fresh buffer and remain valid across later calls.
-Module initialization uses no network requests or neighboring files.
+The package contains ready-to-import decoders and TypeScript declarations, with
+no runtime dependencies. Rust encodes payloads; use the CLI or workbench to create
+them. The default import supports pair with strict format and BLAKE3 checks fixed
+on. Import `glyphpack/full` when you need every codec and runtime option.
 
-The full module supports all twelve combinations:
+| Packing      | Document encoding | Use                                       |
+| ------------ | ----------------- | ----------------------------------------- |
+| pair         | UTF-16LE          | Small framing and fast decode             |
+| ans          | UTF-16LE          | Dense larger payloads                     |
+| windows      | Windows-1252      | Highest density with a controlled charset |
+| utf8         | UTF-8             | Fast Base122 alternative                  |
+| utf8-compact | UTF-8             | Finite-state ANS for higher density       |
+
+Fast UTF-8 has about 13.56% random-data overhead; compact UTF-8 about 11.81%.
+These are transports, not compressors. Compact chooses the smaller current ANS
+or fast representation. One document has one charset; transcoding changes density.
 
 ```js
-binary(encodedText, {
+import { binary, warmup } from "glyphpack/full";
+warmup(["ans", "pair"], [false, true]); // Optional aligned lists.
+const bytes = binary(payload, {
   verifyFormat: true,
-  verifyData: 'secure', // 'secure', 'fast', 'none'; true/false aliases
-  memoryHeavy: false
+  verifyData: "secure", // BLAKE3; also fast=XXH32, none, true/false aliases.
+  memoryHeavy: false,
 });
 ```
 
-| Option | Meaning |
-| --- | --- |
-| `verifyFormat` | Check symbols, header rules, decoded coverage and padding |
-| `verifyData: 'secure'` | Require and verify BLAKE3-256 |
-| `verifyData: 'fast'` | Require and verify XXH32 |
-| `verifyData: 'none'` | Skip integrity verification |
-| `memoryHeavy` | Use a lazy, reusable 256 KiB high-digit lookup |
+Defaults are strict format, BLAKE3 and memory false. Allocation, input-capacity,
+trailer and algorithm-state bounds are mandatory. Only pair uses the optional
+256 KiB lookup. Output buffers are owned. An unkeyed digest checks bytes, not
+authorship or encoded-text spelling.
 
-Defaults are format checking on, BLAKE3 on, and heavy memory off. Mandatory
-integer-length, available-input and trailer bounds stay enabled in every build.
-A digest checks decoded bytes, not text spelling or authorship. Keep format
-checking enabled for untrusted encoded text.
+Warm-up without arguments selects exactly one available codec in pair > ans >
+windows > utf8 > utf8-compact order, memory false. Decode initializes caches
+itself. Compact ANS is tableless; its adaptive fast representation shares a 4 KiB
+lookup. Warm-up does not promise a JIT tier or reserve payload-sized arenas.
 
-## Build and encode
-
-Install Rust 1.85+ with its baseline Wasm target, Node.js 20+, and native `gzip`:
+Full builds handle all five codecs, all three integrity modes, both format
+policies and both pair memory strategies. Custom builds erase unselected code.
+Recommended profiles remain pair-only or pair+ANS with both checks fixed on.
+See the [configuration guide](docs/configuration.md) for package imports, build
+flags, runtime policies and warm-up examples, and [runnable samples](examples/).
 
 ```sh
-rustup target add wasm32v1-none
-npm ci
-cargo build --release --locked
+# From a source checkout, after npm ci and installing the Wasm targets:
 cargo run --release --locked -- build --all
+cargo run --release --locked -- build --full -o full.mjs
+cargo run --release --locked -- build --packing utf8 utf8-compact -o utf8.mjs
+cargo run --release --locked -- encode input.bin --packing utf8-compact -o payload.gp8
+cargo run --release --locked -- inject template.html payload.gp8 standalone.html
 ```
 
-For byte-reproducible distributions, use Rust 1.99.1, esbuild 0.28.2 and Binaryen
-129; CI pins these versions. esbuild and Binaryen are installed by `npm ci`.
-Set `ESBUILD_BINARY_PATH` or `WASM_OPT` to use an explicit tool.
+Required Wasm is embedded as Zopfli-optimized gzip/base64 and loaded once through native
+DecompressionStream. Decode is synchronous after import. Fast-UTF-8-only hashless
+builds omit Wasm. The current standalone `glyphpack/utf8-raw` leaf exposes
+`decode`/`warmup` for bare fast transport; full builds expose only `binary`/`warmup`.
 
-The executable is `target/release/glyphpack` (`.exe` on Windows).
+Standalone HTML supports file:// with an inline Blob-imported module, as in
+`dist/standalone.html` and workbench exports. Separate module files follow browser
+origin rules. The injector handles safe HTML data containers and native charsets;
+read exact textContent without trimming or normalization. The workbench uses
+local files and uploads nothing.
+
+Build prerequisites: Rust 1.85+, wasm32v1-none and wasm32-unknown-unknown, Node 20+,
+npm ci. CI pins Rust 1.99.1.
 
 ```sh
-# BLAKE3 integrity and full automatic mask search; payload UTF-16LE without BOM.
-glyphpack encode input.bin -o payload.utf16
-
-# Sampled mask ranking followed by exact whole-input shortlist scoring.
-glyphpack encode input.bin --effort fast -o payload.utf16
-
-# Return UTF-8 text for a caller managing its own document serialization.
-glyphpack encode input.bin --text -o payload.txt
-
-# Complete offline HTML example, using an inline ES module.
-glyphpack demo demo.html
-```
-
-GlyphPack is a binary-to-text transport, not a compressor. Compress input first
-when appropriate. Automatic XOR selection never enlarges the identity-mask body.
-Full search checks every mask unless it reaches the theoretical minimum.
-The Rust encoder writes the requested representation directly. It borrows input
-and its small digest separately, samples windows without copying them, and
-avoids intermediate UTF-16 buffers.
-
-For repeated encoding, retain the output allocation:
-
-```rust
-use glyphpack::encoder::{dense16_into, EncodeOptions};
-let mut output = Vec::new();
-dense16_into(b"first input", &EncodeOptions::default(), &mut output)?;
-dense16_into(b"next input", &EncodeOptions::default(), &mut output)?;
-```
-
-`encode_units_into` and `encode_text_into` do the same for u16 units and UTF-8.
-Validation errors preserve the existing output. Serial encoding can reuse warm
-capacity without heap allocation after the alphabet initializes.
-
-An opt-in `parallel-encoder` Cargo feature uses up to four scoped native workers
-for expensive exact searches. It shares the input, preserves output/tie order,
-and stays off by default. Some inputs reach the minimum early and benefit less
-from computing ahead. It does not add threads to browser builds.
-
-```sh
-cargo build --release --features parallel-encoder
-```
-
-## Build only the features you need
-
-```sh
-# Fixed secure/default module.
-glyphpack build -o decoder.mjs
-
-# Minimal module: no optional verification or hashes.
-glyphpack build --data none --no-format-checks -o tiny.mjs
-
-# Only these runtime-selectable settings.
-glyphpack build --format on off --data fast none -o choices.mjs
-
-# All 12 runtime combinations.
-glyphpack build --full -o full.mjs
-
-# Select one or both memory strategies independently.
-glyphpack build --memory-heavy off on -o adaptive.mjs
-```
-
-One value on an axis fixes its behavior at build time; runtime options cannot
-override it. Multiple values add handlers only for the selected choices.
-Unselected Rust code and JS option/error handling are removed. `--readable`
-produces readable glue; `--module` is accepted for compatibility but all builds
-are ES modules. Use an inline `<script type="module">` when embedding one in HTML.
-
-`dist/default.*` is the fixed secure profile. `core.*` and `none.*` are identical
-minimal profiles. `fast-none.*`, `high-memory.*`, and `full.*` show other selections.
-Sizes, digests and embedded Wasm/gzip sizes are recorded in `dist/profiles.json`.
-Missing Wasm or `DecompressionStream` rejects module import with a clear error.
-
-## HTML insertion
-
-The encoder and injector are independent Rust APIs:
-`encoder::{encode_text, dense16, EncodeOptions}` and
-`injector::{payload_element, inject_html, utf16_document}`.
-
-```sh
-glyphpack inject template.html payload.utf16 output.html
-```
-
-The UTF-8 template's `__PAYLOAD__` marker receives an inert script data block;
-the resulting document is UTF-16LE with a BOM. The template supplies its module
-code. Preserve payload `textContent` exactly: do not trim or entity-escape it.
-See [format and embedding details](docs/format.md).
-
-## Verify and compare
-
-```sh
-npm test                         # Rust vectors + 63 specialized Wasm profiles
-npm run test:file                # offline file://, UTF-8 and UTF-16LE
-npm run test:browser              # Browser matrix, peers and offline HTML
-npm run bench                    # Decode-only comparison in Chromium
-npm run bench:encode             # Native encoder CSV
-npm run summary                  # Summarize the latest public-fixture comparison
-```
-
-`CHROMIUM_BIN` selects the browser and `CHROMIUM_VERSION` its expected exact
-version. Benchmarks use reproducible public fixtures and the browser version recorded in
-each report. New measurements go into `generated/results/`.
-The pure-JS implementation is retained only under tests/reference and optimization
-archives for differential testing, never as a shipped runtime fallback.
-
-[Benchmark methodology](docs/benchmarking.md) · [Source map](docs/source-map.md)
-
-## Build the demo
-
-The optional browser encoder uses native UTF-16 string conversion, reusable Wasm
-output capacity, and standard SIMD128 for BLAKE3. Chrome 109 remains supported.
-Set `GLYPHPACK_ENCODER_SIMD=0` when building the site for a scalar comparison.
-
-```sh
-rustup target add wasm32-unknown-unknown
+npm test
+npm run test:types
+npm run test:package
+npm run test:examples
+npm run test:integration
 npm run build:site
 npm run test:site
-# Serve generated/pages/ with any static HTTP server.
 ```
 
-`site/` contains plain HTML, CSS and browser JS. A module worker runs both
-engines. `crates/encoder-wasm/` reuses the native Rust encoder and is built only
-for the workbench; it adds no bytes to the decoder distributions. The browser
-encoder is lowered to baseline Wasm and packaged with native gzip + base64.
-
-The Pages workflow builds, tests and deploys `generated/pages/` on main pushes.
-The demo limits files and inflated output to 16 MiB, and previews large inputs
-without rendering the entire file. Use the CLI for larger assets. Local timing
-is a warmed decode-only comparison, including the chosen verification.
-
-## Layout
-
-```text
-src/encoder.rs           native packing, mask search and output backends
-src/hash.rs              native/shared Wasm XXH32 and BLAKE3
-src/hash/simd.rs         four-chunk BLAKE3 SIMD compression
-src/injector.rs          generic HTML insertion
-src/builder.rs           specialized Wasm + gzip/base64 ESM builds
-src/transport.rs         native gzip and base64 output
-src/decoder/             browser loader, ABI adapter and option selectors
-src/tooling/             Rust fixtures, hosting, reports and distributions
-crates/decoder-wasm/     allocator-free Wasm parser and hot loops
-crates/encoder-wasm/     optional workbench encoder, shared native source
-site/                    framework-free Pages workbench
-dist/                    standalone ESM distributions
-examples/                usage examples and encoder benchmark
-tests/                   vectors, regressions and frozen references
-benchmarks/              browser comparison, licensed peers and past results
-docs/                    wire format and methodology
-```
-
-[Contributing](CONTRIBUTING.md) · [Third-party notices](docs/third-party.md)
-
-## Relocatable CLI
-
-`glyphpack encode`, `glyphpack inject` and `glyphpack --version` work from any
-directory. They do not require Node, Wasm tools, or a source checkout. Source-only
-commands (`build`, `demo`, `site`, `fixtures`, tests and browser benchmarks) find
-the checkout in the current directory or its ancestors. Set `GLYPHPACK_ROOT` to
-select another checkout explicitly. This also lets a downloaded CLI build the
-matching sources without depending on its original build-machine paths.
-
-GitHub CI covers the pinned production toolchain, native ARM64, and the declared
-Rust 1.85 minimum. The manual **benchmarks** workflow publishes raw measurements,
-CPU/browser details, compact CSVs and a chart as downloadable Actions artifacts.
-
-## Use the Rust codec without build tools
-
-Encoding, hashing and HTML injection need no third-party Rust dependencies:
-
-```toml
-[dependencies]
-glyphpack = { path = "path/to/glyphpack", default-features = false }
-```
-
-```rust
-use glyphpack::encoder::{dense16, EncodeOptions};
-let packed = dense16(b"hello", &EncodeOptions::default())?;
-```
-
-The default `tools` feature adds the CLI, decoder compilation, benchmark/report
-utilities and their JSON dependency. Disabling it leaves the codec APIs intact.
-
-Release downloads are explained in [Start here](docs/downloads.md). Native CLI
-archives are built and tested as static musl binaries for Linux x86_64/aarch64.
-The manual packages workflow produces reviewable archives; it never publishes a
-release automatically. [Release checklist](docs/releasing.md).
-
-TypeScript declarations accompany each distribution and expose only its selected
-runtime options. Custom builds can write matching declarations separately:
-
-```sh
-glyphpack build --full -o decoder.mjs --types decoder.d.mts
-```
-
-`npm run test:types` checks accepted/rejected policies, and `npm run test:package`
-installs a real local tarball in a clean directory and tests all six exports.
-GitHub runs these consumer checks on Node 20 and 22.
+[Format](docs/format.md) · [CLI](docs/cli.md) · [Configuration](docs/configuration.md) · [Source map](docs/source-map.md) ·
+[Measurements](benchmarks/results/integration/report.md) ·
+[History](docs/history.md) · [Refinement results](benchmarks/results/refinement/report.md) ·
+[Release notes](CHANGELOG.md).

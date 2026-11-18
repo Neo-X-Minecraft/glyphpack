@@ -77,7 +77,47 @@ fn mix(s: &mut [u32; 16], a: usize, b: usize, c: usize, d: usize, x: u32, y: u32
 
 // CHUNK_START=1, CHUNK_END=2, PARENT=4, ROOT=8. Only eight output words
 // are needed for chaining values and the fixed 32-byte root digest.
-fn compress(cv: [u32; 8], m: [u32; 16], counter: u64, length: usize, flags: u32) -> [u32; 8] {
+#[cfg(target_arch = "wasm32")]
+fn compress_compact(
+    cv: [u32; 8],
+    m: [u32; 16],
+    counter: u64,
+    length: usize,
+    flags: u32,
+) -> [u32; 8] {
+    // Wasm keeps one scalar round body for tails/tree nodes, rather than seven
+    // expanded copies. Fixed message positions let LLVM keep words in locals;
+    // the four-chunk SIMD hot path is unchanged when enabled. Native and
+    // default builds retain expanded rounds. Both produce the same digest.
+    let mut m = m;
+    let mut s = [0; 16];
+    s[..8].copy_from_slice(&cv);
+    s[8..12].copy_from_slice(&IV[..4]);
+    s[12] = counter as u32;
+    s[13] = (counter >> 32) as u32;
+    s[14] = length as u32;
+    s[15] = flags;
+    for round in 0..7 {
+        mix(&mut s, 0, 4, 8, 12, m[0], m[1]);
+        mix(&mut s, 1, 5, 9, 13, m[2], m[3]);
+        mix(&mut s, 2, 6, 10, 14, m[4], m[5]);
+        mix(&mut s, 3, 7, 11, 15, m[6], m[7]);
+        mix(&mut s, 0, 5, 10, 15, m[8], m[9]);
+        mix(&mut s, 1, 6, 11, 12, m[10], m[11]);
+        mix(&mut s, 2, 7, 8, 13, m[12], m[13]);
+        mix(&mut s, 3, 4, 9, 14, m[14], m[15]);
+        if round != 6 {
+            // The last permutation is intentionally omitted: no later round
+            // observes the message. This is the standard BLAKE3 permutation.
+            m = [
+                m[2], m[6], m[3], m[10], m[7], m[0], m[4], m[13], m[1], m[11], m[12], m[5], m[9],
+                m[14], m[15], m[8],
+            ];
+        }
+    }
+    core::array::from_fn(|i| s[i] ^ s[i + 8])
+}
+fn compress_fast(cv: [u32; 8], m: [u32; 16], counter: u64, length: usize, flags: u32) -> [u32; 8] {
     let mut s = [0; 16];
     s[..8].copy_from_slice(&cv);
     s[8..12].copy_from_slice(&IV[..4]);
@@ -109,9 +149,33 @@ fn compress(cv: [u32; 8], m: [u32; 16], counter: u64, length: usize, flags: u32)
     core::array::from_fn(|i| s[i] ^ s[i + 8])
 }
 
+// The const parameter is resolved at build time; only one scalar compressor is
+// retained in each decoder. Native encoding and default decoders keep expanded
+// rounds; the optional compact-hash build selects the smaller tree/tail path.
+fn compress<const COMPACT: bool>(
+    cv: [u32; 8],
+    m: [u32; 16],
+    counter: u64,
+    length: usize,
+    flags: u32,
+) -> [u32; 8] {
+    #[cfg(target_arch = "wasm32")]
+    if COMPACT {
+        return compress_compact(cv, m, counter, length, flags);
+    }
+    compress_fast(cv, m, counter, length, flags)
+}
+
 /// One-shot BLAKE3-256, covering empty input, exact block ends and full trees.
 /// This deliberately exposes neither keyed hashing, KDF nor variable output.
 pub fn blake3(data: &[u8]) -> [u8; 32] {
+    blake3_impl::<false>(data)
+}
+#[cfg(target_arch = "wasm32")]
+pub(super) fn blake3_compact(data: &[u8]) -> [u8; 32] {
+    blake3_impl::<true>(data)
+}
+fn blake3_impl<const COMPACT: bool>(data: &[u8]) -> [u8; 32] {
     let chunks = data.len().div_ceil(1024).max(1);
     // At most 64 tree levels cover every addressable input length. Keeping
     // this fixed stack local removes the per-hash allocation and also lets the
@@ -134,7 +198,7 @@ pub fn blake3(data: &[u8]) -> [u8; 32] {
                     depth -= 1;
                     words[..8].copy_from_slice(&stack[depth]);
                     words[8..].copy_from_slice(&cv);
-                    cv = compress(IV, words, 0, 64, 4);
+                    cv = compress::<COMPACT>(IV, words, 0, 64, 4);
                     completed >>= 1;
                 }
                 stack[depth] = cv;
@@ -160,7 +224,7 @@ pub fn blake3(data: &[u8]) -> [u8; 32] {
                 } else {
                     0
                 };
-            cv = compress(cv, words, chunk as u64, block.len(), flags);
+            cv = compress::<COMPACT>(cv, words, chunk as u64, block.len(), flags);
         }
         if chunk == chunks - 1 {
             while depth != 0 {
@@ -169,7 +233,7 @@ pub fn blake3(data: &[u8]) -> [u8; 32] {
                 let mut words = [0; 16];
                 words[..8].copy_from_slice(&left);
                 words[8..].copy_from_slice(&cv);
-                cv = compress(IV, words, 0, 64, 4 | if depth == 0 { 8 } else { 0 });
+                cv = compress::<COMPACT>(IV, words, 0, 64, 4 | if depth == 0 { 8 } else { 0 });
             }
         } else {
             let mut completed = chunk + 1;
@@ -178,7 +242,7 @@ pub fn blake3(data: &[u8]) -> [u8; 32] {
                 depth -= 1;
                 words[..8].copy_from_slice(&stack[depth]);
                 words[8..].copy_from_slice(&cv);
-                cv = compress(IV, words, 0, 64, 4);
+                cv = compress::<COMPACT>(IV, words, 0, 64, 4);
                 completed >>= 1;
             }
             stack[depth] = cv;

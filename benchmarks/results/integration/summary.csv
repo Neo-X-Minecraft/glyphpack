@@ -1,0 +1,17 @@
+decoder,input_bytes,median_ms,process_min_ms,process_max_ms
+current-raw,1048576,3.728,3.725,3.855
+utf8-core,1048576,3.790,3.752,3.793
+utf8-strict-js,1048576,3.718,3.715,3.727
+utf8-secure-fixed,1048576,5.848,5.838,5.877
+base122-tuned,1048576,3.843,3.840,3.847
+pair-none,1048576,2.443,2.433,2.540
+pair-secure,1048576,4.175,4.172,4.228
+ans-none,1048576,2.245,2.220,2.255
+ans-secure,1048576,4.005,3.982,4.017
+windows-none,1048576,3.760,3.727,3.825
+windows-secure,1048576,5.512,5.483,5.535
+utf8-none,1048576,3.710,3.683,3.725
+utf8-secure,1048576,5.507,5.470,5.525
+utf8-compact-none,1048576,10.657,10.065,10.702
+utf8-compact-secure,1048576,12.352,11.767,12.387
+utf8-unchecked,1048576,3.725,3.695,3.735

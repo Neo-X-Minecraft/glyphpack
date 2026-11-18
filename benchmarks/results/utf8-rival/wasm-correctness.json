@@ -1,0 +1,138 @@
+{
+  "passed": true,
+  "runtime": "v24.21.0",
+  "records": [
+    {
+      "name": "wasm-utf8-scalar",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "c07b2fbce483ac50b44c69a222d0561d78d4c79f211586d23fe092575f12a9ea"
+    },
+    {
+      "name": "wasm-utf8-unroll",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "ff6bd3ccfb3a37f00883cfd85bed1da0bd13f031d4332682000a58c025c84a7e"
+    },
+    {
+      "name": "wasm-utf8-ascii8",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "7962eb86143d8f136eb2e89e31a21093791cefc6a6a29d5e555d407b230ebf08"
+    },
+    {
+      "name": "wasm-utf8-branchless",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "bd9bf9f1ccc747eb35218320a31b614f0a5a91c7a20ed2b3161c855ac6d97d5b"
+    },
+    {
+      "name": "wasm-utf8-high",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "2f99944d7149c37e5a7593b788b48b99fdca80a224464c72a0d99ed9f8660a82"
+    },
+    {
+      "name": "wasm-utf16-scalar",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "32e225abd797314575a792a98aae38b914e99336c48c2b7382b13e14be16299f"
+    },
+    {
+      "name": "wasm-utf16-scalar-copy1",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "91243b5b5ac487a542a660c83f85ab28bc1100c8adb422552bde852debb58e28"
+    },
+    {
+      "name": "wasm-utf16-scalar-copy2",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "e6b2bfc718b4cd4c0bb5152b04dbe04a3e529e61dddf8d379fe55a86a2f84a35"
+    },
+    {
+      "name": "wasm-utf16-unroll",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "3d249b74cfaf4ca4ecf40af0f4311684bfd0f81fe20e702de51e649db9fb0c00"
+    },
+    {
+      "name": "wasm-utf16-unroll-copy1",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "492454680eb1697728343a0d9717c9138d91e852f981f5e1fd12264aee891528"
+    },
+    {
+      "name": "wasm-utf16-unroll-copy2",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "a46e115047ac5c4765d638bc8c407b3aa3cc87ceff95ccaf8b7d15ad3f71ec38"
+    },
+    {
+      "name": "wasm-utf16-branchless",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "6feeb54eb30500cbf3c7fac11ce7a08d8d114bdb5b7e7500f0e7c5753a4b6c95"
+    },
+    {
+      "name": "wasm-utf16-branchless-copy1",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "fd61ae206f33b03d68e3ab3caadc6091929dcc7a0dab3565caa1a31771aa0727"
+    },
+    {
+      "name": "wasm-utf16-branchless-copy2",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "694115f50c06ff07aeb0d02124e615a4969dd54a5c84e552518a418456156aac"
+    },
+    {
+      "name": "wasm-utf16-high",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "65ed72b5648d5dd3be9227d82e63044a77739c4c8813afffdc6b36f423293dfd"
+    },
+    {
+      "name": "wasm-utf16-high-copy1",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "2001ed467fd3204b91c2f000f1dece6373a5eaa25b836d0cb0bdd22c4b6f1ad0"
+    },
+    {
+      "name": "wasm-utf16-high-copy2",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "707406d2f71e787b9797444cdc563895cc6b0213e89460584ff0ab7110837840"
+    },
+    {
+      "name": "wasm-tokens-scalar",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "d9ac6a44d0e9861132725d01860b6dfdba8dfe80f7288cb1c7533ea4f6fbbba3"
+    },
+    {
+      "name": "wasm-tokens-unroll",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "81bf617e93ee6870a3db0c7122e9b2af69d0bac79b76e6b221f599d0f13578a7"
+    },
+    {
+      "name": "wasm-tokens-branchless",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "6f1601f0b3e8b9825272fdd78a20e651a312cec15ad65ceb8e15dca491e19acd"
+    },
+    {
+      "name": "wasm-tokens-high",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "6a00a92dd41ec960eec21532b99ae5d4b5d8e886298ec8738250f09fbc4c14c1"
+    },
+    {
+      "name": "wasm-tokens-simd",
+      "vectors": 1600,
+      "oneMiBSha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+      "moduleSha256": "b485dc8e9b0389db584b9aa881b2f108cc13bcdf105b76cc29d61c54f841e569"
+    }
+  ]
+}

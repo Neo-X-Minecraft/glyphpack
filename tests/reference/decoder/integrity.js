@@ -7,8 +7,6 @@
 import {xxhash32} from './xxhash32.js';
 import {createBlake3} from './blake3.js';
 import {invalidLength} from './allocation.js';
-// Compatibility alias: declared-length safety is now mandatory in every build.
-export {checkAllocationLength as checkIntegrityLength} from './allocation.js';
 
 // Independent defense at the verifier boundary: require an integer data end and
 // exactly one complete trailer finishing this packet view (no missing/extra

@@ -91,8 +91,11 @@ function buttons() {
     "memory",
     "gzip",
     "effort",
+    "packing",
   ])
     $(id).disabled = locked;
+  // These controls affect pair/ANS/Windows mask search and pair lookup only.
+  $("effort").disabled = locked || $("packing").value.startsWith("utf8");
   $("input").readOnly = locked;
   $("payload").readOnly = locked || state.payload.length > 65536;
   for (const button of document.querySelectorAll("[data-example]"))
@@ -228,7 +231,7 @@ function accept(result, meta, opts) {
   state.goodPayload = state.payload;
   render();
   $("stat-original").textContent = size(result.bytes.length);
-  $("stat-packed").textContent = size(state.payload.length * 2);
+  $("stat-packed").textContent = size(payloadFile(state.payload).bytes.length);
   $("stat-utf8").textContent = size(utf8.encode(state.payload).length);
   $("stat-base64").textContent = size(4 * Math.ceil(result.bytes.length / 3));
   $("timing").textContent =
@@ -246,7 +249,7 @@ function accept(result, meta, opts) {
 function snippet() {
   const opts = options();
   $("current-code").textContent =
-    `import {binary} from './full.min.mjs';\n\n// Read a .gp16 file as UTF-16LE, or pass the encoded string directly.\nconst bytes = binary(payload, ${JSON.stringify(opts, null, 2)});\n\n// Text / JSON\nconst text = new TextDecoder().decode(bytes);`;
+    `import {binary} from './full.min.mjs';\n\n// Read .gp8 as UTF-8 or .gp16 as UTF-16LE; binary() reads the payload tag.\nconst bytes = binary(payload, ${JSON.stringify(opts, null, 2)});\n\n// Text / JSON\nconst text = new TextDecoder().decode(bytes);`;
 }
 async function loadExample(id) {
   const sample = state.samples.find((s) => s.id === id);
@@ -293,6 +296,7 @@ $("encode").onclick = () =>
       mode,
       gzip,
       exact: $("effort").value === "full",
+      packing: $("packing").value,
     });
     state.sample = null;
     state.meta = {
@@ -352,16 +356,19 @@ $("payload-file").onchange = () =>
     if (file.size > limit * 2 + 128)
       throw Error("The payload is too large for this playground.");
     const bytes = new Uint8Array(await file.arrayBuffer()),
+      windows = /\.gp1252$/i.test(file.name),
       wide =
         /\.(gp16|utf16)$/i.test(file.name) ||
         (bytes[0] === 255 && bytes[1] === 254);
     if (wide && bytes.length % 2)
       throw Error("UTF-16LE payload has an odd byte count.");
-    showPayload(
-      new TextDecoder(wide ? "utf-16le" : "utf-8", { fatal: true }).decode(
-        bytes,
-      ),
-    );
+    const text = new TextDecoder(
+      windows ? "windows-1252" : wide ? "utf-16le" : "utf-8",
+      {
+        fatal: true,
+      },
+    ).decode(bytes);
+    showPayload(windows ? text.replaceAll("\0", "\ufffd") : text);
     state.sample = null;
     state.meta = {
       name: "decoded.bin",
@@ -375,6 +382,7 @@ for (const id of ["integrity", "format", "memory"])
     snippet();
     if (state.sample) loadExample(state.sample);
   };
+$("packing").onchange = buttons;
 $("view").onchange = render;
 $("restore").onclick = () => {
   const opts = state.lastOptions;
@@ -399,12 +407,42 @@ function download(bytes, name, type) {
 $("download-bytes").onclick = () =>
   download(state.bytes, state.outputMeta.name, state.outputMeta.mime);
 $("download-payload").onclick = () => {
-  const data = new Uint8Array(state.payload.length * 2),
-    view = new DataView(data.buffer);
-  for (let i = 0; i < state.payload.length; i++)
-    view.setUint16(i * 2, state.payload.charCodeAt(i), true);
-  download(data, state.meta.name + ".gp16", "application/octet-stream");
+  const file = payloadFile(state.payload);
+  download(
+    file.bytes,
+    state.meta.name + file.extension,
+    "application/octet-stream",
+  );
 };
+// Native source representation follows the payload tag; UI selection does not
+// reinterpret a previously loaded payload. Logical strings remain unchanged.
+function payloadFile(text) {
+  if (text.charCodeAt(0) === 11 || text.charCodeAt(0) === 14)
+    return { bytes: utf8.encode(text), extension: ".gp8" };
+  if (text.charCodeAt(0) === 12) {
+    const special = [
+      8364, 129, 8218, 402, 8222, 8230, 8224, 8225, 710, 8240, 352, 8249, 338,
+      141, 381, 143, 144, 8216, 8217, 8220, 8221, 8226, 8211, 8212, 732, 8482,
+      353, 8250, 339, 157, 382, 376,
+    ];
+    return {
+      bytes: Uint8Array.from(text, (c) => {
+        const n = c.charCodeAt(0);
+        return n === 65533
+          ? 0
+          : n < 128 || (n >= 160 && n <= 255)
+            ? n
+            : 128 + special.indexOf(n);
+      }),
+      extension: ".gp1252",
+    };
+  }
+  const bytes = new Uint8Array(text.length * 2),
+    view = new DataView(bytes.buffer);
+  for (let i = 0; i < text.length; i++)
+    view.setUint16(i * 2, text.charCodeAt(i), true);
+  return { bytes, extension: ".gp16" };
+}
 $("copy-payload").onclick = async () => {
   try {
     await navigator.clipboard.writeText(state.payload);
@@ -448,13 +486,28 @@ async function standalone() {
       meta = { ...state.lastMeta };
     // Export the last successful payload with the policy that successfully read it.
     const mode = state.lastOptions || opts;
-    const script = `const moduleUrl=URL.createObjectURL(new Blob([${literal(source)}],{type:'text/javascript'}));\nconst {binary}=await import(moduleUrl);URL.revokeObjectURL(moduleUrl);\nlet bytes=binary(${literal(payload)},${literal(mode)});\nconst meta=${literal(meta)};\nif(meta.gzip){bytes=new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());meta.name=meta.name.replace(/\\.gz$/i,'');meta.mime=meta.name.endsWith('.svg')?'image/svg+xml':meta.name.endsWith('.json')?'application/json':'application/octet-stream';}\ndocument.title=meta.name;document.querySelector('h1').textContent=meta.name;\nconst url=URL.createObjectURL(new Blob([bytes],{type:meta.mime}));const a=document.querySelector('a');a.href=url;a.download=meta.name;\nif(/^image\\/(png|jpeg|webp|gif|svg\\+xml)$/.test(meta.mime)){const img=document.createElement('img');img.src=url;img.alt=meta.name;document.querySelector('main').append(img);}else{const pre=document.createElement('pre');pre.textContent=new TextDecoder().decode(bytes.subarray(0,65536))||'[Empty file]';document.querySelector('main').append(pre);}`;
-    const html = `<!doctype html><meta charset="utf-16le"><meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'unsafe-inline' blob: 'wasm-unsafe-eval';style-src 'unsafe-inline';img-src blob:;base-uri 'none';object-src 'none'"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GlyphPack file</title><style>body{color-scheme:dark;background:#101214;color:#e7ebe8;max-width:900px;margin:40px auto;padding:20px;font:14px system-ui}h1{font-size:22px}a{color:inherit}pre{white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #394038;padding:20px}img{max-width:100%}</style><h1>Loading…</h1><a>Download original bytes</a><main></main><script type="module">${script}</script>`;
-    const data = new Uint8Array(2 + html.length * 2),
-      view = new DataView(data.buffer);
-    view.setUint16(0, 0xfeff, true);
-    for (let i = 0; i < html.length; i++)
-      view.setUint16(2 + i * 2, html.charCodeAt(i), true);
+    const fastUtf8 = payload.charCodeAt(0) === 11,
+      compactUtf8 = payload.charCodeAt(0) === 14,
+      isUtf8 = fastUtf8 || compactUtf8;
+    const container = compactUtf8
+      ? `<script type="application/octet-stream" id="payload">${payload}</script>`
+      : fastUtf8
+        ? `<textarea hidden id="payload">${payload.replaceAll("&", "&amp;").replace(/<(?=\/textarea)/gi, "&lt;")}</textarea>`
+        : "";
+    const expression = isUtf8
+      ? "document.getElementById('payload').textContent"
+      : literal(payload);
+    const script = `const moduleUrl=URL.createObjectURL(new Blob([${literal(source)}],{type:'text/javascript'}));\nconst {binary}=await import(moduleUrl);URL.revokeObjectURL(moduleUrl);\nlet bytes=binary(${expression},${literal(mode)});\nconst meta=${literal(meta)};\nif(meta.gzip){bytes=new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());meta.name=meta.name.replace(/\\.gz$/i,'');meta.mime=meta.name.endsWith('.svg')?'image/svg+xml':meta.name.endsWith('.json')?'application/json':'application/octet-stream';}\ndocument.title=meta.name;document.querySelector('h1').textContent=meta.name;\nconst url=URL.createObjectURL(new Blob([bytes],{type:meta.mime}));const a=document.querySelector('a');a.href=url;a.download=meta.name;\nif(/^image\\/(png|jpeg|webp|gif|svg\\+xml)$/.test(meta.mime)){const img=document.createElement('img');img.src=url;img.alt=meta.name;document.querySelector('main').append(img);}else{const pre=document.createElement('pre');pre.textContent=new TextDecoder().decode(bytes.subarray(0,65536))||'[Empty file]';document.querySelector('main').append(pre);}`;
+    const html = `<!doctype html><meta charset="${isUtf8 ? "utf-8" : "utf-16le"}"><meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'unsafe-inline' blob: 'wasm-unsafe-eval';style-src 'unsafe-inline';img-src blob:;base-uri 'none';object-src 'none'"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GlyphPack file</title><style>body{color-scheme:dark;background:#101214;color:#e7ebe8;max-width:900px;margin:40px auto;padding:20px;font:14px system-ui}h1{font-size:22px}a{color:inherit}pre{white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #394038;padding:20px}img{max-width:100%}</style><h1>Loading…</h1><a>Download original bytes</a><main></main>${container}<script type="module">${script}</script>`;
+    let data;
+    if (isUtf8) data = utf8.encode("\ufeff" + html);
+    else {
+      data = new Uint8Array(2 + html.length * 2);
+      const view = new DataView(data.buffer);
+      view.setUint16(0, 0xfeff, true);
+      for (let i = 0; i < html.length; i++)
+        view.setUint16(2 + i * 2, html.charCodeAt(i), true);
+    }
     download(data, displayName(meta.name) + ".html", "text/html");
     status(
       "Standalone HTML downloaded. It includes the decoder and packed file.",
@@ -497,7 +550,8 @@ $("run-checks").onclick = () =>
   action("Running verification examples…", async () => {
     const packet = state.samples.find((s) => s.id === "json").packets.secure;
     // Mutate an ordinary valid body symbol, keeping the header and alphabet valid.
-    let code = packet.charCodeAt(2) + 1;
+    // Format 4 adds one codec unit before the two-unit small-packet header.
+    let code = packet.charCodeAt(3) + 1;
     while (
       code === 60 ||
       (code >= 127 && code <= 159) ||
@@ -507,7 +561,7 @@ $("run-checks").onclick = () =>
     )
       code++;
     const damaged =
-        packet.slice(0, 2) + String.fromCharCode(code) + packet.slice(3),
+        packet.slice(0, 3) + String.fromCharCode(code) + packet.slice(4),
       cases = [
         [
           "Changed bytes",

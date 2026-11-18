@@ -1,5 +1,4 @@
-//! Wire-format and build compatibility fixtures were captured before the Rust
-//! extraction. They are data, so this suite needs no copy of the old tooling.
+//! Current wire-format vectors, build choices and independent hash answers.
 use glyphpack::{
     builder::{build_decoder, BuildOptions},
     encoder::{self, Effort, EncodeOptions, Integrity},
@@ -33,7 +32,7 @@ fn xxhash_known_answers() {
 }
 
 #[test]
-fn gzip_handles_input_larger_than_process_pipes() {
+fn gzip_round_trip_for_large_incompressible_input() {
     use std::{
         io::Write,
         process::{Command, Stdio},
@@ -45,7 +44,7 @@ fn gzip_handles_input_larger_than_process_pipes() {
             (seed >> 24) as u8
         })
         .collect();
-    let compressed = glyphpack::transport::gzip9(&input).unwrap();
+    let compressed = glyphpack::transport::gzip(&input).unwrap();
     let mut child = Command::new("gzip")
         .args(["-d", "-c"])
         .stdin(Stdio::piped())
@@ -63,7 +62,7 @@ fn gzip_handles_input_larger_than_process_pipes() {
     assert_eq!(decoded, input);
 }
 #[test]
-fn original_wire_format() {
+fn pair_golden_vectors() {
     let rows: Value = serde_json::from_str(
         &fs::read_to_string(root().join("tests/fixtures/encoder-golden.json")).unwrap(),
     )
@@ -77,13 +76,16 @@ fn original_wire_format() {
             ..EncodeOptions::default()
         };
         let encoded = encoder::dense16(&data, &options).unwrap();
+        assert_eq!(&encoded[..2], &glyphpack::packing::PAIR_TAG.to_le_bytes());
+        // Check the current codec tag and independently recorded body hashes.
+        let encoded = &encoded[2..];
         assert_eq!(
             encoded.len(),
             row["bytes"].as_u64().unwrap() as usize,
             "{row}"
         );
         assert_eq!(
-            hex(&hash::blake3(&encoded)),
+            hex(&hash::blake3(encoded)),
             row["digest"].as_str().unwrap(),
             "{row}"
         );
@@ -154,17 +156,23 @@ fn invalid_build_choices_and_minimal_code() {
         ..BuildOptions::default()
     })
     .is_err());
-    assert!(build_decoder(&BuildOptions {
-        legacy: true,
-        ..BuildOptions::default()
-    })
-    .is_err());
     let source = build_decoder(&BuildOptions {
         formats: vec![false],
         data: vec![Integrity::None],
         ..BuildOptions::default()
     })
     .unwrap();
+    assert_eq!(
+        source,
+        build_decoder(&BuildOptions {
+            formats: vec![false],
+            data: vec![Integrity::None],
+            compact_hash: true,
+            ..Default::default()
+        })
+        .unwrap(),
+        "Hashless builds must not retain compact-hash handling"
+    );
     for unwanted in [
         "imul",
         "Payload digest",

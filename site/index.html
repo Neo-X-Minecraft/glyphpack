@@ -47,6 +47,15 @@
         <div id="examples" class="examples" aria-label="Example payloads"></div>
         <div class="options">
           <label
+            >Encoding<select id="packing">
+              <option value="pair">UTF-16 pair</option>
+              <option value="ans">UTF-16 ANS</option>
+              <option value="windows">Windows-1252</option>
+              <option value="utf8">UTF-8 · fast</option>
+              <option value="utf8-compact">UTF-8 · compact</option>
+            </select></label
+          >
+          <label
             >Integrity<select id="integrity">
               <option value="secure">BLAKE3 · secure</option>
               <option value="fast">XXH32 · fast</option>
@@ -57,7 +66,7 @@
             ><input id="format" type="checkbox" checked />Check format</label
           >
           <label class="check"
-            ><input id="memory" type="checkbox" />256 KiB lookup</label
+            ><input id="memory" type="checkbox" />Pair: 256 KiB lookup</label
           >
           <details class="advanced">
             <summary>Encoding options</summary>
@@ -71,7 +80,8 @@
             >
             <p>
               Browser gzip is separate from the codec. Its compression level is
-              chosen by the browser.
+              chosen by the browser. UTF-8 modes use their own bounded mask
+              search.
             </p>
           </details>
         </div>
@@ -129,7 +139,7 @@
             <span>Codec input bytes</span><strong id="stat-original">—</strong>
           </div>
           <div>
-            <span>GlyphPack · UTF-16LE</span><strong id="stat-packed">—</strong>
+            <span>Native payload bytes</span><strong id="stat-packed">—</strong>
           </div>
           <div>
             <span>Same glyphs · UTF-8</span><strong id="stat-utf8">—</strong>
@@ -139,8 +149,8 @@
           </div>
         </div>
         <p class="fine">
-          GlyphPack is an encoding, not compression. Its dense size applies to
-          UTF-16LE. UTF-8 files can be larger; both sizes are shown above.
+          GlyphPack is an encoding, not compression. Native size follows the
+          chosen UTF-8, UTF-16LE or Windows-1252 transport.
         </p>
         <section class="output-box">
           <div class="pane-heading">
@@ -162,7 +172,7 @@
         </section>
         <div class="actions">
           <button id="download-bytes" disabled>Download bytes</button
-          ><button id="download-payload" disabled>Download .gp16</button
+          ><button id="download-payload" disabled>Download payload</button
           ><button id="copy-payload" disabled>Copy glyphs</button
           ><button id="download-html" disabled>Make standalone HTML</button
           ><button id="inflate" hidden>Inflate gzip</button

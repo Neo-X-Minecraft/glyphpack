@@ -2,7 +2,7 @@
 //! terminal text encoding; stdout contains only the requested output bytes.
 use glyphpack::{
     builder::{self, BuildOptions},
-    encoder::{self, Effort, EncodeOptions, Integrity},
+    encoder::{self, Effort, EncodeOptions, Integrity, Packing},
     injector, tooling,
 };
 use std::{
@@ -83,6 +83,7 @@ fn main_impl() -> Result<()> {
             let mut at = 0;
             while at < args.len() {
                 match args[at].as_str() {
+                    "--packing" => options.packing = Packing::parse(next(args, &mut at)?)?,
                     "--checksum" | "--data" => {
                         options.integrity = Integrity::parse(next(args, &mut at)?)?
                     }
@@ -104,7 +105,6 @@ fn main_impl() -> Result<()> {
                             _ => return Err("effort must be full or fast".into()),
                         }
                     }
-                    "--legacy" => options.legacy = true,
                     "--text" => text = true,
                     "-o" | "--output" => output = Some(next(args, &mut at)?),
                     "-" => input = "-",
@@ -117,7 +117,7 @@ fn main_impl() -> Result<()> {
             if text {
                 write(output, encoder::encode_text(&data, &options)?.as_bytes())
             } else {
-                write(output, &encoder::dense16(&data, &options)?)
+                write(output, &encoder::encode_bytes(&data, &options)?)
             }
         }
         "build" => {
@@ -125,8 +125,17 @@ fn main_impl() -> Result<()> {
             let (mut at, mut output, mut full, mut selected, mut all) =
                 (0, None, false, false, false);
             let mut types = None;
+            let mut packing_selected = false;
             while at < args.len() {
                 match args[at].as_str() {
+                    "--compact-hash" => options.compact_hash = true,
+                    "--packing" => {
+                        options.packings = switches(args, &mut at)?
+                            .iter()
+                            .map(|v| Packing::parse(v).map_err(str::to_string))
+                            .collect::<Result<Vec<_>>>()?;
+                        packing_selected = true;
+                    }
                     "--types" => types = Some(next(args, &mut at)?),
                     "--data" => {
                         options.data = switches(args, &mut at)?
@@ -147,11 +156,9 @@ fn main_impl() -> Result<()> {
                         options.formats = vec![false];
                         selected = true;
                     }
-                    "--legacy" => options.legacy = true,
                     "--full" => full = true,
                     "--all" => all = true,
                     "--readable" => options.minify = false,
-                    "--module" => options.module = true,
                     "--esbuild" => options.esbuild = Some(next(args, &mut at)?.into()),
                     "-o" | "--output" => output = Some(next(args, &mut at)?),
                     s => return Err(format!("Unknown build option: {s}")),
@@ -164,11 +171,26 @@ fn main_impl() -> Result<()> {
             if all && types.is_some() {
                 return Err("--all writes declarations beside each profile; omit --types".into());
             }
+            if all && options.compact_hash {
+                return Err(
+                    "--all writes standard profiles; use --compact-hash with an individual build"
+                        .into(),
+                );
+            }
             if all {
                 println!("{}", tooling::profiles::build_all(&root()?)?);
                 return Ok(());
             }
             if full {
+                if !packing_selected {
+                    options.packings = vec![
+                        Packing::Pair,
+                        Packing::Ans,
+                        Packing::Windows,
+                        Packing::Utf8,
+                        Packing::Utf8Compact,
+                    ];
+                }
                 options.formats = vec![false, true];
                 options.data = vec![Integrity::None, Integrity::Fast, Integrity::Secure];
                 options.memory = vec![false, true];
@@ -180,27 +202,85 @@ fn main_impl() -> Result<()> {
             write(output, source.as_bytes())
         }
         "inject" => {
-            if args.len() != 3 {
+            let mut encoding = "auto";
+            let mut paths = Vec::new();
+            let mut at = 0;
+            while at < args.len() {
+                if args[at] == "--encoding" {
+                    encoding = next(args, &mut at)?;
+                } else {
+                    paths.push(args[at].as_str())
+                }
+                at += 1;
+            }
+            if paths.len() != 3
+                || ![
+                    "auto",
+                    "utf8",
+                    "utf-8",
+                    "utf16le",
+                    "windows1252",
+                    "windows-1252",
+                ]
+                .contains(&encoding)
+            {
                 return Err(
-                    "Usage: glyphpack inject template.html payload.utf16 output.html".into(),
+                    "Usage: glyphpack inject template.html payload output.html [--encoding utf8|utf16le|windows1252]".into(),
                 );
             }
-            let template = String::from_utf8(read(&args[0])?).map_err(|e| e.to_string())?;
-            let raw = read(&args[1])?;
-            if raw.len() % 2 != 0 {
+            let template = String::from_utf8(read(paths[0])?).map_err(|e| e.to_string())?;
+            let raw = read(paths[1])?;
+            if encoding == "auto" {
+                encoding = if raw.first().is_some_and(|b| matches!(b, 11 | 14))
+                    && raw.get(1).is_some_and(|b| matches!(b, b'0'..=b'2'))
+                {
+                    "utf8"
+                } else {
+                    "utf16le"
+                };
+            }
+            let utf8 = matches!(encoding, "utf8" | "utf-8");
+            let windows = matches!(encoding, "windows1252" | "windows-1252");
+            if !windows && !utf8 && raw.len() % 2 != 0 {
                 return Err("UTF-16LE payload has an odd byte count".into());
             }
-            let units: Vec<u16> = raw
-                .chunks_exact(2)
-                .map(|b| u16::from_le_bytes([b[0], b[1]]))
-                .collect();
-            let text = String::from_utf16(&units).map_err(|e| e.to_string())?;
+            let text = if utf8 {
+                String::from_utf8(raw).map_err(|e| e.to_string())?
+            } else if windows {
+                injector::windows1252_payload_text(&raw)
+            } else {
+                let units: Vec<u16> = raw
+                    .chunks_exact(2)
+                    .map(|b| u16::from_le_bytes([b[0], b[1]]))
+                    .collect();
+                String::from_utf16(&units).map_err(|e| e.to_string())?
+            };
             let element = injector::payload_element("payload", &text, &BTreeMap::new())?;
             let html = injector::inject_html(
                 &template,
-                &BTreeMap::from([("__PAYLOAD__".into(), element)]),
+                &BTreeMap::from([
+                    ("__PAYLOAD__".into(), element),
+                    (
+                        "__CHARSET__".into(),
+                        if utf8 {
+                            "utf-8"
+                        } else if windows {
+                            "windows-1252"
+                        } else {
+                            "utf-16le"
+                        }
+                        .into(),
+                    ),
+                ]),
             )?;
-            write(Some(&args[2]), &injector::utf16_document(&html))
+            let document = if utf8 {
+                injector::utf8_document(&html)
+            } else if windows {
+                injector::windows1252_document(&html)?
+            } else {
+                injector::utf16_document(&html)
+            };
+            write(Some(paths[2]), &document)
         }
         "demo" => {
             let text = encoder::encode_text(
@@ -233,7 +313,6 @@ fn main_impl() -> Result<()> {
             let path = tooling::fixtures::write_vectors(&root()?)?;
             for file in [
                 "tests/regression.cjs",
-                "tests/payload_decoder_test.js",
                 "tests/blake3_test.js",
                 "tests/wasm.cjs",
             ] {
@@ -251,15 +330,40 @@ fn main_impl() -> Result<()> {
                     return Err(format!("JavaScript test failed: {file}"));
                 }
             }
+            let path = tooling::codecs::prepare(&root()?)?;
+            let status = Command::new("node")
+                .arg(root()?.join("tests/codecs.cjs"))
+                .arg(path)
+                .current_dir(root()?)
+                .env("GLYPHPACK_CODECS_NODE", "1")
+                .status()
+                .map_err(|e| e.to_string())?;
+            if !status.success() {
+                return Err("Codec matrix failed".into());
+            }
             Ok(())
         }
         "bench" => {
+            // Browser timing is separate from codec correctness preparation.
             if args.first().is_some_and(|s| s == "smoke") {
                 tooling::fixtures::write_vectors(&root()?)?;
             }
             tooling::benchmark::run(&root()?, args)
         }
-        "history-report" => tooling::history_report::write(&root()?),
+        "test-codecs" => {
+            let path = tooling::codecs::prepare(&root()?)?;
+            let status = Command::new("node")
+                .arg(root()?.join("tests/codecs.cjs"))
+                .arg(path)
+                .current_dir(root()?)
+                .status()
+                .map_err(|e| e.to_string())?;
+            if status.success() {
+                Ok(())
+            } else {
+                Err("Codec matrix failed".into())
+            }
+        }
         "site" => {
             let out = match args {
                 [] => root()?.join("generated/pages"),
@@ -278,7 +382,7 @@ fn main_impl() -> Result<()> {
             _ => Err("Usage: glyphpack summary [--input CSV --output directory]".into()),
         },
         "help" | "--help" | "-h" => {
-            println!("GlyphPack\n\n  encode [input|-] [--checksum secure|fast|none] [--mask N] [--text] [-o path]\n  build [--full|--all] [--format on off] [--data none fast secure]\n        [--memory-heavy off on] [--module] [--readable] [--types path] [-o path]\n  inject template.html payload.utf16 output.html\n  demo [output.html]\n  fixtures\n  test-js\n  bench prepare|run|smoke|history [--quick]\n  history-report\n  site [--output directory]\n  summary");
+            println!("GlyphPack\n\n  encode [input|-] [--packing pair|ans|windows|utf8|utf8-compact] [--checksum secure|fast|none] [--mask N] [--text] [-o path]\n  build [--full|--all] [--packing pair ans windows utf8 utf8-compact] [--format on off] [--data none fast secure]\n        [--memory-heavy off on] [--compact-hash] [--readable] [--types path] [-o path]\n  inject template.html payload output.html [--encoding utf8|utf16le|windows1252]\n  demo [output.html]\n  fixtures\n  test-js\n  test-codecs\n  bench prepare|run|smoke [--quick]\n  site [--output directory]\n  summary");
             Ok(())
         }
         s => Err(format!("Unknown command: {s}")),

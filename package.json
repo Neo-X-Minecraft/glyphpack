@@ -1,22 +1,30 @@
 {
   "name": "glyphpack",
-  "version": "0.2.2",
-  "description": "Dense UTF-16 payloads with a Rust/Wasm decoder and gzip/base64 ESM loader",
+  "version": "1.0.0",
+  "description": "Dense UTF-8/UTF-16 HTML payloads with JavaScript and Rust/Wasm decoders",
   "license": "0BSD",
   "type": "commonjs",
   "exports": {
     ".": "./dist/default.min.mjs",
     "./full": "./dist/full.min.mjs",
+    "./recommended": "./dist/recommended.min.mjs",
+    "./recommended-full": "./dist/recommended-full.min.mjs",
+    "./ans": "./dist/ans.min.mjs",
+    "./windows": "./dist/windows.min.mjs",
+    "./utf8": "./dist/utf8.min.mjs",
+    "./utf8-compact": "./dist/utf8-compact.min.mjs",
     "./core": "./dist/core.min.mjs",
     "./none": "./dist/none.min.mjs",
     "./fast-none": "./dist/fast-none.min.mjs",
-    "./high-memory": "./dist/high-memory.min.mjs"
+    "./high-memory": "./dist/high-memory.min.mjs",
+    "./utf8-raw": "./dist/utf8-raw.min.mjs"
   },
   "files": [
     "dist",
     "docs",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "cargo run --release --locked -- build --all",
@@ -29,7 +37,9 @@
     "build:site": "cargo run --release --locked -- site --output generated/pages",
     "test:site": "node tests/site.cjs",
     "test:types": "tsc --noEmit --strict --module nodenext --target es2022 tests/types.mts",
-    "test:package": "node tests/package.cjs"
+    "test:package": "node tests/package.cjs",
+    "test:integration": "node tests/guards.cjs && cargo run --release --locked --example integration && node tests/integration.cjs && node tests/integration-browser.cjs && node tests/integration-html.cjs && node tests/compact.cjs",
+    "test:examples": "node tests/examples.cjs"
   },
   "engines": {
     "node": ">=20"
@@ -44,10 +54,24 @@
   "types": "./dist/default.min.d.mts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Neo-X-Minecraft/glyphpack.git"
+    "url": "git+https://github.com/Neo-X-Minecraft/glyphpack.git"
   },
   "homepage": "https://neo-x-minecraft.github.io/glyphpack/",
   "bugs": {
     "url": "https://github.com/Neo-X-Minecraft/glyphpack/issues"
+  },
+  "keywords": [
+    "encoding",
+    "base64",
+    "base122",
+    "binary",
+    "wasm",
+    "html",
+    "utf8",
+    "utf16"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

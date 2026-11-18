@@ -4,3 +4,4 @@ export interface DecodeOptions {
   verifyData?: 'none' | false | 'fast';
 }
 export declare function binary(text: string, options?: DecodeOptions): Uint8Array;
+export declare function warmup(codecs?: readonly ('pair')[], memoryHeavy?: readonly boolean[]): void;

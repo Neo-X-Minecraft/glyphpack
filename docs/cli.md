@@ -1,44 +1,46 @@
-# GlyphPack native CLI
+# GlyphPack 1.0.0 CLI
 
-By NeoX, 0BSD. This archive contains a statically linked Linux executable,
-its source commit, and third-party notices. Choose the x86_64 or aarch64 archive
-for your CPU. Extract it and run `./glyphpack --version`.
-
-Encoding and HTML insertion require no installation, Node.js, or neighboring
-source files:
+NeoX · 0BSD. Encode/inject need no Node or adjacent sources. Source builds need
+a matching checkout and the documented toolchain.
 
 ```sh
-# UTF-16LE payload, automatic mask selection, BLAKE3 by default.
-./glyphpack encode input.bin -o payload.gp16
-
-# Faster sampled mask search; never larger than the identity-mask body.
-./glyphpack encode input.bin --effort fast -o payload.gp16
-
-# Explicit verification mode or a fixed mask, useful for benchmarks.
-./glyphpack encode input.bin --checksum fast --mask 0 -o payload.gp16
-
-# UTF-8 representation for callers managing their own text container.
-./glyphpack encode input.bin --text -o payload.txt
-
-# Replace __PAYLOAD__ in a UTF-8 template; write a UTF-16LE HTML document.
-./glyphpack inject template.html payload.gp16 standalone.html
+glyphpack encode input.bin --packing utf8-compact -o payload.gp8
+glyphpack encode input.bin --packing pair -o payload.gp16
+glyphpack encode input.bin --packing windows -o payload.gp1252
+glyphpack inject template.html payload.gp8 standalone.html
+glyphpack inject template.html payload.gp1252 standalone.html --encoding windows1252
+glyphpack build --full -o full.mjs
+glyphpack build --packing pair ans -o recommended-full.mjs
+glyphpack build --packing utf8 --format off on --data none -o fast.mjs
+glyphpack build --all
 ```
 
-The template supplies the browser module and calls `binary()` on the inserted
-payload element's `textContent`. Do not trim or escape that text. A digest checks
-bytes; an unkeyed digest does not establish authorship. See the repository's
-format documentation and browser examples.
+Templates supply `__PAYLOAD__`, optionally `__CHARSET__`, and an inline module that
+reads exact data-element textContent. UTF-8 output is detected from current
+indicators; Windows-1252 is explicit. UTF-16LE documents have a BOM.
 
-Commands that compile decoders, build the demo, or run repository tests and
-benchmarks need the matching source checkout. Run them from that checkout or
-set `GLYPHPACK_ROOT=/path/to/glyphpack`. They also require the build tools listed
-in the repository README. `encode` and `inject` are independent of those tools.
+Defaults: pair, strict format, BLAKE3, memory false. Packing/format/data/memory
+axes accept nonempty subsets. Multiple values add runtime handling, one fixes
+that policy. Compact-hash changes scalar BLAKE3 code size independently of the
+compact codec. Builds are ES modules. Compatibility switches are absent.
+No command publishes a release.
 
-`cargo run --release --locked -- build --all` also writes
-`dist/standalone.html`. Open that file directly to exercise the embedded browser
-decoder offline. The default Wasm build uses standard SIMD128, supported by the
-Chrome 109 baseline. For an explicitly scalar kernel, build with
-`RUSTFLAGS="-C target-feature=-simd128"`; this changes the generated artifact,
-not the payload format or JavaScript options.
+`encode` reads a file or `-` for stdin, and writes stdout unless `-o` is supplied.
+`--checksum secure|fast|none` selects the stored trailer. `--mask 0..255` (also hex,
+such as `0xff`) forces a mask; otherwise the encoder chooses one. `--effort full`
+is the default size search; `--effort fast` reduces encoding work. The decoder
+does not need to know the encoder's effort setting.
 
-Source and live workbench: https://github.com/Neo-X-Minecraft/glyphpack
+Without `--text`, output uses the codec's native source charset: UTF-16LE for
+pair/ANS, Windows-1252 for Windows, UTF-8 for the UTF-8 codecs. `--text` instead
+writes the logical JavaScript string as UTF-8, useful for source literals and
+interchange. It does not retain the UTF-16/Windows source-size benefit.
+
+The injector replaces `__PAYLOAD__` with the appropriate inert data element and
+`__CHARSET__` with its encoding name. The template owns the decoder code and reads
+`document.getElementById('payload').textContent`. It is not an arbitrary minifier
+or module bundler. The workbench can create a complete standalone page directly.
+
+Custom builds and runtime settings are documented in [configuration.md](configuration.md).
+Single builds write declarations only when `--types path` is supplied; `--all`
+writes them for every standard profile. `--readable` produces inspectable source.

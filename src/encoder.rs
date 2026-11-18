@@ -1,12 +1,15 @@
-//! Format-3 encoding and exact adaptive XOR selection. No HTML or compression.
+//! Tagged pair/ANS/Windows encoding and adaptive XOR selection. No HTML or compression.
 use crate::hash::{blake3, xxhash32};
+pub use crate::packing::Packing;
 use std::sync::OnceLock;
+#[path = "encoder/ans.rs"]
+mod ans;
 
 #[cfg(not(target_family = "wasm"))]
 #[path = "encoder/parallel.rs"]
 mod parallel;
 
-pub const FORMAT_VERSION: u8 = 3;
+pub const FORMAT_VERSION: u8 = 1;
 pub const RADIX: u64 = 63385;
 pub const THRESHOLD: u64 = RADIX * RADIX - 2147483649;
 static ALPHABET: OnceLock<Vec<u16>> = OnceLock::new();
@@ -15,16 +18,11 @@ static ALPHABET: OnceLock<Vec<u16>> = OnceLock::new();
 /// surrogates, noncharacters, BOM, and JS line/paragraph separators.
 pub fn alphabet() -> &'static [u16] {
     ALPHABET.get_or_init(|| {
-        (32u32..65534)
-            .filter(|&c| {
-                !(c == 60
-                    || (127..=159).contains(&c)
-                    || (55296..=57343).contains(&c)
-                    || (64976..=65007).contains(&c)
-                    || [65279, 8232, 8233].contains(&c))
-            })
-            .map(|c| c as u16)
-            .collect()
+        let mut alphabet = Vec::with_capacity(RADIX as usize);
+        for (start, end) in crate::packing::UNICODE_RANGES {
+            alphabet.extend((start..end).map(|c| c as u16));
+        }
+        alphabet
     })
 }
 
@@ -65,18 +63,18 @@ pub enum Effort {
 }
 #[derive(Clone, Debug)]
 pub struct EncodeOptions {
+    pub packing: Packing,
     pub integrity: Integrity,
     pub mask: Option<u8>,
     pub effort: Effort,
-    pub legacy: bool,
 }
 impl Default for EncodeOptions {
     fn default() -> Self {
         Self {
+            packing: Packing::Pair,
             integrity: Integrity::Secure,
             mask: None,
             effort: Effort::Full,
-            legacy: false,
         }
     }
 }
@@ -401,11 +399,68 @@ impl Output for Text<'_> {
     }
 }
 
+fn utf8_text(data: &[u8], options: &EncodeOptions) -> Result<String, String> {
+    let trailer = match options.integrity {
+        Integrity::None => Vec::new(),
+        Integrity::Fast => xxhash32(data).to_le_bytes().to_vec(),
+        Integrity::Secure => blake3(data).to_vec(),
+    };
+    let size = data
+        .len()
+        .checked_add(trailer.len())
+        .ok_or("Payload too large")?;
+    if size > 0x40000000 {
+        return Err("Payload too large".into());
+    }
+    let stored = if trailer.is_empty() {
+        std::borrow::Cow::Borrowed(data)
+    } else {
+        let mut v = Vec::with_capacity(size);
+        v.extend_from_slice(data);
+        v.extend_from_slice(&trailer);
+        std::borrow::Cow::Owned(v)
+    };
+    let mut text = if options.packing == Packing::Utf8Compact {
+        let dense = crate::utf8_compact::encode(&stored, options.mask)?;
+        let fast = crate::utf8_raw::encode(
+            &stored,
+            options
+                .mask
+                .unwrap_or_else(|| crate::utf8_raw::select_mask(&stored)),
+        )?;
+        let fast = crate::utf8_compact::protect(&fast);
+        if fast.len() < dense.len() {
+            fast
+        } else {
+            dense
+        }
+    } else {
+        crate::utf8_raw::encode(
+            &stored,
+            options
+                .mask
+                .unwrap_or_else(|| crate::utf8_raw::select_mask(&stored)),
+        )?
+    };
+    let prefix = [
+        options.packing.tag() as u8,
+        b'0' + options.integrity.kind() as u8,
+    ];
+    text.insert_str(0, std::str::from_utf8(&prefix).unwrap());
+    Ok(text)
+}
+
 fn encode<O: Output>(data: &[u8], options: &EncodeOptions, out: &mut O) -> Result<(), String> {
-    if options.legacy
-        && (options.integrity != Integrity::None || options.mask.is_some_and(|m| m != 0))
-    {
-        return Err("Legacy packets do not support masks or checksums".into());
+    if options.packing.is_utf8() {
+        let text = utf8_text(data, options)?;
+        out.reset(text.len());
+        for c in text.encode_utf16() {
+            out.unit(c);
+        }
+        return Ok(());
+    }
+    if options.packing != Packing::Pair {
+        return ans::encode(data, options, out);
     }
     let trailer = match options.integrity {
         Integrity::None => 0,
@@ -429,9 +484,7 @@ fn encode<O: Output>(data: &[u8], options: &EncodeOptions, out: &mut O) -> Resul
     // Reuse the exact pair count already obtained by automatic mask search.
     // Explicit masks reserve a conservative 31-bit bound instead of adding an
     // entire counting pass. Both strategies avoid output-buffer growth/copies.
-    let (mask, pairs) = if options.legacy {
-        (0, (length as u64 * 8).div_ceil(31) as usize)
-    } else if let Some(mask) = options.mask {
+    let (mask, pairs) = if let Some(mask) = options.mask {
         (mask, (length as u64 * 8).div_ceil(31) as usize)
     } else {
         let choice = choose_mask_in(&stored, options.effort);
@@ -441,10 +494,9 @@ fn encode<O: Output>(data: &[u8], options: &EncodeOptions, out: &mut O) -> Resul
     let n = length as u64;
     let a = alphabet();
     debug_assert_eq!(a.len() as u64, RADIX);
-    out.reset(pairs * 2 + 3);
-    if options.legacy {
-        out.pair(a[(n % RADIX) as usize], a[(n / RADIX) as usize]);
-    } else if n < 32 * RADIX {
+    out.reset(pairs * 2 + 4);
+    out.unit(options.packing.tag());
+    if n < 32 * RADIX {
         out.pair(
             a[mode as usize + 1024 * (n / RADIX) as usize],
             a[(n % RADIX) as usize],
@@ -491,9 +543,8 @@ fn encode<O: Output>(data: &[u8], options: &EncodeOptions, out: &mut O) -> Resul
     Ok(())
 }
 
-/// Format-3 UTF-16 code units, without a document BOM. Hash original bytes,
-/// append the optional trailer, XOR actual bytes, and zero-pad only the final
-/// packed pair. The header length always includes the trailer.
+/// Logical UTF-16 code units, including the current codec indicator, without
+/// a document BOM. The stored length always includes the optional digest.
 pub fn encode_units(data: &[u8], options: &EncodeOptions) -> Result<Vec<u16>, String> {
     let mut out = Vec::new();
     encode_units_into(data, options, &mut out)?;
@@ -511,10 +562,46 @@ pub fn dense16(data: &[u8], options: &EncodeOptions) -> Result<Vec<u8>, String> 
     dense16_into(data, options, &mut out)?;
     Ok(out)
 }
+/// Payload source bytes in the codec's native storage: UTF-16LE for pair/ANS,
+/// Windows-1252 for the Windows codec. No document BOM is added.
+pub fn encode_bytes(data: &[u8], options: &EncodeOptions) -> Result<Vec<u8>, String> {
+    let mut out = Vec::new();
+    encode_bytes_into(data, options, &mut out)?;
+    Ok(out)
+}
+pub fn encode_bytes_into(
+    data: &[u8],
+    options: &EncodeOptions,
+    out: &mut Vec<u8>,
+) -> Result<(), String> {
+    if options.packing.is_utf8() {
+        let mut text = String::new();
+        encode_text_into(data, options, &mut text)?;
+        out.clear();
+        out.extend_from_slice(text.as_bytes());
+        Ok(())
+    } else if options.packing == Packing::Windows {
+        encode(data, options, &mut Windows(out))
+    } else {
+        dense16_into(data, options, out)
+    }
+}
+struct Windows<'a>(&'a mut Vec<u8>);
+impl Output for Windows<'_> {
+    fn reset(&mut self, n: usize) {
+        self.0.clear();
+        self.0.reserve(n)
+    }
+    fn unit(&mut self, c: u16) {
+        self.0
+            .push(crate::packing::windows_source_byte(c).expect("Windows alphabet unit"))
+    }
+}
 
 /// Replace UTF-16 output while retaining its allocation. Validation errors
-/// leave the previous contents intact. After warming the alphabet, serial
-/// encoding needs no heap allocation when this capacity is already sufficient.
+/// leave the previous contents intact. The pair backend needs no further heap
+/// allocation after warming the alphabet when output capacity is sufficient;
+/// ANS backends also allocate their reverse-order digit stack.
 pub fn encode_units_into(
     data: &[u8],
     options: &EncodeOptions,
@@ -532,7 +619,14 @@ pub fn encode_text_into(
     options: &EncodeOptions,
     out: &mut String,
 ) -> Result<(), String> {
-    encode(data, options, &mut Text(out))
+    if options.packing.is_utf8() {
+        let text = utf8_text(data, options)?;
+        out.clear();
+        out.push_str(&text);
+        Ok(())
+    } else {
+        encode(data, options, &mut Text(out))
+    }
 }
 
 #[cfg(test)]
@@ -581,7 +675,7 @@ mod tests {
         }
     }
     #[test]
-    fn reusable_outputs_keep_capacity_and_preserve_failed_results() {
+    fn reusable_outputs_keep_capacity() {
         let options = EncodeOptions::default();
         let large: Vec<_> = (0..4097).map(|i| i as u8).collect();
         let mut units = encode_units(&large, &options).unwrap();
@@ -597,15 +691,6 @@ mod tests {
             assert_eq!(text, encode_text(data, &options).unwrap());
             assert_eq!(pointers, (units.as_ptr(), bytes.as_ptr(), text.as_ptr()));
         }
-        let before = (units.clone(), bytes.clone(), text.clone());
-        let bad = EncodeOptions {
-            legacy: true,
-            ..options
-        };
-        assert!(encode_units_into(b"bad", &bad, &mut units).is_err());
-        assert!(dense16_into(b"bad", &bad, &mut bytes).is_err());
-        assert!(encode_text_into(b"bad", &bad, &mut text).is_err());
-        assert_eq!((units, bytes, text), before);
     }
     #[test]
     fn parallel_scores_match_scalar_for_every_mask_and_short_tail() {

@@ -1,0 +1,857 @@
+{
+  "environment": {
+    "recordedAt": "2026-11-13T17:22:13.840Z",
+    "arch": "arm64",
+    "cpu": "unknown",
+    "runs": 1,
+    "rounds": 5,
+    "scope": "Complete warm decode; owned exact output for UTF-8, permissive view output allowed for Base122; no data integrity in either.",
+    "candidates": [
+      {
+        "name": "utf8-raw",
+        "family": "utf8",
+        "moduleBytes": 2342,
+        "sha256": "945ce5a10e77fd93b6cd0b3c1a6849ad3f8be1429ee10a9d57f52538f4e595a8"
+      },
+      {
+        "name": "utf8-unroll",
+        "family": "utf8",
+        "moduleBytes": 2311,
+        "sha256": "215f7d30ec47d08c85646fe109e1471b42d64ba8885692564e28bc1d6a11ae6c"
+      },
+      {
+        "name": "base122-groupUnroll",
+        "family": "base122",
+        "moduleBytes": 1325,
+        "sha256": "c86b858feae64cafcd71a1ce75227dadda5c8d5cbb93e876b1848efd77dd8211"
+      },
+      {
+        "name": "utf8-word16",
+        "family": "utf8",
+        "moduleBytes": 2383,
+        "sha256": "cd816ee90f9c1d99853c0758594b0024e09fe9057442b94ab207546543af8973"
+      },
+      {
+        "name": "utf8-branchless",
+        "family": "utf8",
+        "moduleBytes": 2350,
+        "sha256": "afd969a9d0ecb03bf674325ad5ddfb2646083e662b59283b282a19f392c2ea48"
+      },
+      {
+        "name": "wasm-utf8-high",
+        "file": "generated/utf8-wasm/wasm-utf8-high.mjs",
+        "wasmBytes": 2502,
+        "moduleBytes": 4796,
+        "family": "utf8",
+        "sha256": "2f99944d7149c37e5a7593b788b48b99fdca80a224464c72a0d99ed9f8660a82"
+      },
+      {
+        "name": "wasm-utf16-branchless-copy1",
+        "file": "generated/utf8-wasm/wasm-utf16-branchless-copy1.mjs",
+        "wasmBytes": 3064,
+        "moduleBytes": 5716,
+        "family": "utf8",
+        "sha256": "fd61ae206f33b03d68e3ab3caadc6091929dcc7a0dab3565caa1a31771aa0727"
+      },
+      {
+        "name": "wasm-tokens-branchless",
+        "file": "generated/utf8-wasm/wasm-tokens-branchless.mjs",
+        "wasmBytes": 2649,
+        "moduleBytes": 4984,
+        "family": "utf8",
+        "sha256": "6f1601f0b3e8b9825272fdd78a20e651a312cec15ad65ceb8e15dca491e19acd"
+      }
+    ],
+    "inputs": [
+      {
+        "base122": "generated/encoding-comparison/bootstrap-none.base122",
+        "binary": "generated/encoding-comparison/bootstrap.bin",
+        "bytes": 15200,
+        "file": "generated/utf8-rival/bootstrap.txt",
+        "label": "bootstrap",
+        "payloadBytes": 17209,
+        "sha256": "9e8c21305d4917f84bc172cbfda971881cf0422ee2ea545824531293b7e20d76",
+        "base122Bytes": 17372
+      },
+      {
+        "base122": "generated/encoding-comparison/random-1KiB-none.base122",
+        "binary": "generated/encoding-comparison/random-1KiB.bin",
+        "bytes": 1024,
+        "file": "generated/utf8-rival/random-1KiB.txt",
+        "label": "random-1KiB",
+        "payloadBytes": 1172,
+        "sha256": "cd5139c7cc61f7c5ca3fb9d4f4386af4b8b303029581629795cbd8ab131e54d0",
+        "base122Bytes": 1171
+      },
+      {
+        "base122": "generated/encoding-comparison/random-64KiB-none.base122",
+        "binary": "generated/encoding-comparison/random-64KiB.bin",
+        "bytes": 65536,
+        "file": "generated/utf8-rival/random-64KiB.txt",
+        "label": "random-64KiB",
+        "payloadBytes": 74432,
+        "sha256": "f540ac5d87fd275467341d328f866d241bee9350a3f42ee2a93ebb8db0dd24ad",
+        "base122Bytes": 74899
+      },
+      {
+        "base122": "generated/encoding-comparison/random-1MiB-none.base122",
+        "binary": "generated/encoding-comparison/random-1MiB.bin",
+        "bytes": 1048576,
+        "file": "generated/utf8-rival/random-1MiB.txt",
+        "label": "random-1MiB",
+        "payloadBytes": 1190768,
+        "sha256": "815783db360dfeb077720cfc8953d5a847740df9ce8261a77d6f1305b29b6434",
+        "base122Bytes": 1198373
+      },
+      {
+        "base122": "generated/encoding-comparison/zeros-1MiB-none.base122",
+        "binary": "generated/encoding-comparison/zeros-1MiB.bin",
+        "bytes": 1048576,
+        "file": "generated/utf8-rival/zeros-1MiB.txt",
+        "label": "zeros-1MiB",
+        "payloadBytes": 1118492,
+        "sha256": "30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58",
+        "base122Bytes": 1198374
+      },
+      {
+        "base122": "generated/encoding-comparison/sequential-1MiB-none.base122",
+        "binary": "generated/encoding-comparison/sequential-1MiB.bin",
+        "bytes": 1048576,
+        "file": "generated/utf8-rival/sequential-1MiB.txt",
+        "label": "sequential-1MiB",
+        "payloadBytes": 1191947,
+        "sha256": "fbbab289f7f94b25736c58be46a994c441fd02552cc6022352e3d86d2fab7c83",
+        "base122Bytes": 1198373
+      }
+    ]
+  },
+  "checks": [
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "checked": 11416
+    }
+  ],
+  "records": [
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-raw",
+      "label": "bootstrap",
+      "inputBytes": 15200,
+      "samples": [
+        0.04375,
+        0.04699999988079071,
+        0.044249999523162845,
+        0.045250000059604646,
+        0.04425000101327896
+      ],
+      "medianMs": 0.04425000101327896
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-raw",
+      "label": "random-1KiB",
+      "inputBytes": 1024,
+      "samples": [
+        0.0038799999952316283,
+        0.003634999990463257,
+        0.0039300000071525575,
+        0.004014999985694885,
+        0.0036949999928474427
+      ],
+      "medianMs": 0.0038799999952316283
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-raw",
+      "label": "random-64KiB",
+      "inputBytes": 65536,
+      "samples": [
+        0.18799999952316285,
+        0.1980000004172325,
+        0.1977500006556511,
+        0.21150000095367433,
+        0.19975000023841857
+      ],
+      "medianMs": 0.1980000004172325
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-raw",
+      "label": "random-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        3.532499998807907,
+        3.530000001192093,
+        3.5750000029802322,
+        3.5225000083446503,
+        3.519999995827675
+      ],
+      "medianMs": 3.530000001192093
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-raw",
+      "label": "zeros-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        1.7650000005960464,
+        1.7049999982118607,
+        1.7524999976158142,
+        1.7549999952316284,
+        1.7074999958276749
+      ],
+      "medianMs": 1.7524999976158142
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-raw",
+      "label": "sequential-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        3.0499999970197678,
+        3.070000007748604,
+        3.092500001192093,
+        3.002499997615814,
+        2.997500002384186
+      ],
+      "medianMs": 3.0499999970197678
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-unroll",
+      "label": "bootstrap",
+      "inputBytes": 15200,
+      "samples": [
+        0.042749999463558196,
+        0.04074999988079071,
+        0.04099999964237213,
+        0.04149999916553497,
+        0.5955000013113022
+      ],
+      "medianMs": 0.04149999916553497
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-unroll",
+      "label": "random-1KiB",
+      "inputBytes": 1024,
+      "samples": [
+        0.0036350000202655794,
+        0.0034300000071525575,
+        0.0035999999940395356,
+        0.0038499999940395354,
+        0.008049999982118607
+      ],
+      "medianMs": 0.0036350000202655794
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-unroll",
+      "label": "random-64KiB",
+      "inputBytes": 65536,
+      "samples": [
+        0.19224999994039535,
+        0.1875,
+        0.18825000077486037,
+        0.18875000029802322,
+        0.38975000083446504
+      ],
+      "medianMs": 0.18875000029802322
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-unroll",
+      "label": "random-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        3.5799999982118607,
+        3.3875000029802322,
+        3.3474999964237213,
+        3.375,
+        3.5074999928474426
+      ],
+      "medianMs": 3.3875000029802322
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-unroll",
+      "label": "zeros-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        1.727500006556511,
+        1.7549999952316284,
+        1.782499998807907,
+        1.7725000083446503,
+        1.8524999916553497
+      ],
+      "medianMs": 1.7725000083446503
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-unroll",
+      "label": "sequential-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        2.9825000017881393,
+        3.0125000029802322,
+        2.9375,
+        2.9200000017881393,
+        3.0374999940395355
+      ],
+      "medianMs": 2.9825000017881393
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "base122-groupUnroll",
+      "label": "bootstrap",
+      "inputBytes": 15200,
+      "samples": [
+        0.05074999928474426,
+        0.04574999958276749,
+        0.04650000035762787,
+        0.04574999958276749,
+        0.04799999892711639
+      ],
+      "medianMs": 0.04650000035762787
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "base122-groupUnroll",
+      "label": "random-1KiB",
+      "inputBytes": 1024,
+      "samples": [
+        0.004060000002384186,
+        0.0038799999952316283,
+        0.004050000011920929,
+        0.004180000007152558,
+        0.004305000007152557
+      ],
+      "medianMs": 0.004060000002384186
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "base122-groupUnroll",
+      "label": "random-64KiB",
+      "inputBytes": 65536,
+      "samples": [
+        0.2019999995827675,
+        0.20150000005960464,
+        0.1977500006556511,
+        0.19975000023841857,
+        0.20600000023841858
+      ],
+      "medianMs": 0.20150000005960464
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "base122-groupUnroll",
+      "label": "random-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        3.4325000047683716,
+        3.4375,
+        3.4849999994039536,
+        3.459999993443489,
+        3.477500006556511
+      ],
+      "medianMs": 3.459999993443489
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "base122-groupUnroll",
+      "label": "zeros-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        14.340000003576279,
+        2.802500009536743,
+        2.905000001192093,
+        3.1000000089406967,
+        2.9024999886751175
+      ],
+      "medianMs": 2.905000001192093
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "base122-groupUnroll",
+      "label": "sequential-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        2.864999994635582,
+        2.8299999982118607,
+        2.834999993443489,
+        2.9200000017881393,
+        2.8700000047683716
+      ],
+      "medianMs": 2.864999994635582
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-word16",
+      "label": "bootstrap",
+      "inputBytes": 15200,
+      "samples": [
+        0.06474999934434891,
+        0.06674999892711639,
+        0.0645000010728836,
+        0.06625000089406967,
+        0.06700000017881394
+      ],
+      "medianMs": 0.06625000089406967
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-word16",
+      "label": "random-1KiB",
+      "inputBytes": 1024,
+      "samples": [
+        0.0053449999988079075,
+        0.005280000001192093,
+        0.005179999977350235,
+        0.005504999995231628,
+        0.00558500000834465
+      ],
+      "medianMs": 0.0053449999988079075
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-word16",
+      "label": "random-64KiB",
+      "inputBytes": 65536,
+      "samples": [
+        0.27349999994039537,
+        0.2782499998807907,
+        0.2757500007748604,
+        0.27849999964237215,
+        0.27599999904632566
+      ],
+      "medianMs": 0.27599999904632566
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-word16",
+      "label": "random-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        4.4000000059604645,
+        4.43249998986721,
+        4.405000001192093,
+        4.540000006556511,
+        4.439999997615814
+      ],
+      "medianMs": 4.43249998986721
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-word16",
+      "label": "zeros-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        2.3374999910593033,
+        2.342500001192093,
+        2.3074999898672104,
+        2.3900000005960464,
+        2.377499997615814
+      ],
+      "medianMs": 2.342500001192093
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-word16",
+      "label": "sequential-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        4.482500001788139,
+        4.532499998807907,
+        4.492499992251396,
+        4.459999993443489,
+        4.450000002980232
+      ],
+      "medianMs": 4.482500001788139
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-branchless",
+      "label": "bootstrap",
+      "inputBytes": 15200,
+      "samples": [
+        0.05074999928474426,
+        0.05324999988079071,
+        0.049500000476837155,
+        0.05049999952316284,
+        0.05049999952316284
+      ],
+      "medianMs": 0.05049999952316284
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-branchless",
+      "label": "random-1KiB",
+      "inputBytes": 1024,
+      "samples": [
+        0.004480000019073486,
+        0.004185000002384186,
+        0.003939999997615814,
+        0.004284999996423722,
+        0.004300000011920929
+      ],
+      "medianMs": 0.004284999996423722
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-branchless",
+      "label": "random-64KiB",
+      "inputBytes": 65536,
+      "samples": [
+        0.20899999886751175,
+        0.21300000101327896,
+        0.21199999898672103,
+        0.2137500002980232,
+        0.2125
+      ],
+      "medianMs": 0.2125
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-branchless",
+      "label": "random-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        3.3675000071525574,
+        8.78999999165535,
+        3.4099999964237213,
+        3.417500004172325,
+        3.4224999994039536
+      ],
+      "medianMs": 3.417500004172325
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-branchless",
+      "label": "zeros-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        1.7950000017881393,
+        7.80749998986721,
+        1.7625000029802322,
+        1.8149999976158142,
+        1.822500005364418
+      ],
+      "medianMs": 1.8149999976158142
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "utf8-branchless",
+      "label": "sequential-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        3.4424999952316284,
+        4.252499997615814,
+        3.3900000005960464,
+        3.4749999940395355,
+        3.3999999910593033
+      ],
+      "medianMs": 3.4424999952316284
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wasm-utf8-high",
+      "label": "bootstrap",
+      "inputBytes": 15200,
+      "samples": [
+        0.10325000137090683,
+        0.10150000005960465,
+        0.4147499993443489,
+        0.09925000071525573,
+        0.10074999928474426
+      ],
+      "medianMs": 0.10150000005960465
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wasm-utf8-high",
+      "label": "random-1KiB",
+      "inputBytes": 1024,
+      "samples": [
+        0.008625,
+        0.008419999986886978,
+        0.02073999997973442,
+        0.008185000002384186,
+        0.008319999992847443
+      ],
+      "medianMs": 0.008419999986886978
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wasm-utf8-high",
+      "label": "random-64KiB",
+      "inputBytes": 65536,
+      "samples": [
+        0.45300000011920927,
+        0.4332499995827675,
+        0.4362500011920929,
+        0.4597499996423721,
+        0.45150000005960467
+      ],
+      "medianMs": 0.45150000005960467
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wasm-utf8-high",
+      "label": "random-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        8.280000001192093,
+        8.532499998807907,
+        8.509999990463257,
+        8.652500003576279,
+        8.635000005364418
+      ],
+      "medianMs": 8.532499998807907
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wasm-utf8-high",
+      "label": "zeros-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        3.7974999994039536,
+        3.7899999916553497,
+        3.8075000047683716,
+        3.7224999964237213,
+        3.814999997615814
+      ],
+      "medianMs": 3.7974999994039536
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wasm-utf8-high",
+      "label": "sequential-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        7.454999998211861,
+        7.507499992847443,
+        7.642499998211861,
+        7.5875000059604645,
+        7.5
+      ],
+      "medianMs": 7.507499992847443
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wasm-utf16-branchless-copy1",
+      "label": "bootstrap",
+      "inputBytes": 15200,
+      "samples": [
+        0.06500000059604645,
+        0.061249999701976775,
+        0.060750000178813934,
+        0.061249999701976775,
+        0.11124999970197677
+      ],
+      "medianMs": 0.061249999701976775
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wasm-utf16-branchless-copy1",
+      "label": "random-1KiB",
+      "inputBytes": 1024,
+      "samples": [
+        0.005060000002384186,
+        0.005615000009536743,
+        0.01991999998688698,
+        0.004935000002384186,
+        0.006895000010728836
+      ],
+      "medianMs": 0.005615000009536743
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wasm-utf16-branchless-copy1",
+      "label": "random-64KiB",
+      "inputBytes": 65536,
+      "samples": [
+        0.2670000001788139,
+        0.2665000006556511,
+        0.5492499992251396,
+        0.2702499985694885,
+        0.26450000107288363
+      ],
+      "medianMs": 0.2670000001788139
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wasm-utf16-branchless-copy1",
+      "label": "random-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        4.28999999165535,
+        4.24499998986721,
+        4.3125,
+        4.237499997019768,
+        4.197499990463257
+      ],
+      "medianMs": 4.24499998986721
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wasm-utf16-branchless-copy1",
+      "label": "zeros-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        2.5049999952316284,
+        2.3250000029802322,
+        2.3250000029802322,
+        4.692499995231628,
+        2.2875000089406967
+      ],
+      "medianMs": 2.3250000029802322
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wasm-utf16-branchless-copy1",
+      "label": "sequential-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        4.219999998807907,
+        4.260000005364418,
+        4.424999997019768,
+        7.979999989271164,
+        4.262500002980232
+      ],
+      "medianMs": 4.262500002980232
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wasm-tokens-branchless",
+      "label": "bootstrap",
+      "inputBytes": 15200,
+      "samples": [
+        0.07424999922513961,
+        0.0709999993443489,
+        0.07799999862909317,
+        0.07049999982118607,
+        0.07224999964237214
+      ],
+      "medianMs": 0.07224999964237214
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wasm-tokens-branchless",
+      "label": "random-1KiB",
+      "inputBytes": 1024,
+      "samples": [
+        0.0058050000071525575,
+        0.005784999996423721,
+        0.005729999989271164,
+        0.006739999979734421,
+        0.005664999991655349
+      ],
+      "medianMs": 0.005784999996423721
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wasm-tokens-branchless",
+      "label": "random-64KiB",
+      "inputBytes": 65536,
+      "samples": [
+        0.30674999952316284,
+        0.2997500002384186,
+        0.302250000834465,
+        0.2872499987483025,
+        0.3020000010728836
+      ],
+      "medianMs": 0.3020000010728836
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wasm-tokens-branchless",
+      "label": "random-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        4.832500010728836,
+        4.917500004172325,
+        4.867499992251396,
+        4.924999997019768,
+        4.862499997019768
+      ],
+      "medianMs": 4.867499992251396
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wasm-tokens-branchless",
+      "label": "zeros-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        2.447500005364418,
+        2.4249999970197678,
+        2.4025000035762787,
+        2.415000006556511,
+        2.6400000005960464
+      ],
+      "medianMs": 2.4249999970197678
+    },
+    {
+      "browser": "156.0.8078.79",
+      "run": 1,
+      "variant": "wasm-tokens-branchless",
+      "label": "sequential-1MiB",
+      "inputBytes": 1048576,
+      "samples": [
+        4.857500001788139,
+        4.83500000834465,
+        4.844999998807907,
+        4.862499997019768,
+        4.870000004768372
+      ],
+      "medianMs": 4.857500001788139
+    }
+  ]
+}

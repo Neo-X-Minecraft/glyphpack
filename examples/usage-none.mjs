@@ -1,6 +1,7 @@
 // Run with: node examples/usage-none.mjs
 import {binary} from '../dist/none.min.mjs';
 
-// Encode with checksum='none' to omit the payload digest too.
-const payload=" H\u5002\u705e\uf744\u768b\u88d0\uf866\u3aea\uebfe\u99db\u5e23\u9394\u7702\ub38e\uf593\uf708\u96b9\ua52e\u96f3\u155d\u00cc";
+// Both optional checks and hash implementations are omitted from this build.
+// The packet also omits its digest: encode - --checksum none --mask 0 --text.
+const payload = "\t 9\u5002\u705e\uf744\u768b\ua82e\u9358\u8f7d\ue03b\u9b54\ue654\u1874\u3bfe\u0169 ";
 console.log(new TextDecoder().decode(binary(payload)));

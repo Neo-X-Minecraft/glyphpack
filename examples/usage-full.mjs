@@ -1,20 +1,19 @@
 // Run with: node examples/usage-full.mjs
-import {binary} from '../dist/full.min.mjs';
+import {binary, warmup} from '../dist/full.min.mjs';
 
-// All twelve combinations are included. Defaults: format=true, data=secure,
-// memoryHeavy=false. The 256 KiB lookup is cached after its first true use.
-const packets={
-  "secure": "\u0242c\u5002\u705e\uf744\u768b\u88d0\uf866\u3afd\ud373\u3302\u4350\u7aed\ue893\u8e1f\u433f\u8a70\ud1ee\ua81f\u6967\uee04\u2d5c\ubdf9\u95b8\u38e5\ucc57\u2c46\u53f7\u8475\u798f\u3103\ufb11\u9a6e\u9185\u67aa ",
-  "fast": "\u0142G\u5002\u705e\uf744\u768b\u88d0\uf866\u3afd\ud373\u3302\u4350\u7aed\ue893\u8e1f\u433f\u8a70\ud1ee\u443c\u1e40\u9125 ",
-  "none": " C\u5002\u705e\uf744\u768b\u88d0\uf866\u3afd\ud373\u3302\u4350\u7aed\ue893\u8e1f\u433f\u8a70\ud1ee\u430a "
-};
-console.log('Default:',new TextDecoder().decode(binary(packets.secure)));
+// Current tagged packets, each encoding the same text. Codec choice comes from
+// the packet; runtime options select verification and pair lookup policy only.
+const packets = {"pair":{"secure":"\t\u0242Z\u5002\u705e\uf744\u768b\ua82e\u9358\u8f7d\ue03b\u9b54\ue654\u1874\u3bfe\u847a\u975d\u07df\uaec0\ub0a9\uc948\uae04\u75e3\u8e72\u7613\u4a52\ucfcf\uf754\u51b6\ucdaa\ud005\u06d0 ","fast":"\t\u0142>\u5002\u705e\uf744\u768b\ua82e\u9358\u8f7d\ue03b\u9b54\ue654\u1874\u3bfe\u376b\u5044\u01b5 ","none":"\t 9\u5002\u705e\uf744\u768b\ua82e\u9358\u8f7d\ue03b\u9b54\ue654\u1874\u3bfe\u0169 "},"ans":{"secure":"\n\u0242Z\u973f\uad19 \ufe4f\ua76d \uaa32\ua76d \u0cf5\ua76f \uff53\ubbff\uf64b\uedb6\ud62f\u4de0\u02a9\u87c6\ue310\u8ae0\ubbab\u9e96\u99b3\uf3a3\ubbd1\u8bb6\u7667\uf86f\u2217\u156f\u8739\u9fcf\ub367\u8f15\uae61\uff66\uff66\uff66\uff66","fast":"\n\u0142>\u2717\u9781 \u36a2\u9782 \ud170\u977f \u853b\u928b \u77dd\u59f5\u7b73\u24ca\u1541\u27bd\ucbba\u52d9\ub123\u5ca7\uae49\uff66\uff66\uff66\uff66","none":"\n 9\u2717\u9781 \u7f41\u928b \u2add\u928a \u853b\u928b \u77dd\u0378\u2d5f\u24ca\u1541\u215a\ucdbe\u52d9\uae23\uff66\uff66\uff66\uff66"},"windows":{"secure":"\f\u0004\u0002:\ufffd\ufffd\ufffd\u201eC\u201d\ufffd]\u001e\u201c\ufffd`\u001c\u201c\ufffdf\u001f\u201c\ufffdg\u00d8\u0019+&\u00eb\u02dc\u00c5\u00e8\u00c1\u00b2\u00b0\u2013ws\u0081B\u0006\u00c4\u201ey\u00b6\u00c9\u2021\u02dc\u2018\u00f4lzM\u00a9W\u00d7\u00078\u00d0Q\u00a9\u00ba|b\u02dcA\u2026p\u00ed\u00f2\u0003\u00f1\u0012+\u00e7\u00df\u0004\u0004\u0004\u0004","fast":"\f\u0002\u0001\u001e\ufffd\ufffd\ufffd\ufffdr\u0152\ufffd\u00f7\\\u2039\ufffd\u00fe\\\u2039\ufffd\u00fe\\\u2039\ufffd\u0001\u2019\u00d8\u00e4\u00e1\u00c3v\u009d\u00c2\u00b7\u00ae\u00a6\u017d\u2039\u008d\u2022X9\u00fc\u00b6\u00ad\u0010\u00be\u00b4\u00c7\u0004\u0004\u0004\u0004","none":"\f\ufffd\ufffd\u001a\ufffd\ufffd\ufffd\u00da\\\u2039\ufffd\u00d7J\u0160\ufffd\u00deJ\u0160\ufffd\u00deJ\u0160\ufffd\u00e1v\u00bc\u00c8\u00c5\u00ab^\u2026\u00aa\u00a3\u0161\u2019z{}\u2026H-\u00f0\u00aa\u00a1\u0004\u0004\u0004\u0004"},"utf8":{"secure":"\u000b2~u2AA5B$\u0019-Fc<@f9\u001bmR\u0002\u001dXy8\u001a\u01ad\u0016\u001b,\u06f1bN$\u007f\u0001\u000e'9y05\u001cM9WBcXx/\u000fK-x<\u0012\u001bBuJ\u001b'Xtu`Qvg\u041d","fast":"\u000b1~u2AAd$\u0019-Fc<@f9\u001bmR\u0002\u001dXy8\u001a\u01ad\u0016\u001b,\u06f1bN$`;\u0005\u001ar","none":"\u000b0~u2AAZ$\u0019-Fc<@f9\u001bmR\u0002\u001dXy8\u001a\u01ad\u0016\u001b,\u06f1bN$`"},"utf8-compact":{"secure":"\u000e2~u2AA5B$\u0019-Fc<@f9\u001bmR\u0002\u001dXy8\u001a\u01ad\u0016\u001b,\u06f1bN$\u007f\u0001\u000e'9y05\u001cM9WBcXx/\u000fK-x<\u0012\u001bBuJ\u001b'Xtu`Qvg\u041d","fast":"\u000e1~u2AAd$\u0019-Fc<@f9\u001bmR\u0002\u001dXy8\u001a\u01ad\u0016\u001b,\u06f1bN$`;\u0005\u001ar","none":"\u000e0~u2AAZ$\u0019-Fc<@f9\u001bmR\u0002\u001dXy8\u001a\u01ad\u0016\u001b,\u06f1bN$`"}};
 
-for(const memoryHeavy of [false,true]){
-  for(const verifyFormat of [true,false]){
-    for(const verifyData of ['secure','fast','none']){
-      const bytes=binary(packets[verifyData],{verifyFormat,verifyData,memoryHeavy});
-      console.log({verifyFormat,verifyData,memoryHeavy},new TextDecoder().decode(bytes));
+// Optional caches: ANS ignores memoryHeavy; pair alone has a larger lookup.
+warmup(['ans', 'pair'], [false, true]);
+for (const [codec, modes] of Object.entries(packets)) {
+  for (const memoryHeavy of [false, true]) {
+    for (const verifyFormat of [true, false]) {
+      for (const verifyData of ['secure', 'fast', 'none']) {
+        const bytes = binary(modes[verifyData], {verifyFormat, verifyData, memoryHeavy});
+        console.log(codec, verifyFormat, verifyData, memoryHeavy, new TextDecoder().decode(bytes));
+      }
     }
   }
 }

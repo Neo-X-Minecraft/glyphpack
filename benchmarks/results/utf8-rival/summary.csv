@@ -1,0 +1,4 @@
+browser,decoder,utf8_payload_bytes,esm_bytes,median_ms,process_min_ms,process_max_ms
+156.0.8078.79,utf8-raw,1190768,2319,3.305,3.270,3.315
+156.0.8078.79,base122-reference,1198373,305,5.995,5.970,6.015
+156.0.8078.79,base122-groupUnroll,1198373,1325,3.490,3.485,3.510

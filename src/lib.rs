@@ -8,9 +8,13 @@ pub mod builder;
 pub mod encoder;
 pub mod hash;
 pub mod injector;
+pub mod packing;
 #[cfg(feature = "tools")]
 pub mod project;
 #[cfg(feature = "tools")]
 pub mod tooling;
 
 pub mod transport;
+pub mod utf8_compact;
+/// Explicitly raw UTF-8 transport; secure encoder defaults are unchanged.
+pub mod utf8_raw;

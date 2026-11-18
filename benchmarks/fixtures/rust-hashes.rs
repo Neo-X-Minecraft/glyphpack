@@ -52,7 +52,16 @@ pub extern "C" fn blake3(length: usize) -> usize {
             return 0;
         }
         let bytes = core::slice::from_raw_parts(state.0 as *const u8, length);
-        *DIGEST.0.get() = hash::blake3(bytes);
+        // Benchmark the exact production scalar-round choices in separate
+        // modules. The historical harness keeps expanded rounds by default.
+        #[cfg(feature = "compact-hash")]
+        {
+            *DIGEST.0.get() = hash::blake3_compact(bytes);
+        }
+        #[cfg(not(feature = "compact-hash"))]
+        {
+            *DIGEST.0.get() = hash::blake3(bytes);
+        }
         DIGEST.0.get().cast::<u8>() as usize
     }
 }

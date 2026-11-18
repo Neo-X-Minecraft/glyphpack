@@ -1,33 +1,34 @@
 # Contributing
 
-Code contributed to GlyphPack is licensed under 0BSD. Retain separate notices
-for third-party references. Changes should preserve wire format 3, decoder API,
-error messages, fixed/runtime build semantics and mandatory allocation bounds.
+Own code is 0BSD, attributed to NeoX. Keep third-party notices separate.
+
+1.0.0 is a clean payload/API baseline. Implement only current formats. Do not
+add readers, emitters, aliases or fallback branches for unreleased experiments.
+Future compatibility work considers published release formats only. Historical
+measurements may remain as data, without executable copies of retired codecs.
+
+Use Rust for native tooling and native kernels, JS for browser adapters/tests.
+Folder names are lowercase. Edit authoritative sources and regenerate dist.
+Do not weaken mandatory length, capacity, trailer or state bounds.
 
 ```sh
 npm ci
-cargo fmt --all
-cargo clippy --locked --all-targets -- -D warnings
+cargo fmt --all -- --check
+cargo clippy --locked --all-targets --all-features -- -D warnings
 npm test
 npm run build
-npm run test:browser
+npm run test:types
+npm run test:package
+npm run test:examples
+npm run test:integration
 ```
 
-Edit authoritative sources rather than `dist/` or archived candidates. Rebuild
-and include changed distribution files. Keep the const-specialized Wasm pair implementation authoritative. Frozen JS
-references are for compatibility comparisons, not runtime fallbacks.
+Performance tests compare complete current decode calls, matching data and
+verification policies. Encode/import/warm-up/correctness checks stay outside
+timers. Rotate order, consume outputs and report repeated measurements with
+exact artifacts and browser versions. Chrome 109 is the compatibility baseline;
+Chromium 156 is the recorded performance runtime.
 
-For performance changes, compare complete calls with matching outputs and
-verification. Warm up, alternate order, consume results and report repeated
-measurements with environment details. Keep correctness work outside timers.
-Do not replace the recorded baseline results with numbers from another browser
-or different inputs. New local output belongs under `generated/results/`.
-
-Folder names are lowercase. Rust owns native tooling and decoding; JS owns loading, the ABI adapter, and
-execution-specific browser/Node tests.
-
-CLI changes must work outside the compile-time source directory. `tests/cli.rs`
-checks encoding, injection, version output and source-checkout errors from an
-unrelated directory. Build tools discover the checkout at runtime; use
-`GLYPHPACK_ROOT` for explicit selection. The native CI jobs check Rust 1.85 and
-ARM64 independently of the full Wasm/browser suite.
+Encode/inject/version must work outside the checkout. Build tooling discovers
+sources at runtime, with GLYPHPACK_ROOT as explicit override. Local preparation
+must not publish a tag, package, release or site without user authorization.
