@@ -1,6 +1,8 @@
 # Start with GlyphPack 1.0.0
 
-Prepared locally; unpublished. By NeoX, under 0BSD.
+By NeoX, under 0BSD. Install `npm install glyphpack` for prebuilt decoder modules
+and TypeScript declarations. Import `glyphpack` for secure pair or
+`glyphpack/full` for all codecs and runtime options.
 
 Open dist/standalone.html directly for an offline example. The workbench's HTML
 exports also run under file:// without companion fetches. Separate ES modules
@@ -19,4 +21,9 @@ Chrome 109+ is the browser target. Retired payload formats are unsupported.
 
 A local npm archive can be installed with npm install ./glyphpack-1.0.0.tgz.
 The native CLI's encode/inject commands work independently of the checkout.
-See cli.md, format.md and the root README for current commands and contracts.
+Linux CLI archives are static x86_64/aarch64 binaries with third-party notices.
+The web ZIP includes modules, declarations, examples, docs and benchmark results.
+Individual modules and the standalone HTML are also available as release assets.
+`SHA256SUMS` records the published asset checksums. The raw Wasm is an advanced
+ABI artifact; normal users should import a module with its embedded loader.
+See cli.md, configuration.md, format.md and the root README for commands and contracts.

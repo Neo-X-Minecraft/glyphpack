@@ -19,6 +19,7 @@ npm test
 npm run build
 npm run test:types
 npm run test:package
+npm run test:examples
 npm run test:integration
 ```
 

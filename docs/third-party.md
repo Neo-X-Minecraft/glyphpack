@@ -33,3 +33,7 @@ recorded in `package-lock.json`; they are not production decoder dependencies.
 Native release archives include license files from the locked Cargo dependencies
 and Rust's standard-library copyright inventory. Browser ZIPs include the Rust
 inventory as well. These notices do not change the 0BSD license on NeoX's code.
+The npm archive carries the same Rust 1.99.1 inventory as
+[`licenses/rust-library.html.gz`](licenses/rust-library.html.gz), losslessly
+compressed to avoid expanding the decoder package. Decompress with `gzip -d` or
+any gzip reader to inspect the complete upstream HTML and license texts.

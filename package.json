@@ -23,7 +23,8 @@
     "dist",
     "docs",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "cargo run --release --locked -- build --all",
@@ -37,7 +38,8 @@
     "test:site": "node tests/site.cjs",
     "test:types": "tsc --noEmit --strict --module nodenext --target es2022 tests/types.mts",
     "test:package": "node tests/package.cjs",
-    "test:integration": "node tests/guards.cjs && cargo run --release --locked --example integration && node tests/integration.cjs && node tests/integration-browser.cjs && node tests/integration-html.cjs && node tests/compact.cjs"
+    "test:integration": "node tests/guards.cjs && cargo run --release --locked --example integration && node tests/integration.cjs && node tests/integration-browser.cjs && node tests/integration-html.cjs && node tests/compact.cjs",
+    "test:examples": "node tests/examples.cjs"
   },
   "engines": {
     "node": ">=20"
@@ -52,10 +54,24 @@
   "types": "./dist/default.min.d.mts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Neo-X-Minecraft/glyphpack.git"
+    "url": "git+https://github.com/Neo-X-Minecraft/glyphpack.git"
   },
   "homepage": "https://neo-x-minecraft.github.io/glyphpack/",
   "bugs": {
     "url": "https://github.com/Neo-X-Minecraft/glyphpack/issues"
+  },
+  "keywords": [
+    "encoding",
+    "base64",
+    "base122",
+    "binary",
+    "wasm",
+    "html",
+    "utf8",
+    "utf16"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

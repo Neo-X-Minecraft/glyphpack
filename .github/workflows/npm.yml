@@ -1,0 +1,60 @@
+name: npm
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Published GitHub release tag, for example v1.0.0
+        required: true
+        type: string
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - run: npm install --global npm@11.21.2
+      - name: Download and verify the released npm archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          version=$(node -p 'require("./package.json").version')
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          test "$RELEASE_TAG" = "v$version"
+          archive="glyphpack-$version.tgz"
+          mkdir -p verified
+          gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --dir verified --pattern "$archive" --pattern SHA256SUMS
+          cd verified
+          awk -v name="$archive" '$2 == name {print; count++} END {if(count != 1) exit 1}' SHA256SUMS > npm-sha256.txt
+          sha256sum --check npm-sha256.txt
+          tar -xOf "$archive" package/package.json > package.json
+          node -e 'const p=require("./package.json");if(p.name!=="glyphpack"||"v"+p.version!==process.env.RELEASE_TAG)throw Error("Release package identity mismatch")'
+      - name: Publish the verified archive through npm trusted publishing
+        # Configure this repository and npm.yml as an npm trusted publisher.
+        # Initial package creation uses a maintainer login; no token is stored here.
+        env:
+          NODE_AUTH_TOKEN: ""
+        run: |
+          version=$(node -p 'require("./package.json").version')
+          archive="verified/glyphpack-$version.tgz"
+          expected="sha512-$(openssl dgst -sha512 -binary "$archive" | openssl base64 -A)"
+          if npm view "glyphpack@$version" dist.integrity --json > verified/registry-integrity.json 2> verified/registry-error.log; then
+            actual=$(node -p 'JSON.parse(require("node:fs").readFileSync("verified/registry-integrity.json","utf8"))')
+            test "$actual" = "$expected"
+            echo "The exact release archive is already published."
+          else
+            # A registry outage or authorization failure must not look like a new version.
+            node -e 'const fs=require("node:fs"),p=JSON.parse(fs.readFileSync("verified/registry-integrity.json","utf8"));if(p.error?.code!=="E404")throw Error("Registry lookup failed")'
+            npm publish "$archive" --access public --provenance
+          fi

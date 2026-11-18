@@ -29,10 +29,11 @@ const fs = require("node:fs/promises"),
     );
     for (const file of packed.files)
       assert(
-        /^(dist\/|docs\/|LICENSE$|README.md$|package.json$)/.test(file.path),
+        /^(dist\/|docs\/|LICENSE$|README.md$|CHANGELOG.md$|package.json$)/.test(file.path),
         "Unexpected published file: " + file.path,
       );
     assert(packed.files.some((f) => f.path === "dist/full.min.d.mts"));
+    assert(packed.files.some((f) => f.path === "docs/licenses/rust-library.html.gz"));
     await fs.writeFile(
       path.join(temp, "package.json"),
       '{"private":true,"type":"module"}',
@@ -90,6 +91,18 @@ console.log(JSON.stringify({pass:true,node:process.version,cases,exports:13}));`
         encoding: "utf8",
       }),
     );
+    // Resolve declarations from the installed archive, not the repository's
+    // self-referencing package. Negative type assertions must still hold here.
+    await fs.copyFile(
+      path.join(root, "tests/types.mts"),
+      path.join(temp, "types.mts"),
+    );
+    execFileSync(process.execPath, [
+      require.resolve("typescript/bin/tsc"),
+      "--noEmit", "--strict", "--module", "nodenext", "--target", "es2022",
+      "types.mts",
+    ], { cwd: temp, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    console.log("Installed package declarations passed.");
   } finally {
     await fs.rm(temp, { recursive: true, force: true });
   }

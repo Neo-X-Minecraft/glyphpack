@@ -1,6 +1,6 @@
 # Release notes
 
-## 1.0.0 — prepared, unpublished
+## 1.0.0 — 2026-11-18
 
 A clean format/API baseline and overhaul. All earlier payload compatibility is
 dropped: no predecessor readers/emitters, legacy flags, implicit dispatch or
@@ -16,7 +16,8 @@ frozen executable copies. Historical measurements remain as data only.
   shrinks embedded Wasm without adding browser code; repeated build probes and
   small-asset compression are cached.
 - Rust native tools, JS/Wasm browser paths, TypeScript declarations, 0BSD licensing.
+- npm decoder exports, tested installed-package declarations, runnable examples
+  for all 60 full-build combinations, and a build/runtime configuration guide.
 
 Future compatibility considers released formats only. Unreleased experiments
-never create reader obligations. Preparation creates no tag, GitHub release,
-npm publication or Pages deployment.
+never create reader obligations.
