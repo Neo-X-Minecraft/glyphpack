@@ -155,10 +155,10 @@ const url = (s) =>
   let api;
   WebAssembly.instantiate = async (...args) => {
     const r = await instantiate(...args);
-    api = r.instance.exports;
-    return {
-      ...r,
-      instance: {
+    const exports = (r.instance || r).exports;
+    if (typeof exports.decode_compact !== "function") return r;
+    api = exports;
+    const observed = {
         exports: {
           ...api,
           decode(...a) {
@@ -178,8 +178,8 @@ const url = (s) =>
             return api.warmup(...a);
           },
         },
-      },
     };
+    return r.instance ? {...r, instance: observed} : observed;
   };
   try {
     const observed = await import(

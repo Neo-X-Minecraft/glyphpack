@@ -43,6 +43,11 @@ function parts(text) {
   };
   let m;
   try {
+    // Reproduce an unrelated Module-overload instantiation even on Node
+    // versions which do not lazily initialize an HTTP-parser Wasm here.
+    await WebAssembly.instantiate(new WebAssembly.Module(
+      new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0]),
+    ));
     m = await import(
       "data:text/javascript;base64," + Buffer.from(source).toString("base64")
     );

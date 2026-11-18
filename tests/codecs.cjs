@@ -25,10 +25,11 @@ async function observedModule(source) {
     instantiate = WebAssembly.instantiate;
   WebAssembly.instantiate = async (...args) => {
     const result = await instantiate(...args),
-      api = result.instance.exports;
-    return {
-      ...result,
-      instance: {
+      api = (result.instance || result).exports;
+    // Other runtime modules (such as Node's HTTP parser) are unrelated to
+    // these assertions. Preserve either instantiate() overload for them.
+    if (typeof api.decode !== "function" || typeof api.warmup !== "function") return result;
+    const observed = {
         exports: {
           ...api,
           warmup(...flags) {
@@ -36,8 +37,8 @@ async function observedModule(source) {
             return api.warmup(...flags);
           },
         },
-      },
     };
+    return result.instance ? {...result, instance: observed} : observed;
   };
   try {
     return {
